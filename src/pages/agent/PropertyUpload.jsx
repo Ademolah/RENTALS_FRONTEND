@@ -1,130 +1,270 @@
 import { useState } from 'react';
-import { Upload, X, } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../services/apiClient';
+import { Upload, X, ArrowLeft, Building2, MapPin, DollarSign, Layers } from 'lucide-react';
 
 export const PropertyUpload = () => {
-  const [loading, setLoading] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [previewUrls, setPreviewUrls] = useState([]);
+  const navigate = useNavigate();
   
-  const [metadata, setMetadata] = useState({
+  // Structured Property State
+  const [formData, setFormData] = useState({
     title: '',
+    description: '',
     price: '',
+    propertyType: 'house',
     bedrooms: '',
     bathrooms: '',
-    address: ''
+    address: '',
+    locality: '',
+    state: 'Lagos', // Defaulting to high-velocity market
   });
 
-  // Direct client-side handling of binary media files
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles((prev) => [...prev, ...files]);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    // Generate local virtual data strings so agents get instant visual upload confirmation
-    const URLs = files.map(file => URL.createObjectURL(file));
-    setPreviewUrls((prev) => [...prev, ...URLs]);
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle Direct Multi-File Selection
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      setImages((prevImages) => [...prevImages, ...selectedFiles]);
+    }
+  };
+
+  // Evict file from staging queue
   const removeImage = (index) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+
+    if (images.length === 0) {
+      setError('Please upload at least one high-resolution property asset image.');
+      setLoading(false);
+      return;
+    }
+
+    // Initialize multi-part FormData sequence for multi-file streaming
+    const payload = new FormData();
+    
+    // Bind textual architecture
+    Object.keys(formData).forEach((key) => {
+      payload.append(key, formData[key]);
+    });
+
+    // Append direct files into array key expected by your backend ingestion layer
+    images.forEach((image) => {
+      payload.append('propertyImages', image);
+    });
 
     try {
-      // Must use FormData format to stream direct raw binary files across the network
-      const payload = new FormData();
-      payload.append('title', metadata.title);
-      payload.append('price', metadata.price);
-      payload.append('bedrooms', metadata.bedrooms);
-      payload.append('bathrooms', metadata.bathrooms);
-      payload.append('address', metadata.address);
-
-      selectedFiles.forEach((file) => {
-        payload.append('images', file); // Maps straight to your media ingestion backend
-      });
-
       await apiClient.post('/properties', payload, {
-        headers: { 'Content-Type': 'multipart/form-data' } // Informs Axios to process raw binary boundaries
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-
-      alert('Luxury listing uploaded successfully.');
+      
+      // Navigate straight back to inventory dashboard on success
+      navigate('/agent');
     } catch (err) {
-      console.error(err);
+      setError(err.response?.data?.message || 'Failed to push property asset live.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-brand-slate p-6 md:p-10">
-      <div className="max-w-4xl mx-auto bg-white rounded-[2rem] p-8 shadow-premium border border-brand-midnight/5">
+    <div className="min-h-screen bg-brand-slate text-white p-6 md:p-10 font-sans">
+      <div className="max-w-[1000px] mx-auto space-y-8">
         
-        <h1 className="text-3xl font-display font-extrabold text-brand-midnight mb-8">
-          Publish Luxury Listing
-        </h1>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Direct File Ingestion Component Dropzone */}
-          <div className="border-2 border-dashed border-brand-slate/80 hover:border-brand-cobalt transition-colors rounded-2xl p-8 text-center bg-brand-slate/10 cursor-pointer relative">
-            <input 
-              type="file" 
-              multiple 
-              accept="image/*"
-              onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            />
-            <Upload size={32} className="mx-auto text-brand-slate/60 mb-3" />
-            <p className="text-brand-midnight font-bold">Upload Property Media Assets</p>
-            <p className="text-brand-slate/60 text-xs mt-1 font-medium">Select real high-resolution images direct from your device</p>
-          </div>
-
-          {/* Dynamic Image Grid Preview Panel */}
-          {previewUrls.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-              {previewUrls.map((url, index) => (
-                <div key={index} className="relative aspect-video rounded-xl overflow-hidden group border border-brand-midnight/5">
-                  <img src={url} alt="Preview" className="w-full h-full object-cover" />
-                  <button 
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 p-1.5 bg-brand-midnight/80 backdrop-blur-md rounded-full text-brand-coral hover:bg-brand-midnight transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Architecture Structural Data Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input 
-              type="text" 
-              placeholder="Listing Title (e.g., Luxury 4-Bedroom Detached Duplex)" 
-              required
-              className="w-full bg-brand-slate/30 border border-brand-slate/50 rounded-xl px-4 py-3.5 text-brand-midnight focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-              onChange={(e) => setMetadata({...metadata, title: e.target.value})}
-            />
-            <input 
-              type="number" 
-              placeholder="Price per Year (₦)" 
-              required
-              className="w-full bg-brand-slate/30 border border-brand-slate/50 rounded-xl px-4 py-3.5 text-brand-midnight focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-              onChange={(e) => setMetadata({...metadata, price: e.target.value})}
-            />
-          </div>
-
+        {/* Navigation / Header */}
+        <div className="flex items-center gap-4">
           <button 
-            type="submit" 
-            disabled={loading || selectedFiles.length === 0}
-            className="w-full bg-brand-coral text-white font-bold py-4 rounded-xl transition-colors disabled:opacity-40"
+            onClick={() => navigate('/agent')}
+            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors text-brand-coral"
           >
-            {loading ? 'Ingesting Media & Publishing...' : 'Deploy Listing to Network'}
+            <ArrowLeft size={18} />
           </button>
+          <div>
+            <h1 className="text-3xl font-display font-black tracking-tight text-white">Property Upload Studio</h1>
+            <p className="text-brand-slate/60 text-xs font-medium mt-0.5">Asset Onboarding & Media Ingestion Matrix</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-xs font-medium text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Core Core Specs (Left Column) */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Core Details Block */}
+            <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+                <Building2 size={16} className="text-brand-cobalt" />
+                <h3 className="text-sm font-bold tracking-wider uppercase font-mono text-white/70">Structural Identity</h3>
+              </div>
+              
+              <div className="space-y-1">
+                <label className="text-xs text-white/40 font-bold uppercase">Listing Title</label>
+                <input 
+                  type="text" name="title" required placeholder="Luxury 4-Bedroom Detached Duplex"
+                  value={formData.title} onChange={handleInputChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs text-white/40 font-bold uppercase">Description Narrative</label>
+                <textarea 
+                  name="description" required rows="4" placeholder="Detail the interior specifications, automated automation systems, and luxury amenities..."
+                  value={formData.description} onChange={handleInputChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1"><DollarSign size={12}/> Valuation (NGN / Year)</label>
+                  <input 
+                    type="number" name="price" required placeholder="45000000"
+                    value={formData.price} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1"><Layers size={12}/> Property Classification</label>
+                  <select 
+                    name="propertyType" value={formData.propertyType} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none"
+                  >
+                    <option value="house" className="bg-brand-midnight">Detached House / Duplex</option>
+                    <option value="penthouse" className="bg-brand-midnight">Luxury Penthouse</option>
+                    <option value="apartment" className="bg-brand-midnight">Serviced Apartment</option>
+                    <option value="land" className="bg-brand-midnight">Premium Land Allocation</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Location Constraints Block */}
+            <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+                <MapPin size={16} className="text-brand-coral" />
+                <h3 className="text-sm font-bold tracking-wider uppercase font-mono text-white/70">Geospatial Routing</h3>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs text-white/40 font-bold uppercase">Street Address Mapping</label>
+                <input 
+                  type="text" name="address" required placeholder="Plot 1024, Banana Island Way"
+                  value={formData.address} onChange={handleInputChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase">Locality / District</label>
+                  <input 
+                    type="text" name="locality" required placeholder="Ikoyi"
+                    value={formData.locality} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase">Regional State Jurisdiction</label>
+                  <input 
+                    type="text" name="state" required placeholder="Lagos"
+                    value={formData.state} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Direct File Ingestion & Specs (Right Column) */}
+          <div className="space-y-6">
+            
+            {/* Size Configurations */}
+            <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase">Bedrooms</label>
+                  <input 
+                    type="number" name="bedrooms" required placeholder="4" min="0"
+                    value={formData.bedrooms} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase">Bathrooms</label>
+                  <input 
+                    type="number" name="bathrooms" required placeholder="5" min="0"
+                    value={formData.bathrooms} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Direct Multi-File Media Dropzone */}
+            <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">
+              <label className="text-xs text-white/40 font-bold uppercase tracking-wider block">Media Storage Pipeline</label>
+              
+              <div className="border-2 border-dashed border-white/10 hover:border-brand-cobalt/50 rounded-2xl p-6 text-center cursor-pointer transition-colors relative group">
+                <input 
+                  type="file" multiple accept="image/*" onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <Upload className="mx-auto text-white/20 group-hover:text-brand-cobalt transition-colors mb-2" size={24} />
+                <p className="text-xs font-bold text-white/60">Select Local Media Files</p>
+                <p className="text-[10px] text-white/30 font-mono mt-1">PNG, JPG formats accepted</p>
+              </div>
+
+              {/* Upload Staging Line Previews */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 pt-2">
+                  {images.map((file, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group bg-white/5">
+                      <img 
+                        src={URL.createObjectURL(file)} 
+                        alt="Staged asset" 
+                        className="w-full h-full object-cover"
+                      />
+                      <button 
+                        type="button" onClick={() => removeImage(idx)}
+                        className="absolute inset-0 bg-brand-coral/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Final Submission Execution */}
+            <button 
+              type="submit" disabled={loading}
+              className="w-full bg-brand-coral hover:bg-brand-coral/90 text-white font-black py-4 rounded-xl text-xs tracking-widest uppercase transition-opacity disabled:opacity-40 shadow-lg shadow-brand-coral/10"
+            >
+              {loading ? 'Streaming Assets...' : 'Commit Listing Live'}
+            </button>
+          </div>
+
         </form>
 
       </div>

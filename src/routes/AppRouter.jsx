@@ -9,13 +9,13 @@ import { Login } from '../pages/public/Login';
 import { Register } from '../pages/public/Register';
 import { AdminDashboard } from '../pages/admin/AdminDashboard';
 import { UserProfile } from '../pages/user/UserProfile';
+import { AgentDashboard } from '../pages/agent/AgentDashboard';
+import { PropertyUpload } from '../pages/agent/PropertyUpload';
+import { AcceptInvite } from '../pages/public/AcceptInvite';
 
 // (Placeholders for your page components)
 
-const AcceptInvite = () => <div className="h-screen bg-brand-coral text-white">Magic Link Screen</div>;
 
-
-const AgentDashboard = () => <div>Agent Dashboard - Upload Properties</div>;
 
 export const AppRouter = () => {
   return (
@@ -53,7 +53,7 @@ export const AppRouter = () => {
             ========================================== */}
         <Route element={<ProtectedRoute allowedRoles={['AGENT', 'AGENCY_ADMIN']} />}>
           <Route path="/agent" element={<AgentDashboard />} />
-          <Route path="/agent/upload" element={<div>Property Upload Form</div>} />
+          <Route path="/agent/upload" element={<PropertyUpload />} />
         </Route>
 
       </Routes>

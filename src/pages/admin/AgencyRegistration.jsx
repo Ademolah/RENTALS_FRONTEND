@@ -2,25 +2,25 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
+import { Building2, FileCheck, MapPin, Phone, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 export const AgencyRegistration = () => {
-  const { user, updateUser } = useAuthStore();
   const navigate = useNavigate();
-  
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const { user, login } = useAuthStore(); // Grab login action to update the user's role globally
 
   const [formData, setFormData] = useState({
     agencyName: '',
-    cacNumber: '', // Corporate Affairs Commission Registration
-    officeAddress: '',
-    contactPhone: '',
+    cacNumber: '',
+    businessAddress: '',
+    corporatePhone: '',
+    agencyEmail: user?.email || '', // Pre-fill with their current authenticated email
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -29,117 +29,127 @@ export const AgencyRegistration = () => {
     setError(null);
 
     try {
-      // Assuming backend route: POST /api/v1/agencies/register
+      // 1. Dispatch corporate data to the agency controller endpoint
       const response = await apiClient.post('/agencies/register', formData);
       
-      setSuccess(true);
+      // 2. IMPORTANT: The backend will return an updated user token with the "ADMIN" role.
+      // We pass this back to Zustand to instantly upgrade their global state.
+      login(response.data.user, response.data.token);
       
-      // Update the global state so the user instantly gets ADMIN privileges
-      updateUser({ role: 'ADMIN', agencyId: response.data.agency._id });
-
-      // Automatically route them to their shiny new CEO dashboard after 2 seconds
-      setTimeout(() => {
-        navigate('/admin');
-      }, 2000);
-
+      // 3. Launch them straight into their new high-end CEO Dashboard!
+      navigate('/admin');
     } catch (err) {
-      setError(err.response?.data?.message || 'Verification failed. Please check your details.');
+      setError(err.response?.data?.message || 'Corporate onboarding failed. Please verify your CAC metrics.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center bg-brand-slate px-4">
-        <div className="bg-white p-10 rounded-[2rem] shadow-premium text-center max-w-md w-full border border-brand-slate/10">
-          <div className="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </div>
-          <h2 className="text-3xl font-display font-bold text-brand-midnight mb-2">Agency Verified</h2>
-          <p className="text-brand-slate/60 font-medium">Your corporate dashboard is ready.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-brand-slate px-4 py-12">
-      <div className="w-full max-w-xl bg-white rounded-[2rem] p-8 md:p-10 shadow-premium border border-brand-slate/10">
+    <div className="min-h-screen bg-brand-slate text-white p-6 md:p-10 font-sans flex items-center justify-center">
+      <div className="w-full max-w-2xl bg-brand-midnight border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-premium relative overflow-hidden">
         
-        <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-display font-extrabold text-brand-midnight tracking-tight">
-            Register Your Agency
-          </h1>
-          <p className="text-brand-slate/60 mt-3 text-sm md:text-base font-medium">
-            Upgrade your account to list premium properties and manage your agents on Rentals.
-          </p>
+        {/* Decorative background glow */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-cobalt/10 rounded-full blur-3xl pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
+
+        {/* Back navigation and title */}
+        <div className="mb-8 flex items-center gap-4 relative z-10">
+          <button 
+            onClick={() => navigate('/profile')}
+            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors text-brand-coral"
+          >
+            <ArrowLeft size={16} />
+          </button>
+          <div>
+            <span className="text-brand-gold text-[10px] font-black tracking-widest uppercase block mb-0.5">Corporate Portal</span>
+            <h1 className="text-2xl md:text-3xl font-display font-black tracking-tight text-white">Establish Your Corporate Agency</h1>
+          </div>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-600 p-4 rounded-xl text-sm mb-8 text-center font-medium">
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-xs font-medium mb-6 text-center relative z-10">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-bold text-brand-midnight mb-2">Registered Agency Name</label>
-            <input
-              type="text"
-              name="agencyName"
-              required
-              onChange={handleChange}
-              className="w-full bg-brand-slate/30 border border-brand-slate/50 rounded-xl px-5 py-4 text-brand-midnight focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-              placeholder="e.g. Zenith Luxury Real Estate"
+        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+          
+          {/* Section Indicator */}
+          <div className="flex items-center gap-2 border-b border-white/5 pb-2 text-white/40">
+            <ShieldCheck size={14} className="text-brand-cobalt" />
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono">Legal & Operational Directives</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1.5">
+                <Building2 size={12} /> Company / Agency Name
+              </label>
+              <input 
+                type="text" name="agencyName" required placeholder="E.g., Vanguard Luxury Real Estate"
+                value={formData.agencyName} onChange={handleChange}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1.5">
+                <FileCheck size={12} /> CAC Verification Number
+              </label>
+              <input 
+                type="text" name="cacNumber" required placeholder="E.g., RC-1234567"
+                value={formData.cacNumber} onChange={handleChange}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1.5">
+              <MapPin size={12} /> Principal Corporate Address
+            </label>
+            <input 
+              type="text" name="businessAddress" required placeholder="E.g., 45 Alfred Rewane Road, Ikoyi, Lagos"
+              value={formData.businessAddress} onChange={handleChange}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-brand-midnight mb-2">CAC Registration Number</label>
-            <input
-              type="text"
-              name="cacNumber"
-              required
-              onChange={handleChange}
-              className="w-full bg-brand-slate/30 border border-brand-slate/50 rounded-xl px-5 py-4 text-brand-midnight focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-              placeholder="RC-1234567"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1.5">
+                <Phone size={12} /> Official Phone Hotline
+              </label>
+              <input 
+                type="tel" name="corporatePhone" required placeholder="E.g., +234 812 345 6789"
+                value={formData.corporatePhone} onChange={handleChange}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-white/40 font-bold uppercase">Corporate Contact Email</label>
+              <input 
+                type="email" name="agencyEmail" required placeholder="info@youragency.com"
+                value={formData.agencyEmail} onChange={handleChange}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white/50 placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium cursor-not-allowed"
+                disabled // Pre-linked to account to maintain security custody
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-brand-midnight mb-2">Corporate Office Address</label>
-            <input
-              type="text"
-              name="officeAddress"
-              required
-              onChange={handleChange}
-              className="w-full bg-brand-slate/30 border border-brand-slate/50 rounded-xl px-5 py-4 text-brand-midnight focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-              placeholder="123 Premium Avenue, Location"
-            />
+          <div className="pt-4">
+            <button 
+              type="submit" disabled={loading}
+              className="w-full bg-brand-gold text-brand-midnight font-black py-4 rounded-xl text-xs tracking-widest uppercase transition-all transform active:scale-[0.99] disabled:opacity-40 shadow-lg shadow-brand-gold/10 hover:bg-white"
+            >
+              {loading ? 'Authenticating Corporate Credentials...' : 'Deploy Firm Setup & Upgrade'}
+            </button>
+            <p className="text-[10px] text-white/30 text-center mt-3 font-medium leading-relaxed">
+              By upgrading, your profile status shifts to a corporate entity shell. You will immediately inherit full administrative capability over your designated workspace, agent rosters, and property syndications.
+            </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-brand-midnight mb-2">Official Contact Number</label>
-            <input
-              type="tel"
-              name="contactPhone"
-              required
-              onChange={handleChange}
-              className="w-full bg-brand-slate/30 border border-brand-slate/50 rounded-xl px-5 py-4 text-brand-midnight focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-              placeholder="+234 ..."
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-brand-midnight hover:bg-brand-midnight/90 text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-8 text-lg"
-          >
-            {loading ? 'Verifying Credentials...' : 'Establish Agency'}
-          </button>
         </form>
 
       </div>
