@@ -6,12 +6,12 @@ import { Building2, FileCheck, MapPin, Phone, ArrowLeft, ShieldCheck } from 'luc
 
 export const AgencyRegistration = () => {
   const navigate = useNavigate();
-  const { user, login } = useAuthStore(); // Grab login action to update the user's role globally
+  const { user,} = useAuthStore(); // Grab login action to update the user's role globally
 
   const [formData, setFormData] = useState({
-    agencyName: '',
+    corporateName: '',
     cacNumber: '',
-    businessAddress: '',
+    hqAddress: '',
     corporatePhone: '',
     agencyEmail: user?.email || '', // Pre-fill with their current authenticated email
   });
@@ -23,21 +23,21 @@ export const AgencyRegistration = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+
+
+const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // 1. Dispatch corporate data to the agency controller endpoint
-      const response = await apiClient.post('/agencies/register', formData);
+      // 1. Dispatch corporate data to create a PENDING agency record
+      await apiClient.post('/agencies', formData);
       
-      // 2. IMPORTANT: The backend will return an updated user token with the "ADMIN" role.
-      // We pass this back to Zustand to instantly upgrade their global state.
-      login(response.data.user, response.data.token);
+      // 2. We do NOT update the role to ADMIN yet. 
+      // We route them back to their profile with a state flag so the UI knows to show the pending card.
+      navigate('/profile', { state: { upgradePending: true } });
       
-      // 3. Launch them straight into their new high-end CEO Dashboard!
-      navigate('/admin');
     } catch (err) {
       setError(err.response?.data?.message || 'Corporate onboarding failed. Please verify your CAC metrics.');
     } finally {
@@ -86,8 +86,8 @@ export const AgencyRegistration = () => {
                 <Building2 size={12} /> Company / Agency Name
               </label>
               <input 
-                type="text" name="agencyName" required placeholder="E.g., Vanguard Luxury Real Estate"
-                value={formData.agencyName} onChange={handleChange}
+                type="text" name="corporateName" required placeholder="E.g., Vanguard Luxury Real Estate"
+                value={formData.corporateName} onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
               />
             </div>
@@ -109,8 +109,8 @@ export const AgencyRegistration = () => {
               <MapPin size={12} /> Principal Corporate Address
             </label>
             <input 
-              type="text" name="businessAddress" required placeholder="E.g., 45 Alfred Rewane Road, Ikoyi, Lagos"
-              value={formData.businessAddress} onChange={handleChange}
+              type="text" name="hqAddress" required placeholder="E.g., 45 Alfred Rewane Road, Ikoyi, Lagos"
+              value={formData.hqAddress} onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
             />
           </div>
