@@ -10,14 +10,20 @@ export const PropertyUpload = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    price: '',
+    pricePerAnnum: '', 
+    serviceCharge: '0', 
+    cautionFee: '0',    
     propertyType: 'house',
-    bedrooms: '',
-    bathrooms: '',
-    address: '',
+    beds: '',          
+    baths: '',         
+    streetAddress: '', 
     locality: '',
-    state: 'Lagos', // Defaulting to high-velocity market
+    state: 'Lagos',
+    longitude: '',     
+    latitude: '',      
   });
+
+ 
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,45 +46,56 @@ export const PropertyUpload = () => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
+  
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    if (images.length === 0) {
-      setError('Please upload at least one high-resolution property asset image.');
-      setLoading(false);
-      return;
-    }
+  const payload = new FormData();
 
-    // Initialize multi-part FormData sequence for multi-file streaming
-    const payload = new FormData();
-    
-    // Bind textual architecture
-    Object.keys(formData).forEach((key) => {
-      payload.append(key, formData[key]);
-    });
+  console.log('FRONTEND IMAGES STATE:', images);
 
-    // Append direct files into array key expected by your backend ingestion layer
-    images.forEach((image) => {
-      payload.append('propertyImages', image);
-    });
+  // 1. Direct text fields
+  payload.append('title', formData.title);
+  payload.append('description', formData.description);
+  payload.append('locality', formData.locality);
+  payload.append('state', formData.state);
+  payload.append('streetAddress', formData.streetAddress); 
 
-    try {
-      await apiClient.post('/properties', payload, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      // Navigate straight back to inventory dashboard on success
-      navigate('/agent');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to push property asset live.');
-    } finally {
-      setLoading(false);
-    }
+  // 2. Number conversions
+  payload.append('pricePerAnnum', Number(formData.pricePerAnnum));
+  payload.append('serviceCharge', Number(formData.serviceCharge || 0));
+  payload.append('cautionFee', Number(formData.cautionFee || 0));
+  payload.append('beds', Number(formData.beds));       
+  payload.append('baths', Number(formData.baths));     
+
+  // 3. The Strict Geospatial Object
+  const geoJSONLocation = {
+    type: 'Point',
+    coordinates: [Number(formData.longitude), Number(formData.latitude)],
   };
+  payload.append('location', JSON.stringify(geoJSONLocation));
+
+  // 4. File attachments
+  images.forEach((file) => {
+  payload.append('images', file); 
+});
+
+  try {
+    await apiClient.post('/properties', payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    navigate(-1); 
+  } catch (err) {
+    setError(err.response?.data?.message || 'Data ingestion failed.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-brand-slate text-white p-6 md:p-10 font-sans">
@@ -138,11 +155,36 @@ export const PropertyUpload = () => {
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1"><DollarSign size={12}/> Valuation (NGN / Year)</label>
                   <input 
-                    type="number" name="price" required placeholder="45000000"
-                    value={formData.price} onChange={handleInputChange}
+                    type="number" name="pricePerAnnum" required placeholder="45000000"
+                    value={formData.pricePerAnnum} onChange={handleInputChange}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
                   />
+
+                  {/* Appended Financial Constraints */}
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="space-y-1">
+                <label className="text-xs text-white/40 font-bold uppercase">Service Charge </label>
+                <input 
+                  type="number" name="serviceCharge" placeholder="0" min="0"
+                  value={formData.serviceCharge} onChange={handleInputChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-white/40 font-bold uppercase">Caution Fee </label>
+                <input 
+                  type="number" name="cautionFee" placeholder="0" min="0"
+                  value={formData.cautionFee} onChange={handleInputChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                />
+              </div>
+            </div>
                 </div>
+
+
+              
+
+
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1"><Layers size={12}/> Property Classification</label>
                   <select 
@@ -168,8 +210,8 @@ export const PropertyUpload = () => {
               <div className="space-y-1">
                 <label className="text-xs text-white/40 font-bold uppercase">Street Address Mapping</label>
                 <input 
-                  type="text" name="address" required placeholder="Plot 1024, Banana Island Way"
-                  value={formData.address} onChange={handleInputChange}
+                  type="text" name="streetAddress" required placeholder="Plot 1024, Banana Island Way"
+                  value={formData.streetAddress} onChange={handleInputChange}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
                 />
               </div>
@@ -191,6 +233,26 @@ export const PropertyUpload = () => {
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
                   />
                 </div>
+
+                {/* Appended Geospatial Pinpoints */}
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase">Longitude (X)</label>
+                  <input 
+                    type="number" name="longitude" required placeholder="3.4308" step="any" min="-180" max="180"
+                    value={formData.longitude} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase">Latitude (Y)</label>
+                  <input 
+                    type="number" name="latitude" required placeholder="6.4531" step="any" min="-90" max="90"
+                    value={formData.latitude} onChange={handleInputChange}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                  />
+                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -204,7 +266,7 @@ export const PropertyUpload = () => {
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase">Bedrooms</label>
                   <input 
-                    type="number" name="bedrooms" required placeholder="4" min="0"
+                    type="number" name="beds" required placeholder="4" min="0"
                     value={formData.bedrooms} onChange={handleInputChange}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
                   />
@@ -212,7 +274,7 @@ export const PropertyUpload = () => {
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase">Bathrooms</label>
                   <input 
-                    type="number" name="bathrooms" required placeholder="5" min="0"
+                    type="number" name="baths" required placeholder="5" min="0"
                     value={formData.bathrooms} onChange={handleInputChange}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
                   />
@@ -261,7 +323,7 @@ export const PropertyUpload = () => {
               type="submit" disabled={loading}
               className="w-full bg-brand-coral hover:bg-brand-coral/90 text-white font-black py-4 rounded-xl text-xs tracking-widest uppercase transition-opacity disabled:opacity-40 shadow-lg shadow-brand-coral/10"
             >
-              {loading ? 'Streaming Assets...' : 'Commit Listing Live'}
+              {loading ? 'Listing Assets...' : 'Commit Listing Live'}
             </button>
           </div>
 

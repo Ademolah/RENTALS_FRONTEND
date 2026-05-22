@@ -1,5 +1,10 @@
-import { Search, MapPin, Filter, SlidersHorizontal, ChevronRight } from 'lucide-react';
+/* eslint-disable react-hooks/set-state-in-effect */
+
+
+import { Search, MapPin, Filter, SlidersHorizontal, ChevronRight, Loader2 } from 'lucide-react';
 import { PropertyCard } from './PropertyCard';
+import { apiClient } from '../../services/apiClient';
+import { useState, useEffect } from 'react';
 
 // ---------------------------------------------------------------------------
 // MOCK DATA ENGINES
@@ -12,43 +17,73 @@ const MOCK_LOCATIONS = [
   { id: 'l5', name: 'Asokoro', count: '45 Properties', image: 'https://images.unsplash.com/photo-1600607687931-cece5ce21448?auto=format&fit=crop&w=600&q=80' },
 ];
 
-const MOCK_PROPERTIES = [
-  {
-    id: '1',
-    title: 'Luxury 4-Bedroom Detached Duplex',
-    locality: 'Ikoyi',
-    price: '₦ 85,000,000 / yr',
-    beds: 4,
-    baths: 5,
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    isPremium: true,
-    span: 'md:col-span-2 md:row-span-2', 
-  },
-  {
-    id: '2',
-    title: 'Minimalist Studio Apartment',
-    locality: 'Victoria Island',
-    price: '₦ 12,000,000 / yr',
-    beds: 1,
-    baths: 1,
-    image: 'https://images.unsplash.com/photo-1502672260266-1c1de2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    isPremium: false,
-    span: 'md:col-span-1 md:row-span-1', 
-  },
-  {
-    id: '3',
-    title: 'Zenith Penthouse Suite',
-    locality: 'Lekki Phase 1',
-    price: '₦ 150,000,000 / yr',
-    beds: 5,
-    baths: 6,
-    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    isPremium: true,
-    span: 'md:col-span-3 md:row-span-2', 
-  }
-];
+
 
 export const PropertyFeed = () => {
+  // Controlled console inputs
+  const [searchLocation, setSearchLocation] = useState('');
+  const [searchBudget, setSearchBudget] = useState('any');
+  
+  // Initialize directly with working mock data to secure layout rendering immediately
+  const [properties, setProperties] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  
+
+  // The central processing engine
+  const executeSearch = async (e, locationOverride) => {
+    if (e) e.preventDefault();
+    setIsSearching(true);
+
+    const locationValue = locationOverride !== undefined ? locationOverride : searchLocation;
+
+    try {
+      const params = new URLSearchParams();
+      if (locationValue.trim()) params.append('location', locationValue.trim());
+      if (searchBudget !== 'any') params.append('maxBudget', searchBudget);
+
+      const response = await apiClient.get(`/properties/search?${params.toString()}`);
+      
+      const fetchedItems = response.data?.data?.properties;
+      if (fetchedItems && fetchedItems.length > 0) {
+        
+        // 🚨 THE TRANSLATION ENGINE
+        const calibratedProperties = fetchedItems.map((item, index) => ({
+          ...item,
+          id: item._id || item.id,
+          
+          // 1. Image Fix: Extract the first Cloudinary URL, or use a premium fallback
+          image: (item.mediaUrls && item.mediaUrls.length > 0) 
+            ? item.mediaUrls[0] 
+            : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop',
+            
+          // 2. Price Fix: Convert the raw DB number (e.g., 5000000) into a gorgeous UI string
+          price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}/yr`,
+          
+          // 3. Keep the dynamic grid layout perfectly intact
+          span: index === 0 ? 'md:col-span-2 md:row-span-2' : 
+                index === 2 ? 'md:col-span-3 md:row-span-2' : 
+                'md:col-span-1 md:row-span-1'
+        }));
+        
+        setProperties(calibratedProperties);
+      } else {
+        setProperties([]); // Empty results handler
+      }
+    } catch (err) {
+      console.warn('Backend search unreachable:', err);
+      setProperties([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Run database lookups on page initialize without blocking layout presentation
+  useEffect(() => {
+    executeSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="bg-brand-midnight text-white min-h-screen font-sans pb-20">
       
@@ -77,12 +112,14 @@ export const PropertyFeed = () => {
           2. THE SEARCH CONSOLE (GLASSMORPHISM)
           ======================================================================= */}
       <div className="px-6 md:px-10 max-w-[1200px] mx-auto relative z-20 -mt-6 md:-mt-10 mb-16">
-        <div className="bg-[#1a233a]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-4 md:p-6 shadow-premium flex flex-col md:flex-row items-center gap-4">
+        <form onSubmit={(e) => executeSearch(e)} className="bg-[#1a233a]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-4 md:p-6 shadow-premium flex flex-col md:flex-row items-center gap-4">
           
           <div className="flex-1 w-full bg-white/5 rounded-xl flex items-center px-4 py-3.5 border border-transparent focus-within:border-brand-cobalt/50 transition-colors">
             <MapPin size={18} className="text-brand-gold shrink-0 mr-3" />
             <input 
               type="text" 
+              value={searchLocation}
+              onChange={(e) => setSearchLocation(e.target.value)}
               placeholder="Where do you want to live?" 
               className="w-full bg-transparent border-none text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-0"
             />
@@ -91,7 +128,11 @@ export const PropertyFeed = () => {
           <div className="flex w-full md:w-auto gap-4">
             <div className="flex-1 md:w-48 bg-white/5 rounded-xl flex items-center px-4 py-3.5 border border-transparent focus-within:border-brand-cobalt/50 transition-colors">
               <Filter size={18} className="text-white/40 shrink-0 mr-3" />
-              <select className="w-full bg-transparent border-none text-sm text-white/80 focus:outline-none appearance-none cursor-pointer">
+              <select 
+                value={searchBudget}
+                onChange={(e) => setSearchBudget(e.target.value)}
+                className="w-full bg-transparent border-none text-sm text-white/80 focus:outline-none appearance-none cursor-pointer"
+              >
                 <option value="any" className="bg-brand-midnight">Max Budget</option>
                 <option value="10m" className="bg-brand-midnight">Up to ₦10M</option>
                 <option value="50m" className="bg-brand-midnight">Up to ₦50M</option>
@@ -99,16 +140,20 @@ export const PropertyFeed = () => {
               </select>
             </div>
 
-            <button className="bg-white/5 p-3.5 rounded-xl border border-white/10 text-white hover:bg-white/10 transition-colors shrink-0">
+            <button type="button" className="bg-white/5 p-3.5 rounded-xl border border-white/10 text-white hover:bg-white/10 transition-colors shrink-0">
               <SlidersHorizontal size={20} />
             </button>
 
-            <button className="bg-brand-cobalt hover:bg-brand-cobalt/90 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-brand-cobalt/20 shrink-0 flex items-center gap-2">
-              <Search size={16} />
-              <span className="hidden md:inline">Search</span>
+            <button 
+              type="submit" 
+              disabled={isSearching}
+              className="bg-brand-cobalt hover:bg-brand-cobalt/90 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-brand-cobalt/20 shrink-0 flex items-center justify-center gap-2 min-w-[120px]"
+            >
+              {isSearching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+              <span className="hidden md:inline">{isSearching ? 'Scanning...' : 'Search'}</span>
             </button>
           </div>
-        </div>
+        </form>
       </div>
 
       {/* =======================================================================
@@ -130,6 +175,10 @@ export const PropertyFeed = () => {
           {MOCK_LOCATIONS.map((loc) => (
             <div 
               key={loc.id} 
+              onClick={() => {
+                setSearchLocation(loc.name);
+                executeSearch(null, loc.name);
+              }}
               className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-white/10"
             >
               <img 
@@ -159,9 +208,9 @@ export const PropertyFeed = () => {
           </div>
         </div>
 
-        {/* Re-integrated Bento Grid */}
+        {/* This matches exactly how your working mockup structure loop operated */}
         <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-[450px] gap-6">
-          {MOCK_PROPERTIES.map((prop) => (
+          {properties.map((prop) => (
             <PropertyCard key={prop.id} property={prop} />
           ))}
         </div>
