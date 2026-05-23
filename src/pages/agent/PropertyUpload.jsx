@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../services/apiClient';
 import { Upload, X, ArrowLeft, Building2, MapPin, DollarSign, Layers } from 'lucide-react';
+import toast from 'react-hot-toast'
+
 
 export const PropertyUpload = () => {
   const navigate = useNavigate();
@@ -89,9 +91,11 @@ export const PropertyUpload = () => {
       }
     });
     
+    toast.success('Property uploaded successfully!');
     navigate(-1); 
   } catch (err) {
     setError(err.response?.data?.message || 'Data ingestion failed.');
+    toast.error('Failed to upload property.');
   } finally {
     setLoading(false);
   }

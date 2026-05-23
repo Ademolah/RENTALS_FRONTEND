@@ -12,6 +12,7 @@ import { UserProfile } from '../pages/user/UserProfile';
 import { AgentDashboard } from '../pages/agent/AgentDashboard';
 import { PropertyUpload } from '../pages/agent/PropertyUpload';
 import { AcceptInvite } from '../pages/public/AcceptInvite';
+import {Toaster } from 'react-hot-toast'
 
 // (Placeholders for your page components)
 
@@ -19,7 +20,19 @@ import { AcceptInvite } from '../pages/public/AcceptInvite';
 
 export const AppRouter = () => {
   return (
+
     <BrowserRouter>
+    <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#0F172A', // Matches your brand-midnight
+            color: '#fff',
+            borderRadius: '1rem',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          },
+        }}
+      />
       <Routes>
         {/* ==========================================
             PUBLIC ROUTES (Open to everyone)
