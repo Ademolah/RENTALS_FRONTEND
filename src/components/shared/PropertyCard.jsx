@@ -56,6 +56,17 @@ export const PropertyCard = ({ property }) => {
 
         {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-col justify-end">
+
+          {/* 🚨 PREMIUM STATUS BADGE */}
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 w-fit transition-colors ${
+            property.isAvailable 
+              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
+              : "bg-white/10 text-white/50 border border-white/5"
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full mr-2 ${property.isAvailable ? 'bg-emerald-400' : 'bg-white/30'}`} />
+            {property.isAvailable ? "Market Active" : "Off-Market"}
+          </div>
+          
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold text-white mb-3 leading-tight tracking-tight">
             {property.title}
           </h2>

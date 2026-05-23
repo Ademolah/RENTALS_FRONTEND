@@ -88,25 +88,62 @@ export const PropertyFeed = () => {
     <div className="bg-brand-midnight text-white min-h-screen font-sans pb-20">
       
       {/* =======================================================================
-          1. CINEMATIC HERO & BRANDING
-          ======================================================================= */}
-      <div className="relative pt-24 md:pt-32 pb-16 px-6 md:px-10 max-w-[1400px] mx-auto text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
-        
-        {/* Abstract Glow Effect */}
-        <div className="absolute top-10 left-10 w-72 h-72 bg-brand-cobalt/20 rounded-full blur-[100px] pointer-events-none"></div>
+    1. CINEMATIC HERO & BRANDING (CLEAN & SECURE VIEWPORT)
+    ======================================================================= */}
+<div className="relative pt-20 md:pt-28 pb-10 px-6 md:px-10 max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden">
+  
+  {/* Abstract Multilayered Glow Effects (Now safely bound inside the parent) */}
+  <div className="absolute top-10 left-10 w-72 h-72 bg-brand-cobalt/10 rounded-full blur-[100px] pointer-events-none" />
+  <div className="absolute bottom-0 right-10 w-72 h-72 bg-brand-coral/5 rounded-full blur-[100px] pointer-events-none hidden md:block" />
 
-        <div className="max-w-2xl relative z-10">
-          <span className="text-brand-gold text-xs font-black tracking-[0.2em] uppercase mb-4 block">
-            Welcome to Rentals
-          </span>
-          <h1 className="text-4xl md:text-6xl font-display font-black tracking-tight leading-tight mb-6">
-            Discover Exquisite <br className="hidden md:block"/> Real Estate.
-          </h1>
-          <p className="text-brand-slate/80 text-base md:text-lg leading-relaxed max-w-xl mx-auto md:mx-0 font-medium">
-            The exclusive network for verified corporate agencies and discerning tenants. Find premium apartments, commercial spaces, and luxury villas curated for your lifestyle.
-          </p>
+  {/* Main Typographic Column */}
+  <div className="max-w-2xl relative z-10 flex-1 text-center md:text-left">
+    
+    {/* High-Impact Headline with Premium Typography */}
+    <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black tracking-tight leading-[1.1] mb-6 text-white">
+      Rent, Shortlet, <br className="hidden md:block"/>
+      <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cobalt via-white to-brand-gold">
+        Or Purchase.
+      </span>
+    </h1>
+    
+    {/* Clean, targeted explanation directly guiding the user's focus */}
+    <p className="text-brand-slate/80 text-base md:text-xl leading-relaxed max-w-xl mx-auto md:mx-0 font-medium">
+      The exclusive marketplace for premium <span className="text-white font-bold">rentals</span>, bespoke <span className="text-white font-bold">shortlets</span>, and luxury <span className="text-white font-bold">acquisitions</span> curated specifically for your lifestyle.
+    </p>
+  </div>
+
+  {/* Right Side Visual/Metrics Pillar (Clean grid layout, zero margins shifting out of bounds) */}
+  <div className="relative z-10 hidden md:flex flex-col gap-4 w-full max-w-xs shrink-0">
+    
+    {/* Metric Card 1 */}
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-premium relative overflow-hidden group">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-brand-cobalt/20 flex items-center justify-center text-brand-cobalt shrink-0">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+        </div>
+        <div>
+          <p className="text-white font-black text-2xl tracking-tight">Verified Spaces</p>
+          <p className="text-brand-slate/50 text-xs font-bold uppercase tracking-wider mt-0.5">Rentals & Shortlets</p>
         </div>
       </div>
+    </div>
+    
+    {/* Metric Card 2 */}
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-premium relative overflow-hidden group">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold shrink-0">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+        </div>
+        <div>
+          <p className="text-white font-black text-2xl tracking-tight">Acquisitions</p>
+          <p className="text-brand-slate/50 text-xs font-bold uppercase tracking-wider mt-0.5">Secure Premium Purchase</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
       {/* =======================================================================
           2. THE SEARCH CONSOLE (GLASSMORPHISM)

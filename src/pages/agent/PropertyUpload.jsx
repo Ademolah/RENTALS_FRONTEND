@@ -22,10 +22,22 @@ export const PropertyUpload = () => {
     locality: '',
     state: 'Lagos',
     longitude: '',     
-    latitude: '',      
+    latitude: '',    
+    isAvailable: true,  
   });
 
- 
+  const NIGERIA_LOCATIONS = {
+  "Abuja (FCT)": ["Maitama", "Wuse", "Asokoro", "Garki", "Gwarinpa", "Jabi", "Utako", "Apo", "Lugbe", "Kubwa", "Gudu", "Lokogoma"],
+  "Lagos": ["Ikoyi", "Victoria Island", "Lekki Phase 1", "Ikeja GRA", "Surulere", "Yaba", "Ajah", "Banana Island", "Magodo", "Maryland"],
+  "Rivers": ["Port Harcourt City", "Obio-Akpor", "Eleme", "Oyigbo", "Bonny", "GRA Phase 1-3", "Trans Amadi"],
+  "Oyo": ["Ibadan North", "Ibadan South-West", "Oluyole", "Bodija", "Agodi GRA", "Samonda"],
+  "Ogun": ["Abeokuta", "Ota", "Ibafo", "Mowe", "Arepo", "Sagamu"],
+  "Enugu": ["Enugu East", "Enugu North", "Enugu South", "Independence Layout", "GRA"],
+  "Kano": ["Kano Municipal", "Nassarawa", "Tarauni", "Kumbotso", "Gwale"],
+  // Add other states and their LGAs/Localities here...
+};
+
+ const AVAILABLE_STATES = Object.keys(NIGERIA_LOCATIONS).sort();
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,7 +68,6 @@ export const PropertyUpload = () => {
 
   const payload = new FormData();
 
-  console.log('FRONTEND IMAGES STATE:', images);
 
   // 1. Direct text fields
   payload.append('title', formData.title);
@@ -70,7 +81,10 @@ export const PropertyUpload = () => {
   payload.append('serviceCharge', Number(formData.serviceCharge || 0));
   payload.append('cautionFee', Number(formData.cautionFee || 0));
   payload.append('beds', Number(formData.beds));       
-  payload.append('baths', Number(formData.baths));     
+  payload.append('baths', Number(formData.baths));    
+  
+  // 3. Status Flags
+  payload.append('isAvailable', formData.isAvailable);
 
   // 3. The Strict Geospatial Object
   const geoJSONLocation = {
@@ -108,7 +122,7 @@ export const PropertyUpload = () => {
         {/* Navigation / Header */}
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => navigate('/agent')}
+            onClick={() => navigate(-1)}
             className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors text-brand-coral"
           >
             <ArrowLeft size={18} />
@@ -163,6 +177,42 @@ export const PropertyUpload = () => {
                     value={formData.pricePerAnnum} onChange={handleInputChange}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
                   />
+              {/* =======================================================================
+                  AVAILABILITY TOGGLE (PREMIUM UI ELEMENT)
+                  ======================================================================= */}
+             
+              <div className="pt-6 col-span-full w-full">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between transition-all duration-300 hover:border-white/20">
+                  <div className="space-y-0.5">
+                    <label className="text-xs text-white/40 font-bold uppercase block">Market Availability Status</label>
+                    <p className="text-xs text-white/60 font-medium">
+                      {formData.isAvailable 
+                        ? "Listing is active, public, and open for clients to tour" 
+                        : "Listing is marked private, hidden, or temporarily off-market"}
+                    </p>
+                  </div>
+
+                  {/* The Custom Switch Mechanism */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
+                    className={`
+                      relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                      transition-colors duration-300 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-cobalt/50
+                      ${formData.isAvailable ? 'bg-emerald-500' : 'bg-white/10'}
+                    `}
+                  >
+                    {/* Toggle Handle Knob */}
+                    <span
+                      className={`
+                        pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 
+                        transition duration-300 ease-in-out
+                        ${formData.isAvailable ? 'translate-x-5' : 'translate-x-0'}
+                      `}
+                    />
+                  </button>
+                </div>
+              </div>
 
                   {/* Appended Financial Constraints */}
             <div className="grid grid-cols-2 gap-4 pt-2">
@@ -198,7 +248,10 @@ export const PropertyUpload = () => {
                     <option value="house" className="bg-brand-midnight">Detached House / Duplex</option>
                     <option value="penthouse" className="bg-brand-midnight">Luxury Penthouse</option>
                     <option value="apartment" className="bg-brand-midnight">Serviced Apartment</option>
+                    <option value="shortlet" className="bg-brand-midnight">Luxury Shortlet / Vacation Rental</option>
                     <option value="land" className="bg-brand-midnight">Premium Land Allocation</option>
+                    <option value="commercial" className="bg-brand-midnight">Commercial Office Space</option>
+                    <option value="terraced" className="bg-brand-midnight">Terraced Townhouse</option>
                   </select>
                 </div>
               </div>
@@ -221,21 +274,68 @@ export const PropertyUpload = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                {/* 1. LOCALITY / DISTRICT (DEPENDENT DROPDOWN) */}
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase">Locality / District</label>
-                  <input 
-                    type="text" name="locality" required placeholder="Ikoyi"
-                    value={formData.locality} onChange={handleInputChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
-                  />
+                  <div className="relative">
+                    <select 
+                      name="locality" 
+                      required 
+                      value={formData.locality} 
+                      onChange={handleInputChange}
+                      disabled={!formData.state}
+                      className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none 
+                        ${!formData.state ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                      `}
+                    >
+                      <option value="" disabled className="bg-brand-midnight text-white/50">
+                        {formData.state ? `Select locality in ${formData.state}` : "Select a state first"}
+                      </option>
+                      
+                      {/* Render localities dynamically based on selected state */}
+                      {formData.state && NIGERIA_LOCATIONS[formData.state]?.map(loc => (
+                        <option key={loc} value={loc} className="bg-brand-midnight text-white">
+                          {loc}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Premium Custom Chevron */}
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-white/40">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                  </div>
                 </div>
+
+                {/* 2. REGIONAL STATE JURISDICTION (PRIMARY DROPDOWN) */}
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase">Regional State Jurisdiction</label>
-                  <input 
-                    type="text" name="state" required placeholder="Lagos"
-                    value={formData.state} onChange={handleInputChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
-                  />
+                  <div className="relative">
+                    <select 
+                      name="state" 
+                      required 
+                      value={formData.state} 
+                      onChange={(e) => {
+                        // Update the state AND safely wipe the locality clean
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          state: e.target.value, 
+                          locality: '' 
+                        }));
+                      }}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled className="bg-brand-midnight text-white/50">Select State</option>
+                      {AVAILABLE_STATES.map(state => (
+                        <option key={state} value={state} className="bg-brand-midnight text-white">
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Premium Custom Chevron */}
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-white/40">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Appended Geospatial Pinpoints */}
