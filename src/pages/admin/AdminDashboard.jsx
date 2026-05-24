@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
+import toast from 'react-hot-toast';
+import { EditPropertyModal } from '../../components/EditPropertyModal';
 
 export const AdminDashboard = () => {
   const { user, logout } = useAuthStore();
@@ -12,6 +14,9 @@ export const AdminDashboard = () => {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState(null);
   const [inviteError, setInviteError] = useState(null);
+  const [properties, setProperties] = useState([]);
+  const [isLoadingProps, setIsLoadingProps] = useState(true);
+  const [editingProperty, setEditingProperty] = useState(null);
 
   const handleLogout = () => {
     logout();
@@ -37,6 +42,76 @@ export const AdminDashboard = () => {
       setInviteError(err.response?.data?.message || 'Failed to dispatch magic link invitation.');
     } finally {
       setInviteLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchDashboardProperties = async () => {
+      try {
+        // We pass ?isAvailable=all so the CEO sees off-market properties too
+        const response = await apiClient.get('/properties?isAvailable=all');
+        setProperties(response.data.data.properties);
+      } catch (error) {
+        console.error("Failed to load enterprise ledger:", error);
+      } finally {
+        setIsLoadingProps(false);
+      }
+    };
+    
+    fetchDashboardProperties();
+  }, []);
+
+  const handleToggleAvailability = async (propertyId, currentStatus) => {
+    const newStatus = !currentStatus;
+    
+    // Optimistic UI update: instantly change it on the screen so it feels native
+    setProperties(prevProps => 
+      prevProps.map(p => p._id === propertyId ? { ...p, isAvailable: newStatus } : p)
+    );
+
+    try {
+      // Hit the UPDATE route we built earlier
+      await apiClient.patch(`/properties/${propertyId}`, {
+        isAvailable: newStatus
+      });
+    } catch (error) {
+      // Revert the UI if the server request fails
+      setProperties(prevProps => 
+        prevProps.map(p => p._id === propertyId ? { ...p, isAvailable: currentStatus } : p)
+      );
+      toast.error("Failed to sync status with the server");
+      console.log("Availability toggle error:", error);
+    }
+  };
+
+  const handleDeleteProperty = async (propertyId) => {
+    if(!window.confirm("Are you sure you want to permanently purge this asset?")) return;
+    
+    try {
+      await apiClient.delete(`/properties/${propertyId}`);
+      // Remove it from the UI
+      setProperties(prev => prev.filter(p => p._id !== propertyId));
+    } catch (error) {
+      toast.error("Failed to delete property.");
+      console.error("Purge failed:", error);
+    }
+  };
+
+  const handleSaveEdit = async (propertyId, updatedData) => {
+    try {
+      // 1. Send the update to the backend
+      const response = await apiClient.patch(`/properties/${propertyId}`, updatedData);
+      
+      // 2. Update the local state to reflect changes instantly without reloading
+      setProperties(prevProps => 
+        prevProps.map(p => p._id === propertyId ? { ...p, ...response.data.data.property } : p)
+      );
+      
+      // 3. Close the modal
+      setEditingProperty(null);
+    } catch (error) {
+      console.error("Failed to update asset:", error);
+      alert("Failed to update property details. Please check your connection.");
     }
   };
 
@@ -204,10 +279,128 @@ export const AdminDashboard = () => {
               </div>
             </div>
 
+            {/* =======================================================================
+               2. ENTERPRISE PROPERTY LEDGER (NEW CRUD & AVAILABILITY SECTION)
+               ======================================================================= */}
+            <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-display font-bold">Enterprise Property Ledger</h3>
+                <span className="bg-white/5 text-white/60 text-xs px-3 py-1 rounded-full font-medium">
+                  Asset Control
+                </span>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-white/60">
+                  <thead className="text-xs text-white/40 uppercase font-mono border-b border-white/5">
+                    <tr>
+                      <th className="py-3 px-2">Property Asset</th>
+                      <th className="py-3 px-2">Valuation (NGN)</th>
+                      <th className="py-3 px-2 text-center">Market Status</th>
+                      <th className="py-3 px-2 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    
+                    {/* 👇 Replace this mock <tr> block with your actual properties.map(...) 👇 */}
+                    
+                   {isLoadingProps ? (
+                      <tr>
+                        <td colSpan="4" className="py-12 text-center text-white/30 font-medium">
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-brand-cobalt border-t-transparent rounded-full animate-spin"></div>
+                            Syncing Ledger...
+                          </div>
+                        </td>
+                      </tr>
+                    ) : properties.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="py-12 text-center text-white/30 font-medium">
+                          No real estate assets logged in the corporate portfolio yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      properties.map((property) => (
+                        <tr key={property._id} className="hover:bg-white/[0.02] transition-colors group">
+                          <td className="py-4 px-2">
+                            <p className="text-white font-bold text-sm truncate max-w-[200px]">{property.title}</p>
+                            <p className="text-xs text-brand-cobalt mt-0.5">{property.location?.locality || property.locality}, {property.location?.state || property.state}</p>
+                          </td>
+                          <td className="py-4 px-2 font-mono text-white">
+                            ₦ {property.pricePerAnnum?.toLocaleString()}<span className="text-white/30 text-xs">/yr</span>
+                          </td>
+                          
+                          {/* Interactive Availability Toggle Cell */}
+                          <td className="py-4 px-2 text-center">
+                            <div className="flex flex-col items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleAvailability(property._id, property.isAvailable)}
+                                className={`
+                                  relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                                  transition-colors duration-300 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-cobalt/50
+                                  ${property.isAvailable ? 'bg-emerald-500' : 'bg-white/10'}
+                                `}
+                              >
+                                <span
+                                  className={`
+                                    pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 
+                                    transition duration-300 ease-in-out
+                                    ${property.isAvailable ? 'translate-x-4' : 'translate-x-0'}
+                                  `}
+                                />
+                              </button>
+                              <span className={`text-[9px] uppercase font-bold tracking-wider ${property.isAvailable ? 'text-emerald-400' : 'text-white/40'}`}>
+                                {property.isAvailable ? 'Active' : 'Private'}
+                              </span>
+                            </div>
+                          </td>
+                          
+                          {/* CRUD Administrative Actions */}
+                          <td className="py-4 px-2 text-right">
+                            <div className="flex items-center justify-end gap-2 sm:gap-3">
+                              <button 
+                                onClick={() => setEditingProperty(property)}
+                                className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-white/5 hover:bg-brand-cobalt/20 text-white/60 hover:text-brand-cobalt rounded-lg transition-all duration-300 group/edit"
+                                title="Edit Listing"
+                              >
+                                <svg className="w-4 h-4 transition-transform group-hover/edit:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                              </button>
+                              
+                              <button 
+                                onClick={() => handleDeleteProperty(property._id)}
+                                className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-white/5 hover:bg-rose-500/20 text-white/60 hover:text-rose-400 rounded-lg transition-all duration-300 group/delete"
+                                title="Purge Listing"
+                              >
+                                <svg className="w-4 h-4 transition-transform group-hover/delete:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+              {editingProperty && (
+          <EditPropertyModal 
+            property={editingProperty}
+            onClose={() => setEditingProperty(null)}
+            onSave={handleSaveEdit}
+          />
+        )}
+
           </div>
 
         </div>
-
       </div>
     </div>
   );
