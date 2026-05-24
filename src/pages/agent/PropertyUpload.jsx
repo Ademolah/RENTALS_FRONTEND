@@ -28,7 +28,7 @@ export const PropertyUpload = () => {
 
   const NIGERIA_LOCATIONS = {
   "Abuja (FCT)": ["Maitama", "Wuse", "Asokoro", "Garki", "Gwarinpa", "Jabi", "Utako", "Apo", "Lugbe", "Kubwa", "Gudu", "Lokogoma"],
-  "Lagos": ["Ikoyi", "Victoria Island", "Lekki Phase 1", "Ikeja GRA", "Surulere", "Yaba", "Ajah", "Banana Island", "Magodo", "Maryland"],
+  "Lagos": ["Ikoyi", "Victoria Island", "Lekki Phase 1", "Ikeja GRA", "Surulere", "Yaba", "Epe", "Ajah", "Banana Island", "Magodo", "Maryland"],
   "Rivers": ["Port Harcourt City", "Obio-Akpor", "Eleme", "Oyigbo", "Bonny", "GRA Phase 1-3", "Trans Amadi"],
   "Oyo": ["Ibadan North", "Ibadan South-West", "Oluyole", "Bodija", "Agodi GRA", "Samonda"],
   "Ogun": ["Abeokuta", "Ota", "Ibafo", "Mowe", "Arepo", "Sagamu"],

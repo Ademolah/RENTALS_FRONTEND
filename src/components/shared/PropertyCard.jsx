@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { MapPin, BedDouble, Bath, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TourBookingModal } from '../TourBookingModal';
 
 export const PropertyCard = ({ property }) => {
 
   // Surgical State Additions for Full Screen Engine
   const [isOpen, setIsOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   // Safely grab all available media URLs or fall back to the primary mapped image
   const images = property.mediaUrls && property.mediaUrls.length > 0 
@@ -57,7 +59,7 @@ export const PropertyCard = ({ property }) => {
         {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-col justify-end">
 
-          {/* 🚨 PREMIUM STATUS BADGE */}
+          
           <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 w-fit transition-colors ${
             property.isAvailable 
               ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
@@ -66,7 +68,7 @@ export const PropertyCard = ({ property }) => {
             <span className={`w-1.5 h-1.5 rounded-full mr-2 ${property.isAvailable ? 'bg-emerald-400' : 'bg-white/30'}`} />
             {property.isAvailable ? "Market Active" : "Off-Market"}
           </div>
-          
+
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold text-white mb-3 leading-tight tracking-tight">
             {property.title}
           </h2>
@@ -93,11 +95,14 @@ export const PropertyCard = ({ property }) => {
               {property.price}
             </p>
             <button 
-              onClick={(e) => e.stopPropagation()} // Prevents launching studio view when booking
-              className="bg-brand-coral hover:bg-brand-coral/90 text-white px-8 py-3.5 rounded-2xl font-bold transition-all transform active:scale-95 shadow-lg shadow-brand-coral/25"
-            >
-              Book Tour
-            </button>
+            onClick={(e) => {
+              e.stopPropagation(); // Prevents launching studio view
+              setIsBookingModalOpen(true); // 🚨 Opens the Concierge Desk
+            }} 
+            className="bg-brand-coral hover:bg-brand-coral/90 text-white px-8 py-3.5 rounded-2xl font-bold transition-all transform active:scale-95 shadow-lg shadow-brand-coral/25"
+          >
+            Book Tour
+          </button>
           </div>
         </div>
       </div>
@@ -206,6 +211,15 @@ export const PropertyCard = ({ property }) => {
           </div>
         </div>
       )}
+
+      
+    <TourBookingModal 
+      isOpen={isBookingModalOpen} 
+      onClose={() => setIsBookingModalOpen(false)} 
+      property={property} 
+    />
     </>
   );
+  
 };
+
