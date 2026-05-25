@@ -41,7 +41,7 @@ export const AppRouter = () => {
           <Route path="/" element={<PropertyFeed />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/join-agency" element={<AcceptInvite />} />
+          <Route path="/agent/accept-invite" element={<AcceptInvite />} />
         </Route>
 
         {/* ==========================================

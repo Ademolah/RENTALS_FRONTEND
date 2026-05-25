@@ -17,6 +17,8 @@ export const AdminDashboard = () => {
   const [properties, setProperties] = useState([]);
   const [isLoadingProps, setIsLoadingProps] = useState(true);
   const [editingProperty, setEditingProperty] = useState(null);
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -28,20 +30,36 @@ export const AdminDashboard = () => {
     setInviteLoading(true);
     setInviteSuccess(null);
     setInviteError(null);
+    setGeneratedLink(''); // Reset historical link on new run
 
     try {
-      // Simply await the post request without assigning it to an unused variable
-      await apiClient.post('/auth/invite-agent', {
+      const response = await apiClient.post('/auth/invite-agent', {
         email: inviteEmail,
         agencyId: user?.agencyId
       });
 
-      setInviteSuccess(`Invitation successfully generated for ${inviteEmail}!`);
+      // Extract the link returned from the modified backend controller
+      const targetLink = response.data.magicLink;
+      
+      setGeneratedLink(targetLink);
+      setInviteSuccess(`Onboarding credentials compiled for ${inviteEmail}!`);
       setInviteEmail('');
     } catch (err) {
-      setInviteError(err.response?.data?.message || 'Failed to dispatch magic link invitation.');
+      setInviteError(err.response?.data?.message || 'Failed to generate token infrastructure.');
     } finally {
       setInviteLoading(false);
+    }
+  };
+
+  // Dedicated copy controller with temporary visual state change
+  const handleCopyLink = async () => {
+    if (!generatedLink) return;
+    try {
+      await navigator.clipboard.writeText(generatedLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Revert back to original layout state after 2 seconds
+    } catch (err) {
+      console.error('Failed to occupy clipboard:', err);
     }
   };
 
@@ -84,18 +102,18 @@ export const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteProperty = async (propertyId) => {
-    if(!window.confirm("Are you sure you want to permanently purge this asset?")) return;
+  // const handleDeleteProperty = async (propertyId) => {
+  //   if(!window.confirm("Are you sure you want to permanently purge this asset?")) return;
     
-    try {
-      await apiClient.delete(`/properties/${propertyId}`);
-      // Remove it from the UI
-      setProperties(prev => prev.filter(p => p._id !== propertyId));
-    } catch (error) {
-      toast.error("Failed to delete property.");
-      console.error("Purge failed:", error);
-    }
-  };
+  //   try {
+  //     await apiClient.delete(`/properties/${propertyId}`);
+  //     // Remove it from the UI
+  //     setProperties(prev => prev.filter(p => p._id !== propertyId));
+  //   } catch (error) {
+  //     toast.error("Failed to delete property.");
+  //     console.error("Purge failed:", error);
+  //   }
+  // };
 
   const handleSaveEdit = async (propertyId, updatedData) => {
     try {
@@ -211,13 +229,13 @@ export const AdminDashboard = () => {
               </p>
 
               {inviteSuccess && (
-                <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl text-xs font-medium mb-4">
+                <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl text-xs font-medium mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   {inviteSuccess}
                 </div>
               )}
 
               {inviteError && (
-                <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-xs font-medium mb-4">
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-xs font-medium mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   {inviteError}
                 </div>
               )}
@@ -235,11 +253,53 @@ export const AdminDashboard = () => {
                 <button 
                   type="submit"
                   disabled={inviteLoading}
-                  className="w-full bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3.5 rounded-xl text-xs tracking-wider uppercase transition-opacity disabled:opacity-40"
+                  className="w-full bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3.5 rounded-xl text-xs tracking-wider uppercase transition-all transform active:scale-[0.98] disabled:opacity-40"
                 >
-                  {inviteLoading ? 'Generating Token...' : 'Generate Magic Link'}
+                  {inviteLoading ? 'Generating Link...' : 'Generate Invite Link'}
                 </button>
               </form>
+
+              {/* Dynamic Copiable Token Display Box */}
+              {generatedLink && (
+                <div className="mt-5 bg-black/30 border border-white/5 rounded-2xl p-4 space-y-2.5 animate-in zoom-in-95 duration-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-brand-cobalt">Onboarding Link</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active (24h)</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl p-2 pl-3 overflow-hidden group/box">
+                    <p className="text-xs font-mono text-white/40 truncate flex-1 select-all">
+                      {generatedLink}
+                    </p>
+                    
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className={`shrink-0 flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold text-xs transition-all duration-300 transform active:scale-95 ${
+                        copied 
+                          ? 'bg-emerald-500 text-white' 
+                          : 'bg-white/5 hover:bg-brand-cobalt text-white/80 hover:text-white'
+                      }`}
+                    >
+                      {copied ? (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                          </svg>
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="border-t border-white/5 pt-4 mt-6 text-[11px] text-white/30 flex items-center gap-2 font-mono">
@@ -369,7 +429,7 @@ export const AdminDashboard = () => {
                                 </svg>
                               </button>
                               
-                              <button 
+                              {/* <button 
                                 onClick={() => handleDeleteProperty(property._id)}
                                 className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-white/5 hover:bg-rose-500/20 text-white/60 hover:text-rose-400 rounded-lg transition-all duration-300 group/delete"
                                 title="Purge Listing"
@@ -377,7 +437,7 @@ export const AdminDashboard = () => {
                                 <svg className="w-4 h-4 transition-transform group-hover/delete:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
-                              </button>
+                              </button> */}
                             </div>
                           </td>
                         </tr>
