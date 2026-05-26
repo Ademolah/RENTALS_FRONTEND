@@ -238,10 +238,6 @@ export const PropertyUpload = () => {
             </div>
                 </div>
 
-
-              
-
-
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1"><Layers size={12}/> Property Classification</label>
                   <select 

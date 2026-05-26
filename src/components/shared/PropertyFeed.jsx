@@ -5,6 +5,7 @@ import { Search, MapPin, Filter, SlidersHorizontal, ChevronRight, Loader2 } from
 import { PropertyCard } from './PropertyCard';
 import { apiClient } from '../../services/apiClient';
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast'
 
 // ---------------------------------------------------------------------------
 // MOCK DATA ENGINES
@@ -27,6 +28,7 @@ export const PropertyFeed = () => {
   // Initialize directly with working mock data to secure layout rendering immediately
   const [properties, setProperties] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [activeCategoryView, setActiveCategoryView] = useState(null);
 
   
 
@@ -299,6 +301,21 @@ export const PropertyFeed = () => {
             return (
               <div 
                 key={cat.id}
+                onClick={() => {
+                  if (inventoryCount > 0) {
+                    setActiveCategoryView(cat.id);
+                  } else {
+                    toast(`New ${cat.label.toLowerCase()} coming soon!`, {
+                      icon: '⏳',
+                      style: {
+                        borderRadius: '10px',
+                        background: '#1E293B',
+                        color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                      },
+                    });
+                  }
+                }}
                 className="relative w-[290px] sm:w-[320px] md:w-[360px] h-[380px] shrink-0 snap-start rounded-[2rem] overflow-hidden group cursor-pointer border border-white/5 shadow-2xl"
               >
                 {/* Image Component rendering the Real DB Image or Fallback */}
@@ -333,6 +350,64 @@ export const PropertyFeed = () => {
         }
       `}} />
 
+      {/* =======================================================================
+          6. FULL-SCREEN COLLECTION OVERLAY (Dynamic Filtered View)
+          ======================================================================= */}
+      {activeCategoryView && (
+        <div className="fixed inset-0 z-[100] bg-[#0F172A] overflow-y-auto animate-in fade-in slide-in-from-bottom-10 duration-500">
+          
+          {/* Glassmorphism Sticky Header */}
+          <div className="sticky top-0 z-50 bg-[#0F172A]/80 backdrop-blur-xl border-b border-white/5 px-6 md:px-10 py-4 flex items-center justify-between">
+            <div>
+              <p className="text-brand-gold text-xs font-bold tracking-widest uppercase mb-1">
+                Curated Collection
+              </p>
+              <h2 className="text-2xl md:text-3xl font-display font-black text-white capitalize">
+                {/* Dynamically translates 'shortlet' back to 'Vacation Shortlets' */}
+                {
+                  {
+                    house: 'Houses & Duplexes',
+                    penthouse: 'Luxury Penthouses',
+                    apartment: 'Serviced Apartments',
+                    shortlet: 'Vacation Shortlets',
+                    land: 'Premium Land Allocations',
+                    commercial: 'Commercial Office Spaces',
+                    terraced: 'Terraced Townhouses'
+                  }[activeCategoryView] || activeCategoryView
+                }
+              </h2>
+            </div>
+            
+            {/* Close Button */}
+            <button 
+              onClick={() => setActiveCategoryView(null)}
+              className="bg-white/5 hover:bg-white/10 border border-white/10 text-white p-3 md:px-6 md:py-3 rounded-full md:rounded-xl font-bold text-sm transition-all flex items-center gap-2"
+            >
+              <span className="hidden md:inline">Close Collection</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          {/* Filtered Grid Layout */}
+          <div className="px-6 md:px-10 max-w-[1400px] mx-auto py-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-[450px] gap-6 md:gap-8">
+              {properties
+                .filter(prop => prop.propertyType === activeCategoryView)
+                .map(prop => (
+                  /* Your exact, unmodified PropertyCard! */
+                  <PropertyCard key={prop._id || prop.id} property={prop} />
+                ))
+              }
+            </div>
+          </div>
+          
+        </div>
+      )}
+
     </div>
+
+    
   );
 };
