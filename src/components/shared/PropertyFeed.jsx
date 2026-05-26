@@ -29,6 +29,7 @@ export const PropertyFeed = () => {
   const [properties, setProperties] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [activeCategoryView, setActiveCategoryView] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(6);
 
   
 
@@ -239,27 +240,40 @@ export const PropertyFeed = () => {
 {/* =======================================================================
           4. THE BENTO GRID FEED (FEATURED LISTINGS - PRISTINE & UNCHANGED)
           ======================================================================= */}
-      <div className="px-6 md:px-10 max-w-[1400px] mx-auto mb-20">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-display font-bold">Featured Listings</h2>
-            <p className="text-white/40 text-sm mt-1">Hand-picked premium spaces available right now.</p>
-          </div>
+      {/* =======================================================================
+        4. FEATURED LISTINGS GRID WITH DYNAMIC PAGINATION
+        ======================================================================= */}
+    <div className="px-6 md:px-10 max-w-[1400px] mx-auto mb-20">
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-display font-bold">Featured Listings</h2>
+          <p className="text-white/40 text-sm mt-1">Hand-picked premium spaces available right now.</p>
         </div>
+      </div>
 
-        {/* This matches exactly how your working mockup structure loop operated */}
-        <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-[450px] gap-6">
-          {properties.map((prop) => (
-            <PropertyCard key={prop.id} property={prop} />
-          ))}
-        </div>
-        
-        <div className="mt-12 text-center">
-          <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-4 rounded-xl font-bold text-sm transition-all inline-flex items-center gap-2">
+      {/* The Grid: Takes the properties array, slices it to only show up to the 
+        visibleCount, and maps them cleanly.
+      */}
+      <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-[450px] gap-6">
+        {properties.slice(0, visibleCount).map((prop) => (
+          <PropertyCard key={prop._id || prop.id} property={prop} />
+        ))}
+      </div>
+      
+      {/* The Pagination Controller: Only renders the button if there are 
+        more properties left in the database array to show.
+      */}
+      {visibleCount < properties.length && (
+        <div className="mt-12 text-center animate-in fade-in duration-300">
+          <button 
+            onClick={() => setVisibleCount((prevCount) => prevCount + 6)}
+            className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-4 rounded-xl font-bold text-sm transition-all inline-flex items-center gap-2 transform active:scale-95"
+          >
             Load More Properties
           </button>
         </div>
-      </div>
+      )}
+    </div>
 
        {/* =======================================================================
           5. HORIZONTAL PROPERTY TYPE EXPLORER (REAL DATA & MEDIA FIX)
