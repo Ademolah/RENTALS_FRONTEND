@@ -37,6 +37,8 @@ export const PropertyUpload = () => {
   // Add other states and their LGAs/Localities here...
 };
 
+
+
  const AVAILABLE_STATES = Object.keys(NIGERIA_LOCATIONS).sort();
 
   const [images, setImages] = useState([]);
@@ -75,6 +77,7 @@ export const PropertyUpload = () => {
   payload.append('locality', formData.locality);
   payload.append('state', formData.state);
   payload.append('streetAddress', formData.streetAddress); 
+  payload.append('propertyType', formData.propertyType);
 
   // 2. Number conversions
   payload.append('pricePerAnnum', Number(formData.pricePerAnnum));
@@ -242,18 +245,22 @@ export const PropertyUpload = () => {
                 <div className="space-y-1">
                   <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1"><Layers size={12}/> Property Classification</label>
                   <select 
-                    name="propertyType" value={formData.propertyType} onChange={handleInputChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none"
+                    name="propertyType" 
+                    value={formData.propertyType} 
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none cursor-pointer"
                   >
-                    <option value="house" className="bg-brand-midnight">Detached House / Duplex</option>
-                    <option value="penthouse" className="bg-brand-midnight">Luxury Penthouse</option>
-                    <option value="apartment" className="bg-brand-midnight">Serviced Apartment</option>
-                    <option value="shortlet" className="bg-brand-midnight">Luxury Shortlet / Vacation Rental</option>
-                    <option value="land" className="bg-brand-midnight">Premium Land Allocation</option>
-                    <option value="commercial" className="bg-brand-midnight">Commercial Office Space</option>
-                    <option value="terraced" className="bg-brand-midnight">Terraced Townhouse</option>
+                    <option value="" disabled className="bg-[#1E293B] text-white/40">Select Property Category</option>
+                    <option value="house" className="bg-[#1E293B] text-white">Detached House / Duplex</option>
+                    <option value="penthouse" className="bg-[#1E293B] text-white">Luxury Penthouse</option>
+                    <option value="apartment" className="bg-[#1E293B] text-white">Serviced Apartment</option>
+                    <option value="shortlet" className="bg-[#1E293B] text-white">Luxury Shortlet / Vacation Rental</option>
+                    <option value="land" className="bg-[#1E293B] text-white">Premium Land Allocation</option>
+                    <option value="commercial" className="bg-[#1E293B] text-white">Commercial Office Space</option>
+                    <option value="terraced" className="bg-[#1E293B] text-white">Terraced Townhouse</option>
                   </select>
-                </div>
+                                </div>
               </div>
             </div>
 

@@ -194,7 +194,7 @@ export const PropertyFeed = () => {
       </div>
 
       {/* =======================================================================
-          3. HORIZONTAL LOCATION EXPLORER
+          3. HORIZONTAL LOCATION EXPLORER (PRISTINE & UNCHANGED)
           ======================================================================= */}
       <div className="mb-20">
         <div className="px-6 md:px-10 max-w-[1400px] mx-auto flex items-end justify-between mb-6">
@@ -234,10 +234,10 @@ export const PropertyFeed = () => {
         </div>
       </div>
 
-      {/* =======================================================================
-          4. THE BENTO GRID FEED (FEATURED LISTINGS)
+{/* =======================================================================
+          4. THE BENTO GRID FEED (FEATURED LISTINGS - PRISTINE & UNCHANGED)
           ======================================================================= */}
-      <div className="px-6 md:px-10 max-w-[1400px] mx-auto">
+      <div className="px-6 md:px-10 max-w-[1400px] mx-auto mb-20">
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-display font-bold">Featured Listings</h2>
@@ -258,6 +258,80 @@ export const PropertyFeed = () => {
           </button>
         </div>
       </div>
+
+       {/* =======================================================================
+          5. HORIZONTAL PROPERTY TYPE EXPLORER (REAL DATA & MEDIA FIX)
+          ======================================================================= */}
+      <div className="mb-24 w-full">
+        <div className="px-6 md:px-10 max-w-[1400px] mx-auto flex items-end justify-between mb-6">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-display font-bold">Browse by Collection</h2>
+            <p className="text-white/40 text-sm mt-1">Curated classes matching your specific structural preferences.</p>
+          </div>
+        </div>
+
+        {/* The Snapping Horizontal Track */}
+        <div 
+          className="flex gap-6 overflow-x-auto snap-x snap-mandatory px-6 md:px-10 pb-6 scrollbar-hide-type-feed"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {[
+            { id: 'house', label: 'Houses & Duplexes', fallback: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600' },
+            { id: 'penthouse', label: 'Luxury Penthouses', fallback: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=600' },
+            { id: 'apartment', label: 'Serviced Apartments', fallback: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600' },
+            { id: 'shortlet', label: 'Vacation Shortlets', fallback: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600' },
+            { id: 'land', label: 'Premium Land Allocations', fallback: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=600' },
+            { id: 'commercial', label: 'Commercial Office Spaces', fallback: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600' },
+            { id: 'terraced', label: 'Terraced Townhouses', fallback: 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=600' }
+          ].map((cat) => {
+            
+            // 1. DYNAMIC DATA INJECTION: Count exactly how many assets match this category
+            const matchingListings = properties.filter(p => p.propertyType === cat.id);
+            const inventoryCount = matchingListings.length;
+            
+            // 2. 🚨 THE MEDIA URL FIX 🚨
+            // We check the real database for mediaUrls. If the category has properties, 
+            // it uses the first real image. If it has 0 properties, it uses the fallback.
+            const activeImage = inventoryCount > 0 && matchingListings[0]?.mediaUrls?.length > 0
+              ? matchingListings[0].mediaUrls[0] 
+              : cat.fallback;
+
+            return (
+              <div 
+                key={cat.id}
+                className="relative w-[290px] sm:w-[320px] md:w-[360px] h-[380px] shrink-0 snap-start rounded-[2rem] overflow-hidden group cursor-pointer border border-white/5 shadow-2xl"
+              >
+                {/* Image Component rendering the Real DB Image or Fallback */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
+                  style={{ backgroundImage: `url(${activeImage})` }}
+                />
+                
+                {/* Midnight Protection Gradient Layer */}
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/40 to-transparent transition-opacity duration-500" />
+                
+                {/* Card Content Layout */}
+                <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-col justify-end">
+                  <span className="inline-block px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-xl text-[10px] font-black text-white mb-4 border border-white/10 uppercase tracking-widest w-fit shadow-md">
+                    {inventoryCount} {inventoryCount === 1 ? 'Asset' : 'Assets'} Available
+                  </span>
+                  
+                  <h3 className="text-2xl md:text-3xl font-display font-black text-white tracking-tight leading-none">
+                    {cat.label}
+                  </h3>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Embedded Style Block to Safely Remove Horizontal Scrollbar Shadows */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .scrollbar-hide-type-feed::-webkit-scrollbar {
+          display: none;
+        }
+      `}} />
 
     </div>
   );
