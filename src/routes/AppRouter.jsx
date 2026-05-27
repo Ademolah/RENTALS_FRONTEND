@@ -13,6 +13,8 @@ import { AgentDashboard } from '../pages/agent/AgentDashboard';
 import { PropertyUpload } from '../pages/agent/PropertyUpload';
 import { AcceptInvite } from '../pages/public/AcceptInvite';
 import {Toaster } from 'react-hot-toast'
+import { SuperAdminDashboard } from '../pages/SuperAdminDashboard';
+
 
 // (Placeholders for your page components)
 
@@ -64,9 +66,13 @@ export const AppRouter = () => {
         {/* ==========================================
             ROLE-BASED ROUTES (Agents & Admins)
             ========================================== */}
-        <Route element={<ProtectedRoute allowedRoles={['AGENT', 'AGENCY_ADMIN']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['AGENT', 'AGENCY_ADMIN', ]} />}>
           <Route path="/agent" element={<AgentDashboard />} />
           <Route path="/agent/upload" element={<PropertyUpload />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN']} />}>
+          <Route path="/superadmin" element={<SuperAdminDashboard />} />
         </Route>
 
       </Routes>

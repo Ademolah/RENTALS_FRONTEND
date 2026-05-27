@@ -27,6 +27,7 @@ export const Login = () => {
       const userRole = response.data.user.role;
       if (userRole === 'AGENCY_ADMIN') navigate('/admin');
       else if (userRole === 'AGENT') navigate('/agent');
+      else if (userRole === 'SUPERADMIN') navigate('/superadmin');
       else navigate('/'); 
 
     } catch (err) {
