@@ -90,20 +90,21 @@ export const PropertyCard = ({ property }) => {
           </div>
 
           {/* Action Bar */}
-          <div className="flex items-center justify-between mt-auto">
-            <p className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-              {property.price}
-            </p>
-            <button 
+        <div className="flex items-center justify-between gap-4 mt-auto w-full">
+          <p className="text-xl sm:text-2xl font-bold text-white tracking-tight shrink-0">
+            {property.price}
+          </p>
+          
+          <button 
             onClick={(e) => {
               e.stopPropagation(); // Prevents launching studio view
               setIsBookingModalOpen(true); // 🚨 Opens the Concierge Desk
             }} 
-            className="bg-brand-coral hover:bg-brand-coral/90 text-white px-8 py-3.5 rounded-2xl font-bold transition-all transform active:scale-95 shadow-lg shadow-brand-coral/25"
+            className="bg-brand-coral hover:bg-brand-coral/90 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wide whitespace-nowrap transition-all transform active:scale-95 shadow-md hover:shadow-lg shadow-brand-coral/20 shrink-0"
           >
             Book Tour
           </button>
-          </div>
+        </div>
         </div>
       </div>
 

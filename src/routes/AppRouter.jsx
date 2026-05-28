@@ -14,6 +14,8 @@ import { PropertyUpload } from '../pages/agent/PropertyUpload';
 import { AcceptInvite } from '../pages/public/AcceptInvite';
 import {Toaster } from 'react-hot-toast'
 import { SuperAdminDashboard } from '../pages/SuperAdminDashboard';
+import { ContactUs } from '../pages/ContactUs';
+import { AboutUs } from '../pages/AboutUs';
 
 
 // (Placeholders for your page components)
@@ -41,6 +43,8 @@ export const AppRouter = () => {
             ========================================== */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<PropertyFeed />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/about" element={<AboutUs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/agent/accept-invite" element={<AcceptInvite />} />

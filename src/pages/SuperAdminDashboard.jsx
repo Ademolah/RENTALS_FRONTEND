@@ -6,9 +6,11 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiClient } from '../services/apiClient'; // Adjust path to your axios instance
+import { useAuthStore } from '../store/useAuthStore';
 
 export const SuperAdminDashboard = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   
   // Data & UI State
   const [applications, setApplications] = useState([]);
@@ -18,6 +20,11 @@ export const SuperAdminDashboard = () => {
   // Action State
   const [reviewState, setReviewState] = useState({ decision: null, notes: '' });
   const [isProcessing, setIsProcessing] = useState(false);
+
+
+ const initials = user 
+    ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase()
+    : 'A';
 
   // =======================================================================
   // 1. PRODUCTION DATA INGESTION
@@ -74,11 +81,9 @@ export const SuperAdminDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    // Clear tokens/storage based on your auth implementation
-    localStorage.removeItem('token'); 
-    toast.success('Securely logged out of Command Center.');
-    navigate('/login');
+ const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   // =======================================================================
@@ -91,20 +96,45 @@ export const SuperAdminDashboard = () => {
           A. MOBILE OPTIMIZED NAVIGATION HEADER
           ======================================================================= */}
       <header className="sticky top-0 z-40 bg-[#0F172A]/80 backdrop-blur-xl border-b border-white/5 px-6 md:px-10 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 text-brand-gold">
-          <Shield size={24} className="shrink-0" />
-          <span className="hidden md:inline text-sm font-bold tracking-[0.2em] uppercase">
-            Super Admin Command
-          </span>
-        </div>
+      {/* Left Cluster: Command Context */}
+      <div className="flex items-center gap-3 text-brand-gold">
+        <Shield size={24} className="shrink-0" />
+        <span className="hidden md:inline text-sm font-bold tracking-[0.2em] uppercase">
+          Super Admin Command
+        </span>
+      </div>
+
+      {/* Right Cluster: Profile Engine & Session Management */}
+      <div className="flex items-center gap-4 md:gap-6">
+        {user && (
+          <div className="flex items-center gap-3 border-r border-white/5 pr-4 md:pr-6">
+            {/* Geometric Initials Avatar */}
+            <div className="w-9 h-9 rounded-xl bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center text-brand-gold font-bold text-xs tracking-wider shadow-inner">
+              {initials}
+            </div>
+            
+            {/* Chronological Nameplate */}
+            <div className="hidden sm:block text-left">
+              <p className="text-white font-semibold text-sm leading-none tracking-wide">
+                {user.firstName} {user.lastName}
+              </p>
+              <p className="text-slate-400 text-[10px] font-bold tracking-[0.15em] uppercase mt-1">
+                System Admin
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Action Trigger */}
         <button 
           onClick={handleLogout}
-          className="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2"
+          className="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 group dynamic-blur"
         >
-          <LogOut size={16} />
+          <LogOut size={16} className="transition-transform group-hover:translate-x-0.5" />
           <span className="hidden sm:inline">Logout</span>
         </button>
-      </header>
+      </div>
+    </header>
 
       <main className="p-6 md:p-10 max-w-[1400px] mx-auto">
         <div className="mb-8 md:mb-12">

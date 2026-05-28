@@ -1,13 +1,105 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-NG"> <!-- 🇳🇬 Localized for Nigerian English semantics -->
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- ========================================== -->
+    <!-- CORE RESPONSIVENESS & PWA METADATA         -->
+    <!-- ========================================== -->
+    <!-- viewport-fit=cover ensures edge-to-edge mobile responsiveness on notched screens -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0" />
+    <meta name="theme-color" content="#0F172A" /> <!-- Matches your brand-midnight -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>rentals</title>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- ========================================== -->
+    <!-- PRIMARY SEARCH ENGINE METADATA             -->
+    <!-- ========================================== -->
+    <title>Rentals. | The Premium Real Estate Network in Nigeria</title>
+    <meta name="description" content="Discover executive real estate, luxury properties, and premium commercial portfolios across Nigeria. Experience our 100% verified digital property network." />
+    <meta name="keywords" content="luxury real estate Nigeria, premium properties Ibadan, verified rentals Lagos, executive penthouses, commercial real estate Oyo, property management" />
+    <meta name="author" content="Rentals Luxury Network" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- ========================================== -->
+    <!-- OPEN GRAPH (LINKEDIN, FACEBOOK, WHATSAPP)  -->
+    <!-- ========================================== -->
+    <meta property="og:site_name" content="Rentals." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_NG" />
+    <meta property="og:title" content="Rentals. | The Premium Real Estate Network" />
+    <meta property="og:description" content="Discover executive real estate, luxury properties, and premium commercial portfolios across Nigeria. 100% verified CAC agents." />
+    <meta property="og:url" content="https://www.rentalsluxury.network/" />
+    <!-- 🚨 NOTE: Replace with your actual deployed image URL -->
+    <meta property="og:image" content="https://www.rentalsluxury.network/og-image-premium.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Rentals Luxury Network Dashboard interface" />
+
+    <!-- ========================================== -->
+    <!-- TWITTER CARDS                              -->
+    <!-- ========================================== -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Rentals. | Sovereign Real Estate Infrastructure" />
+    <meta name="twitter:description" content="Explore elite, verified property portfolios across key Nigerian hubs. Connect directly with CAC-cleared agents." />
+    <meta name="twitter:image" content="https://www.rentalsluxury.network/twitter-card.jpg" />
+
+    <!-- ========================================== -->
+    <!-- PRECONNECT FOR PERFORMANCE OPTIMIZATION    -->
+    <!-- ========================================== -->
+    <!-- Speeds up rendering if you use external fonts or CDNs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- ========================================== -->
+    <!-- JSON-LD STRUCTURED DATA (GOOGLE CRAWLERS)  -->
+    <!-- ========================================== -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "RealEstateAgent",
+        "name": "Rentals.",
+        "image": "https://www.rentalsluxury.network/logo.png",
+        "@id": "https://www.rentalsluxury.network/",
+        "url": "https://www.rentalsluxury.network/",
+        "telephone": "+2348000000000",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Bodija",
+          "addressRegion": "Ibadan, Oyo State",
+          "addressCountry": "NG"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 7.4206,
+          "longitude": 3.9161
+        },
+        "areaServed": ["Ibadan", "Lagos", "Abuja", "Oyo State","Rivers","Kano","Ogun"],
+        "priceRange": "₦₦₦",
+        "sameAs": [
+          "https://www.linkedin.com/company/rentalsnetwork",
+          "https://twitter.com/rentalsnetwork"
+        ]
+      }
+    </script>
+
   </head>
-  <body>
+  <body class="bg-[#0F172A] text-slate-300 antialiased selection:bg-brand-cobalt/30 selection:text-white">
+    
+    <!-- NO-SCRIPT FALLBACK -->
+    <noscript>
+      <div style="padding: 20px; text-align: center; color: white; background-color: #0F172A; font-family: sans-serif;">
+        <strong>Rentals.</strong> requires JavaScript to render its premium architectural interfaces. Please enable JavaScript to continue.
+      </div>
+    </noscript>
+
+    <!-- REACT MOUNTING POINT -->
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
   </body>
 </html>
