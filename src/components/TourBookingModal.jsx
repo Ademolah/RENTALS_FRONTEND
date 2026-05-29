@@ -1,13 +1,27 @@
 import { useState, useEffect } from 'react';
 import { 
   X, CalendarDays, Clock, Video, MapPin, 
-  Phone, Mail, ShieldAlert, CheckCircle2 
+  Phone, Mail, ShieldAlert, CheckCircle2 , Loader2
 } from 'lucide-react';
 
+import {apiClient} from '../services/apiClient';
+
 export const TourBookingModal = ({ isOpen, onClose, property }) => {
+  
+  // Original Viewport Configuration States
   const [tourType, setTourType] = useState('in-person');
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+
+  // New Explorer Identity Fields
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  // Request Lifecycle Monitor Engine
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Prevent background scrolling when modal is open
   useEffect(() => {
@@ -17,6 +31,55 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
   }, [isOpen]);
 
   if (!isOpen || !property) return null;
+
+  // Form Pipeline Controller
+  const handleConfirmBooking = async () => {
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    const payload = {
+      propertyId: property._id,
+      fullName,
+      email,
+      phone,
+      date: selectedDate,
+      timeSlot: selectedTime,
+      tourType // Captured from your layout options switch
+    };
+
+    try {
+      // Direct integration matching your endpoint protocol
+      await apiClient.post('/bookings/request', payload);
+      
+      setSubmitSuccess(true);
+      
+      // Auto-collapse sequence after clear validation display
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        resetFormState();
+        onClose();
+      }, 3500);
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || 
+        'Transmission execution failed. Please verify connection channels.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetFormState = () => {
+    setSelectedDate('');
+    setSelectedTime('');
+    setFullName('');
+    setEmail('');
+    setPhone('');
+    setErrorMessage('');
+  };
+
+  // Evaluation logic for CTA readiness criteria
+  const isFormInvalid = !selectedDate || !selectedTime || !fullName || !email || !phone;
 
  
 
@@ -31,6 +94,19 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
       {/* Modal Container */}
       <div className="relative w-full max-w-2xl max-h-[95vh] overflow-y-auto bg-brand-midnight border border-white/10 rounded-[2rem] shadow-2xl flex flex-col hide-scrollbar animate-in fade-in zoom-in-95 duration-300">
         
+        {/* ================= SUCCESS STATE BANNER LAYER ================= */}
+        {submitSuccess && (
+          <div className="absolute inset-0 bg-brand-midnight z-50 flex flex-col items-center justify-center text-center p-6 rounded-[2rem] animate-in fade-in duration-300">
+            <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+              <CheckCircle2 size={32} />
+            </div>
+            <h3 className="text-white font-bold text-2xl tracking-tight">Concierge Tour Scheduled</h3>
+            <p className="text-slate-400 text-sm mt-3 max-w-md leading-relaxed">
+              Your appointment request has been successfully registered. The administrative routing agent for <span className="text-white font-semibold">{property.title}</span> has appended this event to their control panel dashboard grid.
+            </p>
+          </div>
+        )}
+
         {/* ================= HEADER ================= */}
         <div className="sticky top-0 z-10 bg-brand-midnight/90 backdrop-blur-xl border-b border-white/5 p-6 flex items-start justify-between">
           <div className="flex items-center gap-4">
@@ -60,6 +136,13 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
         {/* ================= BODY ================= */}
         <div className="p-6 md:p-8 space-y-8">
           
+          {/* Error Ingestion Log Banner */}
+          {errorMessage && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-xs font-semibold tracking-wide animate-in fade-in">
+              {errorMessage}
+            </div>
+          )}
+
           {/* 1. Tour Type Selection */}
           <div className="space-y-3">
             <label className="text-xs text-white/40 font-bold uppercase tracking-wider">Viewing Preference</label>
@@ -113,7 +196,7 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
             </div>
           </div>
 
-          {/* 3. Date & Time Selection (Simplified UI) */}
+          {/* 3. Date & Time Selection */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-3">
               <label className="text-xs text-white/40 font-bold uppercase tracking-wider flex items-center gap-2">
@@ -121,6 +204,8 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
               </label>
               <input 
                 type="date" 
+                value={selectedDate}
+                min={new Date().toISOString().split('T')[0]}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium color-scheme-dark"
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
@@ -130,10 +215,11 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
                 <Clock size={14} /> Time Slot
               </label>
               <select 
+                value={selectedTime}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none"
                 onChange={(e) => setSelectedTime(e.target.value)}
               >
-                <option value="" disabled selected className="bg-brand-midnight text-white/50">Select timeframe...</option>
+                <option value="" disabled className="bg-brand-midnight text-white/50">Select timeframe...</option>
                 <option value="morning" className="bg-brand-midnight">Morning (9AM - 12PM)</option>
                 <option value="afternoon" className="bg-brand-midnight">Afternoon (12PM - 4PM)</option>
                 <option value="evening" className="bg-brand-midnight">Evening (4PM - 6PM)</option>
@@ -141,7 +227,37 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
             </div>
           </div>
 
-          {/* 4. The Security Advisory (Crucial) */}
+          {/* 🎯 SURGICAL UPGRADE: 4. Explorer Contact Protocol Section */}
+          <div className="space-y-3">
+            <label className="text-xs text-white/40 font-bold uppercase tracking-wider">Your Identity & Contact Coordinates</label>
+            <div className="space-y-4">
+              <input 
+                type="text"
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input 
+                  type="email"
+                  placeholder="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                />
+                <input 
+                  type="tel"
+                  placeholder="Phone Number (e.g., 08038883838)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 5. The Security Advisory */}
           <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 flex items-start gap-3">
             <ShieldAlert size={20} className="text-rose-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
@@ -157,11 +273,18 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
         {/* ================= FOOTER / CTA ================= */}
         <div className="sticky bottom-0 bg-brand-midnight/90 backdrop-blur-xl border-t border-white/5 p-6">
           <button 
-            disabled={!selectedDate || !selectedTime}
+            disabled={isFormInvalid || isSubmitting}
+            onClick={handleConfirmBooking}
             className="w-full bg-brand-coral hover:bg-brand-coral/90 disabled:bg-white/10 disabled:text-white/30 text-white py-4 rounded-xl font-bold transition-all transform active:scale-95 flex items-center justify-center gap-2"
           >
-            {selectedDate && selectedTime ? <CheckCircle2 size={20} /> : null}
-            {selectedDate && selectedTime ? 'Confirm Concierge Request' : 'Select Date & Time to Continue'}
+            {isSubmitting ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (!isFormInvalid ? <CheckCircle2 size={20} /> : null)}
+            
+            {isSubmitting 
+              ? 'Transmitting Request Parameters...' 
+              : (!isFormInvalid ? 'Confirm Concierge Request' : 'Complete Form Fields to Continue')
+            }
           </button>
         </div>
 
