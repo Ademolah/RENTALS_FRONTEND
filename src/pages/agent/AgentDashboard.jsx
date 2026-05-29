@@ -26,10 +26,6 @@ export const AgentDashboard = () => {
         // Fetch properties (isAvailable=all ensures we see off-market ones too)
         const response = await apiClient.get('/properties?isAvailable=all');
         
-        // If your backend doesn't automatically filter by the logged-in user's agencyId,
-        // you might want to filter it here: 
-        // const agencyProps = response.data.data.properties.filter(p => p.agencyId === user.agencyId);
-        // setProperties(agencyProps);
         
         setProperties(response.data.data.properties);
       } catch (error) {

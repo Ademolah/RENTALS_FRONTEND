@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
 import toast from 'react-hot-toast';
 import { EditPropertyModal } from '../../components/EditPropertyModal';
+import {CalendarDays, Clock, Loader2, CheckCircle2} from 'lucide-react';
 
 export const AdminDashboard = () => {
   const { user, logout } = useAuthStore();
@@ -19,6 +20,62 @@ export const AdminDashboard = () => {
   const [editingProperty, setEditingProperty] = useState(null);
   const [generatedLink, setGeneratedLink] = useState('');
   const [copied, setCopied] = useState(false);
+
+  const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Initializes as true, preventing the need for sync updates!
+  const [actioningId, setActioningId] = useState(null);
+
+  
+  
+
+  // Fetch routing payload on mount
+  
+
+  useEffect(() => {
+    // Defining the fetch inside the effect prevents dependency array warnings
+    const fetchAgencyItinerary = async () => {
+      // 🚨 Notice: No synchronous setIsLoading(true) here! This fixes the cascading render error completely.
+      try {
+        const response = await apiClient.get('/bookings/workspace/itinerary');
+        setBookings(response.data?.data?.bookings || []);
+      } catch (error) {
+        console.error('Failed to resolve itinerary pipeline stream:', error);
+      } finally {
+        setIsLoading(false); // Async state update is perfectly safe
+      }
+    };
+
+    fetchAgencyItinerary();
+  }, []);
+
+  const handleUpdateStatus = async (bookingId, newStatus) => {
+    setActioningId(bookingId); // Triggers the loading spinner for this specific button
+    try {
+      await apiClient.patch(`/bookings/${bookingId}/status`, { status: newStatus });
+      setBookings(prev => 
+        prev.map(item => item._id === bookingId ? { ...item, status: newStatus } : item)
+      );
+    } catch (error) {
+      toast.error('Status state transition aborted by verification server.');
+      console.log(error)
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  
+const prioritizedBookings = [...bookings].sort((a, b) => {
+    if (a.status === 'PENDING' && b.status !== 'PENDING') return -1;
+    if (a.status !== 'PENDING' && b.status === 'PENDING') return 1;
+    return 0;
+  });
+
+  const formatBookingDate = (dateString) => {
+    if (!dateString) return 'Unspecified';
+    return new Date(dateString).toLocaleDateString('en-NG', {
+      month: 'short', day: 'numeric'
+    });
+  };
 
   const handleLogout = () => {
     logout();
@@ -102,18 +159,18 @@ export const AdminDashboard = () => {
     }
   };
 
-  // const handleDeleteProperty = async (propertyId) => {
-  //   if(!window.confirm("Are you sure you want to permanently purge this asset?")) return;
+  const handleDeleteProperty = async (propertyId) => {
+    if(!window.confirm("Are you sure you want to permanently purge this asset?")) return;
     
-  //   try {
-  //     await apiClient.delete(`/properties/${propertyId}`);
-  //     // Remove it from the UI
-  //     setProperties(prev => prev.filter(p => p._id !== propertyId));
-  //   } catch (error) {
-  //     toast.error("Failed to delete property.");
-  //     console.error("Purge failed:", error);
-  //   }
-  // };
+    try {
+      await apiClient.delete(`/properties/${propertyId}`);
+      // Remove it from the UI
+      setProperties(prev => prev.filter(p => p._id !== propertyId));
+    } catch (error) {
+      toast.error("Failed to delete property.");
+      console.error("Purge failed:", error);
+    }
+  };
 
   const handleSaveEdit = async (propertyId, updatedData) => {
     try {
@@ -132,6 +189,9 @@ export const AdminDashboard = () => {
       alert("Failed to update property details. Please check your connection.");
     }
   };
+
+
+  const activeListingsCount = properties.filter(p => p.isAvailable).length;
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-white p-6 md:p-10 font-sans">
@@ -186,7 +246,7 @@ export const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl">
             <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Active Agency Portfolio</p>
-            <p className="text-4xl font-display font-black mt-2">0 <span className="text-sm font-normal text-white/40">Units Listed</span></p>
+            <p className="text-4xl font-display font-black mt-2"> {isLoadingProps ? '-' : activeListingsCount} <span className="text-sm font-normal text-white/40">Units Listed</span></p>
             <div className="absolute right-4 bottom-4 text-white/5">
               <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
@@ -310,6 +370,121 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
+<div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl flex flex-col justify-between">
+    <div className="w-full">
+      
+      {/* Header Deck */}
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+        <div>
+          <h3 className="text-xl font-display font-bold">Upcoming Tour Booking</h3>
+          <p className="text-white/40 text-xs font-medium mt-0.5">Real-time property evaluations requested by explorers.</p>
+        </div>
+        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          <span className="text-[10px] font-bold text-amber-400 tracking-wide uppercase">Live Pipeline</span>
+        </div>
+      </div>
+
+      {/* Bookings Queue Container */}
+      {/* Bookings Queue Container */}
+      <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1 hide-scrollbar">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12 text-white/40 gap-2 text-xs font-mono">
+            <Loader2 size={14} className="animate-spin text-brand-cobalt" /> Syncing data registries...
+          </div>
+        ) : prioritizedBookings.length === 0 ? (
+          <div className="py-12 text-center text-white/30 text-xs font-medium">
+            No active property tours currently scheduled.
+          </div>
+        ) : (
+          prioritizedBookings.map((booking) => (
+            <div 
+              key={booking._id} 
+              className={`bg-white/[0.02] border hover:border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
+                booking.status === 'PENDING' ? 'border-white/5' : 'border-transparent opacity-80'
+              }`}
+            >
+              {/* Identity & Asset Column */}
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-white truncate">{booking.explorer?.fullName}</span>
+                  <span className={`text-[9px] font-extrabold tracking-widest px-2 py-0.5 rounded uppercase shrink-0 ${
+                    booking.status === 'PENDING' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                    booking.status === 'CONFIRMED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-white/40'
+                  }`}>
+                    {booking.status}
+                  </span>
+                </div>
+                
+                {/* Communication Access Sub-metrics */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/50">
+                  <span className="flex items-center gap-1">
+                    <CalendarDays size={12} className="text-brand-cobalt" /> 
+                    {formatBookingDate(booking.schedule?.date)}
+                  </span>
+                  <span className="flex items-center gap-1 capitalize"><Clock size={12} className="text-white/30" /> {booking.schedule?.timeSlot}</span>
+                  <a href={`tel:${booking.explorer?.phone}`} className="flex items-center gap-1 text-emerald-400/80 hover:text-emerald-400 font-mono text-[11px]">{booking.explorer?.phone}</a>
+                </div>
+              </div>
+
+              {/* Action Operations Controller */}
+              <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                {actioningId === booking._id ? (
+                  <div className="px-4 py-2 flex items-center justify-center">
+                    <Loader2 size={18} className="animate-spin text-brand-cobalt" />
+                  </div>
+                ) : booking.status === 'PENDING' ? (
+                  <>
+                    <button 
+                      onClick={() => handleUpdateStatus(booking._id, 'CANCELLED')}
+                      className="px-3 py-2 bg-white/5 hover:bg-rose-500/10 text-white/60 hover:text-rose-400 border border-white/5 rounded-xl text-xs font-bold transition-all"
+                    >
+                      Decline
+                    </button>
+                    <button 
+                      onClick={() => handleUpdateStatus(booking._id, 'CONFIRMED')}
+                      className="px-4 py-2 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 transition-all"
+                    >
+                      Accept Tour
+                    </button>
+                  </>
+                ) : booking.status === 'CONFIRMED' ? (
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                <span className="text-[11px] font-bold text-emerald-400 px-3 py-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20 flex items-center gap-1.5 shadow-sm shadow-emerald-500/5">
+                  <CheckCircle2 size={14} /> Confirmed
+                </span>
+                {/* NEW: The Final Pipeline Trigger */}
+                <button 
+                  onClick={() => handleUpdateStatus(booking._id, 'COMPLETED')}
+                  className="text-[10px] uppercase tracking-wider font-bold text-slate-400 hover:text-white px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all"
+                >
+                  Mark as Concluded
+                </button>
+              </div>
+                  
+                ) : (
+                  <span className="text-[11px] font-mono text-white/20 px-3 py-1 bg-black/20 rounded-lg border border-white/5">
+                    ARCHIVED
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+    </div>
+
+    {/* Footer Metadata Signature */}
+    <div className="border-t border-white/5 pt-4 mt-6 text-[11px] text-white/30 flex items-center justify-between font-mono w-full">
+      <span className="flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Automated Router Engaged
+      </span>
+      <span>{bookings?.length || 0} Total Units</span>
+    </div>
+  </div>
+          
+
           {/* =======================================================================
              PORTFOLIO & STAFF TRACKING LISTS
              ======================================================================= */}
@@ -429,7 +604,7 @@ export const AdminDashboard = () => {
                                 </svg>
                               </button>
                               
-                              {/* <button 
+                              <button 
                                 onClick={() => handleDeleteProperty(property._id)}
                                 className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-white/5 hover:bg-rose-500/20 text-white/60 hover:text-rose-400 rounded-lg transition-all duration-300 group/delete"
                                 title="Purge Listing"
@@ -437,7 +612,7 @@ export const AdminDashboard = () => {
                                 <svg className="w-4 h-4 transition-transform group-hover/delete:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
-                              </button> */}
+                              </button>
                             </div>
                           </td>
                         </tr>
