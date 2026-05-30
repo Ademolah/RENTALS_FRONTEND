@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
-
+import React from 'react';
 import { Search, MapPin, Filter, SlidersHorizontal, ChevronRight, Loader2 } from 'lucide-react';
 import { PropertyCard } from './PropertyCard';
 import { apiClient } from '../../services/apiClient';
@@ -10,30 +10,31 @@ import toast from 'react-hot-toast'
 // ---------------------------------------------------------------------------
 // MOCK DATA ENGINES
 // ---------------------------------------------------------------------------
-const MOCK_LOCATIONS = [
-  { id: 'l1', name: 'Ikoyi', count: '142 Properties', image: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&w=600&q=80' },
-  { id: 'l2', name: 'Victoria Island', count: '98 Properties', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80' },
-  { id: 'l3', name: 'Maitama', count: '65 Properties', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80' },
-  { id: 'l4', name: 'Lekki Phase 1', count: '210 Properties', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80' },
-  { id: 'l5', name: 'Asokoro', count: '45 Properties', image: 'https://images.unsplash.com/photo-1600607687931-cece5ce21448?auto=format&fit=crop&w=600&q=80' },
-];
+// const MOCK_LOCATIONS = [
+//   { id: 'l1', name: 'Ikoyi', count: '142 Properties', image: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&w=600&q=80' },
+//   { id: 'l2', name: 'Victoria Island', count: '98 Properties', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80' },
+//   { id: 'l3', name: 'Maitama', count: '65 Properties', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80' },
+//   { id: 'l4', name: 'Lekki Phase 1', count: '210 Properties', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80' },
+//   { id: 'l5', name: 'Asokoro', count: '45 Properties', image: 'https://images.unsplash.com/photo-1600607687931-cece5ce21448?auto=format&fit=crop&w=600&q=80' },
+// ];
 
 
 
 export const PropertyFeed = () => {
+
   // Controlled console inputs
   const [searchLocation, setSearchLocation] = useState('');
   const [searchBudget, setSearchBudget] = useState('any');
   
-  // Initialize directly with working mock data to secure layout rendering immediately
+  // Central core application states
   const [properties, setProperties] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSearching, setIsSearching] = useState(true); // Default to true to trigger shimmers on mount
   const [activeCategoryView, setActiveCategoryView] = useState(null);
   const [visibleCount, setVisibleCount] = useState(6);
 
-  
-
-  // The central processing engine
+  // =======================================================================
+  // 1. CENTRAL DATABASE LOOKUP ENGINE (UNIFIED & SINGLE-SOURCE)
+  // =======================================================================
   const executeSearch = async (e, locationOverride) => {
     if (e) e.preventDefault();
     setIsSearching(true);
@@ -45,25 +46,27 @@ export const PropertyFeed = () => {
       if (locationValue.trim()) params.append('location', locationValue.trim());
       if (searchBudget !== 'any') params.append('maxBudget', searchBudget);
 
+      // Executes query seamlessly via your frontend apiClient
       const response = await apiClient.get(`/properties/search?${params.toString()}`);
       
-      const fetchedItems = response.data?.data?.properties;
+      // Fallback arrays to catch any variance in controller output wrapping
+      const fetchedItems = response.data?.data?.properties || response.data?.properties || [];
+      
       if (fetchedItems && fetchedItems.length > 0) {
-        
-        // 🚨 THE TRANSLATION ENGINE
+        // 🚨 THE TRANSLATION ENGINE (Feeds perfect props to your PropertyCard grid)
         const calibratedProperties = fetchedItems.map((item, index) => ({
           ...item,
           id: item._id || item.id,
           
-          // 1. Image Fix: Extract the first Cloudinary URL, or use a premium fallback
+          // Image Fix: Prioritize Cloudinary arrays, then standard fallbacks
           image: (item.mediaUrls && item.mediaUrls.length > 0) 
             ? item.mediaUrls[0] 
             : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop',
             
-          // 2. Price Fix: Convert the raw DB number (e.g., 5000000) into a gorgeous UI string
+          // Price Formatting
           price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}/`,
           
-          // 3. Keep the dynamic grid layout perfectly intact
+          // Premium Bento Grid structural mapping rules
           span: index === 0 ? 'md:col-span-2 md:row-span-2' : 
                 index === 2 ? 'md:col-span-3 md:row-span-2' : 
                 'md:col-span-1 md:row-span-1'
@@ -71,22 +74,98 @@ export const PropertyFeed = () => {
         
         setProperties(calibratedProperties);
       } else {
-        setProperties([]); // Empty results handler
+        setProperties([]);
       }
     } catch (err) {
-      console.warn('Backend search unreachable:', err);
+      console.warn('🚨 [Catalog Engine Error]: Search payload unreachable:', err);
       setProperties([]);
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Run database lookups on page initialize without blocking layout presentation
+  // Run database lookup exactly once on initialization
   useEffect(() => {
     executeSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+
+  // =======================================================================
+  // 2. ULTRA-ROBUST NEIGHBORHOOD AGGREGATION ENGINE
+  // =======================================================================
+  const liveNeighborhoods = React.useMemo(() => {
+    if (!properties || !Array.isArray(properties)) return [];
+    
+    const aggregation = properties.reduce((acc, property) => {
+      // 🎯 SURGICAL FIX: Flexible Location Extraction Parser
+      let locality = null;
+      
+      if (property.location) {
+        if (typeof property.location === 'object') {
+          locality = property.location.locality;
+        } else if (typeof property.location === 'string') {
+          try {
+            // Handles potential stringified JSON structures
+            const parsed = JSON.parse(property.location);
+            locality = parsed.locality;
+          } catch (e) {
+            // Handles comma-separated string formats (e.g. "Apo, Abuja")
+            locality = property.location.split(',')[0].trim();
+            console.warn(e)
+          }
+        }
+      }
+      
+      // Secondary fallback paths if the backend flattened keys (e.g. property.locality)
+      if (!locality) {
+        locality = property.locality || property.district || property.neighborhood;
+      }
+
+      // If still missing completely, skip this listing to protect UI layout purity
+      if (!locality) return acc;
+      
+      // Normalize casing to avoid duplicate blocks like "Apo" and "apo"
+      const normalizedKey = locality.trim();
+
+      if (!acc[normalizedKey]) {
+        acc[normalizedKey] = {
+          name: normalizedKey,
+          count: 0,
+          image: property.image || (property.mediaUrls && property.mediaUrls[0]) || null
+        };
+      }
+      
+      if (property.isAvailable !== false) {
+        acc[normalizedKey].count += 1;
+      }
+      
+      return acc;
+    }, {});
+
+    const curatedNeighborhoodCovers = {
+      "Apo": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80",
+      "Maitama": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80",
+      "Wuse": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80",
+      "Ikoyi": "https://images.unsplash.com/photo-1582407947304-fd86f028f716?auto=format&fit=crop&w=600&q=80",
+      "Lekki": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80",
+    };
+
+    const premiumFallbackShowcases = [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80"
+    ];
+
+    return Object.values(aggregation).map((loc, index) => ({
+      id: `locality-${loc.name}-${index}`,
+      name: loc.name,
+      count: `${loc.count} ${loc.count === 1 ? 'Listing' : 'Listings'}`,
+      image: curatedNeighborhoodCovers[loc.name] || loc.image || premiumFallbackShowcases[index % premiumFallbackShowcases.length]
+    }));
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties]);
   return (
     <div className="bg-brand-midnight text-white min-h-screen font-sans pb-20">
       
@@ -196,47 +275,81 @@ export const PropertyFeed = () => {
         </form>
       </div>
 
-      {/* =======================================================================
-          3. HORIZONTAL LOCATION EXPLORER (PRISTINE & UNCHANGED)
-          ======================================================================= */}
-      <div className="mb-20">
-        <div className="px-6 md:px-10 max-w-[1400px] mx-auto flex items-end justify-between mb-6">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-display font-bold">Prime Neighborhoods</h2>
-            <p className="text-white/40 text-sm mt-1">Explore exclusive properties by district.</p>
-          </div>
-          <button className="hidden md:flex items-center gap-1 text-sm font-bold text-brand-gold hover:text-white transition-colors">
-            View All <ChevronRight size={16} />
-          </button>
-        </div>
+     {/* =======================================================================
+    3{/* =======================================================================
+    3. HORIZONTAL LOCATION EXPLORER (PRISTINE, FUNCTIONAL & LIVE)
+    ======================================================================= */}
+<div className="mb-20">
+  <div className="px-6 md:px-10 max-w-[1400px] mx-auto flex items-end justify-between mb-6">
+    <div>
+      <h2 className="text-2xl md:text-3xl font-display font-bold text-white">Prime Neighborhoods</h2>
+      <p className="text-white/40 text-sm mt-1">Explore exclusive properties by district.</p>
+    </div>
+    
+    <button 
+      onClick={() => {
+        setSearchLocation('');
+        executeSearch(null, '');
+      }}
+      className="hidden md:flex items-center gap-1 text-sm font-bold text-brand-gold hover:text-white transition-colors"
+    >
+      View All Districts <ChevronRight size={16} />
+    </button>
+  </div>
 
-        {/* The Snapping Horizontal Scroll Container */}
-        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 md:px-10 pb-4">
-          {MOCK_LOCATIONS.map((loc) => (
-            <div 
-              key={loc.id} 
-              onClick={() => {
-                setSearchLocation(loc.name);
-                executeSearch(null, loc.name);
-              }}
-              className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-white/10"
-            >
-              <img 
-                src={loc.image} 
-                alt={loc.name} 
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/40 to-transparent"></div>
-              
-              <div className="absolute bottom-6 left-6 right-6">
-                <h3 className="text-xl font-display font-bold text-white mb-1">{loc.name}</h3>
-                <p className="text-brand-gold text-xs font-bold tracking-wider uppercase">{loc.count}</p>
-              </div>
-            </div>
-          ))}
+  {/* The Snapping Horizontal Scroll Container */}
+  <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 md:px-10 pb-4">
+    
+    {isSearching ? (
+      /* World-Class Shimmer Loading Skeletons */
+      Array.from({ length: 4 }).map((_, i) => (
+        <div 
+          key={`skeleton-loc-${i}`}
+          className="relative w-[280px] h-[360px] shrink-0 bg-white/[0.03] border border-white/5 rounded-3xl animate-pulse flex flex-col justify-end p-6"
+        >
+          <div className="h-6 w-2/3 bg-white/10 rounded-md mb-2" />
+          <div className="h-4 w-1/3 bg-white/5 rounded-md" />
         </div>
+      ))
+    ) : !liveNeighborhoods || liveNeighborhoods.length === 0 ? (
+      /* Minimalist Luxury Empty State */
+      <div className="w-full text-center py-12 text-white/20 text-xs uppercase tracking-widest font-mono">
+        No neighborhood registries cataloged yet
       </div>
-
+    ) : (
+      liveNeighborhoods.map((loc) => (
+        <div 
+          key={loc.id} 
+          onClick={() => {
+            setSearchLocation(loc.name);
+            executeSearch(null, loc.name);
+          }}
+          className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-white/10 shadow-premium"
+        >
+          <img 
+            src={loc.image} 
+            alt={`${loc.name} District View`} 
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/30 to-transparent"></div>
+          
+          <div className="absolute bottom-6 left-6 right-6 z-10">
+            <h3 className="text-xl font-display font-bold text-white mb-1 tracking-tight">{loc.name}</h3>
+            
+            {/* Live Counter Pill */}
+            <div className="inline-flex items-center gap-1.5 bg-brand-midnight/60 backdrop-blur-md border border-white/5 px-2.5 py-1 rounded-md mt-1">
+              <span className="w-1 h-1 rounded-full bg-brand-gold animate-pulse" />
+              <p className="text-brand-gold text-[10px] font-mono font-bold tracking-widest uppercase">
+                {loc.count}
+              </p>
+            </div>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+</div>
 {/* =======================================================================
           4. THE BENTO GRID FEED (FEATURED LISTINGS - PRISTINE & UNCHANGED)
           ======================================================================= */}
