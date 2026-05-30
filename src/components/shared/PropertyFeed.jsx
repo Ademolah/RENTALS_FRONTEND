@@ -7,18 +7,6 @@ import { apiClient } from '../../services/apiClient';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast'
 
-// ---------------------------------------------------------------------------
-// MOCK DATA ENGINES
-// ---------------------------------------------------------------------------
-// const MOCK_LOCATIONS = [
-//   { id: 'l1', name: 'Ikoyi', count: '142 Properties', image: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&w=600&q=80' },
-//   { id: 'l2', name: 'Victoria Island', count: '98 Properties', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80' },
-//   { id: 'l3', name: 'Maitama', count: '65 Properties', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80' },
-//   { id: 'l4', name: 'Lekki Phase 1', count: '210 Properties', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80' },
-//   { id: 'l5', name: 'Asokoro', count: '45 Properties', image: 'https://images.unsplash.com/photo-1600607687931-cece5ce21448?auto=format&fit=crop&w=600&q=80' },
-// ];
-
-
 
 export const PropertyFeed = () => {
 
@@ -166,6 +154,19 @@ export const PropertyFeed = () => {
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties]);
+
+
+const handleLocationChange = (e) => {
+  const inputValue = e.target.value;
+  setSearchLocation(inputValue);
+
+  // If the user clears the search box, restore all properties immediately
+  if (inputValue.trim() === '') {
+    executeSearch(null, '');
+  }
+};
+
+
   return (
     <div className="bg-brand-midnight text-white min-h-screen font-sans pb-20">
       
@@ -235,10 +236,11 @@ export const PropertyFeed = () => {
           
           <div className="flex-1 w-full bg-white/5 rounded-xl flex items-center px-4 py-3.5 border border-transparent focus-within:border-brand-cobalt/50 transition-colors">
             <MapPin size={18} className="text-brand-gold shrink-0 mr-3" />
+            
             <input 
               type="text" 
               value={searchLocation}
-              onChange={(e) => setSearchLocation(e.target.value)}
+              onChange={handleLocationChange}
               placeholder="Where do you want to live?" 
               className="w-full bg-transparent border-none text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-0"
             />
@@ -350,9 +352,7 @@ export const PropertyFeed = () => {
     )}
   </div>
 </div>
-{/* =======================================================================
-          4. THE BENTO GRID FEED (FEATURED LISTINGS - PRISTINE & UNCHANGED)
-          ======================================================================= */}
+
       {/* =======================================================================
         4. FEATURED LISTINGS GRID WITH DYNAMIC PAGINATION
         ======================================================================= */}
