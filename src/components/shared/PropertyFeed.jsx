@@ -23,16 +23,40 @@ export const PropertyFeed = () => {
   // =======================================================================
   // 1. CENTRAL DATABASE LOOKUP ENGINE (UNIFIED & SINGLE-SOURCE)
   // =======================================================================
-  const executeSearch = async (e, locationOverride) => {
+  const executeSearch = async (e, locationOverride, budgetOverride) => {
     if (e) e.preventDefault();
     setIsSearching(true);
 
     const locationValue = locationOverride !== undefined ? locationOverride : searchLocation;
+    // Add this line to handle the budget override safely
+    const budgetValue = budgetOverride !== undefined ? budgetOverride : searchBudget;
 
     try {
       const params = new URLSearchParams();
-      if (locationValue.trim()) params.append('location', locationValue.trim());
-      if (searchBudget !== 'any') params.append('maxBudget', searchBudget);
+      
+      // 1. Location Parameter
+      if (locationValue.trim()) {
+        params.append('location', locationValue.trim());
+      }
+      
+      // 2. Smart Budget Parser
+      if (budgetValue !== 'any') {
+        if (budgetValue.startsWith('<')) {
+          // Less than: Only send maxBudget
+          params.append('maxBudget', budgetValue.replace('<', ''));
+        } else if (budgetValue.startsWith('>')) {
+          // Greater than: Only send minBudget
+          params.append('minBudget', budgetValue.replace('>', ''));
+        } else if (budgetValue.includes('-')) {
+          // Range: Send both minBudget and maxBudget
+          const [min, max] = budgetValue.split('-');
+          params.append('minBudget', min);
+          params.append('maxBudget', max);
+        } else {
+          // Fallback just in case
+          params.append('maxBudget', budgetValue);
+        }
+      }
 
       // Executes query seamlessly via your frontend apiClient
       const response = await apiClient.get(`/properties/search?${params.toString()}`);
@@ -77,6 +101,14 @@ export const PropertyFeed = () => {
     executeSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleBudgetChange = (e) => {
+    const selectedBudget = e.target.value;
+    setSearchBudget(selectedBudget);
+
+    // Instantly execute the search with the new budget, bypassing the submit button
+    executeSearch(null, searchLocation, selectedBudget);
+  };
 
 
   // =======================================================================
@@ -250,15 +282,19 @@ const handleLocationChange = (e) => {
             <div className="flex-1 md:w-48 bg-white/5 rounded-xl flex items-center px-4 py-3.5 border border-transparent focus-within:border-brand-cobalt/50 transition-colors">
               <Filter size={18} className="text-white/40 shrink-0 mr-3" />
               <select 
-                value={searchBudget}
-                onChange={(e) => setSearchBudget(e.target.value)}
-                className="w-full bg-transparent border-none text-sm text-white/80 focus:outline-none appearance-none cursor-pointer"
-              >
-                <option value="any" className="bg-brand-midnight">Max Budget</option>
-                <option value="10m" className="bg-brand-midnight">Up to ₦10M</option>
-                <option value="50m" className="bg-brand-midnight">Up to ₦50M</option>
-                <option value="100m" className="bg-brand-midnight">₦100M+</option>
-              </select>
+  value={searchBudget}
+  onChange={handleBudgetChange}
+  className="w-full bg-transparent border-none text-sm text-white/80 focus:outline-none appearance-none cursor-pointer"
+>
+  <option value="any" className="bg-brand-midnight">Any Budget</option>
+  <option value="<100000" className="bg-brand-midnight">Less than ₦100k</option>
+  <option value="100000-500000" className="bg-brand-midnight">₦100k - ₦500k</option>
+  <option value="500000-1000000" className="bg-brand-midnight">₦500k - ₦1M</option>
+  <option value="1000000-5000000" className="bg-brand-midnight">₦1M - ₦5M</option>
+  <option value="5000000-10000000" className="bg-brand-midnight">₦5M - ₦10M</option>
+  <option value="10000000-50000000" className="bg-brand-midnight">₦10M - ₦50M</option>
+  <option value=">50000000" className="bg-brand-midnight">Greater than ₦50M</option>
+</select>
             </div>
 
             <button type="button" className="bg-white/5 p-3.5 rounded-xl border border-white/10 text-white hover:bg-white/10 transition-colors shrink-0">
