@@ -91,9 +91,15 @@ export const PropertyCard = ({ property }) => {
 
           {/* Action Bar */}
         <div className="flex items-center justify-between gap-4 mt-auto w-full">
-          <p className="text-xl sm:text-2xl font-bold text-white tracking-tight shrink-0">
+          
+          {/* 🎯 SURGICAL UPDATE 1: Bento Card Dynamic Pricing Suffix */}
+          <p className="text-xl sm:text-2xl font-bold text-white tracking-tight shrink-0 flex items-baseline gap-1">
             {property.price}
+            <span className="text-xs sm:text-sm text-white/50 font-medium uppercase tracking-widest">
+              {['shortlet', 'apartment'].includes(property.propertyType) ? 'Month' : 'Year'}
+            </span>
           </p>
+          {/* END SURGICAL UPDATE 1 */}
           
           <button 
             onClick={(e) => {
@@ -174,9 +180,16 @@ export const PropertyCard = ({ property }) => {
               </div>
               <div className="text-left md:text-right shrink-0">
                 <p className="text-sm uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Premium Valuation</p>
-                <p className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
+                
+                {/* 🎯 SURGICAL UPDATE 2: Studio Viewer Dynamic Pricing Suffix */}
+                <p className="text-3xl md:text-5xl font-extrabold text-white tracking-tight flex items-baseline justify-start md:justify-end gap-2">
                   {property.price}
+                  <span className="text-lg md:text-2xl text-white/40 font-medium uppercase tracking-widest">
+                    {['shortlet', 'apartment'].includes(property.propertyType) ? '/ Mo' : '/ Yr'}
+                  </span>
                 </p>
+                {/* END SURGICAL UPDATE 2 */}
+
               </div>
             </div>
 

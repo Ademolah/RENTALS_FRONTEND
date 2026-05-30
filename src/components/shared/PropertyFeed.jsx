@@ -61,7 +61,7 @@ export const PropertyFeed = () => {
             : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop',
             
           // 2. Price Fix: Convert the raw DB number (e.g., 5000000) into a gorgeous UI string
-          price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}/yr`,
+          price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}/`,
           
           // 3. Keep the dynamic grid layout perfectly intact
           span: index === 0 ? 'md:col-span-2 md:row-span-2' : 
