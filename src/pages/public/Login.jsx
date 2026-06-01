@@ -26,6 +26,7 @@ export const Login = () => {
       // Secure dynamic routing based on corporate role
       const userRole = response.data.user.role;
       if (userRole === 'AGENCY_ADMIN') navigate('/admin');
+      else if (userRole === 'HOTEL_ADMIN') navigate('/hotel-admin');
       else if (userRole === 'AGENT') navigate('/agent');
       else if (userRole === 'SUPERADMIN') navigate('/superadmin');
       else navigate('/'); 

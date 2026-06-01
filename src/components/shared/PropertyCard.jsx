@@ -204,8 +204,8 @@ export const PropertyCard = ({ property }) => {
                 <span className="flex items-center gap-2 text-xl font-bold"><Bath className="text-brand-slate/40" /> {property.baths} Bath</span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
-                <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Street Address</span>
-                <span className="text-sm font-medium text-white/80 truncate">{property.streetAddress || 'Not specified'}</span>
+                <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Property Type</span>
+                <span className="text-sm font-medium text-white/80 truncate">{property.propertyType || 'Not specified'}</span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
                 <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Service Charge</span>

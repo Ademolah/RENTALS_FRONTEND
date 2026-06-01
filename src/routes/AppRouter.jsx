@@ -16,6 +16,9 @@ import {Toaster } from 'react-hot-toast'
 import { SuperAdminDashboard } from '../pages/SuperAdminDashboard';
 import { ContactUs } from '../pages/ContactUs';
 import { AboutUs } from '../pages/AboutUs';
+import { HotelAdminDashboard } from '../pages/hotel/HotelDashboard'
+import { HotelUpload } from '../pages/hotel/HotelUpload';
+
 
 
 // (Placeholders for your page components)
@@ -65,6 +68,11 @@ export const AppRouter = () => {
         <Route element={<ProtectedRoute allowedRoles={['AGENCY_ADMIN']} />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/settings" element={<div>Brand Settings</div>} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['HOTEL_ADMIN']} />}>
+          <Route path="/hotel-admin" element={<HotelAdminDashboard />} />
+          <Route path="/hotel-admin/upload" element={<HotelUpload />} />
         </Route>
 
         {/* ==========================================

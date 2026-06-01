@@ -20,9 +20,7 @@ export const PropertyUpload = () => {
     baths: '',         
     streetAddress: '', 
     locality: '',
-    state: 'Lagos',
-    longitude: '',     
-    latitude: '',    
+    state: 'Lagos',    
     isAvailable: true,  
   });
 
@@ -70,7 +68,6 @@ export const PropertyUpload = () => {
 
   const payload = new FormData();
 
-
   // 1. Direct text fields
   payload.append('title', formData.title);
   payload.append('description', formData.description);
@@ -89,17 +86,12 @@ export const PropertyUpload = () => {
   // 3. Status Flags
   payload.append('isAvailable', formData.isAvailable);
 
-  // 3. The Strict Geospatial Object
-  const geoJSONLocation = {
-    type: 'Point',
-    coordinates: [Number(formData.longitude), Number(formData.latitude)],
-  };
-  payload.append('location', JSON.stringify(geoJSONLocation));
+  // (The Strict Geospatial Object block has been entirely removed)
 
   // 4. File attachments
   images.forEach((file) => {
-  payload.append('images', file); 
-});
+    payload.append('images', file); 
+  });
 
   try {
     await apiClient.post('/properties', payload, {
@@ -294,13 +286,26 @@ export const PropertyUpload = () => {
                 <h3 className="text-sm font-bold tracking-wider uppercase font-mono text-white/70">Geospatial Routing</h3>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs text-white/40 font-bold uppercase">Street Address Mapping</label>
+              <div className="space-y-1.5">
+                <label className="text-xs text-white/40 font-bold uppercase tracking-wider">Street Address Mapping</label>
+                
                 <input 
-                  type="text" name="streetAddress" required placeholder="Plot 1024, Banana Island Way"
-                  value={formData.streetAddress} onChange={handleInputChange}
+                  type="text" 
+                  name="streetAddress" 
+                  required 
+                  placeholder="Plot 1024, Banana Island Way"
+                  value={formData.streetAddress} 
+                  onChange={handleInputChange}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
                 />
+
+                {/* Premium Privacy Micro-copy */}
+                <p className="text-[11px] text-white/30 font-medium leading-normal mt-1 flex items-start gap-1">
+                  <span>🔒</span>
+                  <span>
+                    <strong>Confidential:</strong> This address remains completely hidden from public explorers. It is collected strictly for secure internal verification and regulatory documentation.
+                  </span>
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -368,25 +373,6 @@ export const PropertyUpload = () => {
                   </div>
                 </div>
 
-                {/* Appended Geospatial Pinpoints */}
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="space-y-1">
-                  <label className="text-xs text-white/40 font-bold uppercase">Longitude (X)</label>
-                  <input 
-                    type="number" name="longitude" required placeholder="3.4308" step="any" min="-180" max="180"
-                    value={formData.longitude} onChange={handleInputChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-white/40 font-bold uppercase">Latitude (Y)</label>
-                  <input 
-                    type="number" name="latitude" required placeholder="6.4531" step="any" min="-90" max="90"
-                    value={formData.latitude} onChange={handleInputChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
-                  />
-                </div>
-              </div>
               </div>
             </div>
           </div>
@@ -416,20 +402,36 @@ export const PropertyUpload = () => {
               </div>
             </div>
 
-            {/* Direct Multi-File Media Dropzone */}
             <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">
-              <label className="text-xs text-white/40 font-bold uppercase tracking-wider block">Media Storage Pipeline</label>
-              
-              <div className="border-2 border-dashed border-white/10 hover:border-brand-cobalt/50 rounded-2xl p-6 text-center cursor-pointer transition-colors relative group">
-                <input 
-                  type="file" multiple accept="image/*" onChange={handleFileChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
-                <Upload className="mx-auto text-white/20 group-hover:text-brand-cobalt transition-colors mb-2" size={24} />
-                <p className="text-xs font-bold text-white/60">Select Local Media Files</p>
-                <p className="text-[10px] text-white/30 font-mono mt-1">PNG, JPG formats accepted</p>
-              </div>
-
+  <div className="flex justify-between items-center">
+    <label className="text-xs text-white/40 font-bold uppercase tracking-wider block">
+      Property Gallery
+    </label>
+    <span className={`text-[11px] font-medium tracking-wide ${images.length > 7 ? 'text-red-400 font-bold' : 'text-white/30'}`}>
+      {images.length} / 7 Images
+    </span>
+  </div>
+  
+  {/* Dropzone Interactive Area */}
+  <div className="border-2 border-dashed border-white/10 hover:border-brand-cobalt/40 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 relative group bg-white/[0.01] hover:bg-white/[0.03]">
+    <input 
+      type="file" 
+      multiple 
+      accept="image/png, image/jpeg, image/jpg, image/webp" 
+      onChange={handleFileChange}
+      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+    />
+    
+    <div className="space-y-2 pointer-events-none">
+      <Upload className="mx-auto text-white/20 group-hover:text-brand-cobalt group-hover:scale-110 transition-all duration-300" size={26} />
+      <p className="text-xs font-bold text-white/70 group-hover:text-white transition-colors">
+        Upload Property Images
+      </p>
+      <p className="text-[11px] text-white/30 max-w-[240px] mx-auto leading-normal">
+        Select up to 7 high-resolution premium photos at once. PNG, JPG, or WEBP formats.
+      </p>
+    </div>
+  </div>
               {/* Upload Staging Line Previews */}
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 pt-2">
