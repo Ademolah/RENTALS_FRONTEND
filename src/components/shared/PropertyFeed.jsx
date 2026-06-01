@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React from 'react';
-import { Search, MapPin, Filter, SlidersHorizontal, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, MapPin, Filter, SlidersHorizontal, ChevronRight, Building, Loader2 } from 'lucide-react';
 import { PropertyCard } from './PropertyCard';
 import { apiClient } from '../../services/apiClient';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast'
+import { HotelExplorerGrid } from '../../pages/hotel/HotelExplorer'
 
 
 export const PropertyFeed = () => {
@@ -14,11 +15,19 @@ export const PropertyFeed = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [searchBudget, setSearchBudget] = useState('any');
   
+  
   // Central core application states
   const [properties, setProperties] = useState([]);
   const [isSearching, setIsSearching] = useState(true); // Default to true to trigger shimmers on mount
   const [activeCategoryView, setActiveCategoryView] = useState(null);
   const [visibleCount, setVisibleCount] = useState(6);
+
+  // =======================================================================
+  // 🟢 NEW CORE: HOSPITALITY GATEWAY AMBIENT STATES
+  // ========================================================================
+  const [currentView, setCurrentView] = useState('landing'); // view routes: 'landing' | 'hotels'
+  const [liveHotels, setLiveHotels] = useState([]);
+  const [isLoadingHotels, setIsLoadingHotels] = useState(false);
 
   // =======================================================================
   // 1. CENTRAL DATABASE LOOKUP ENGINE (UNIFIED & SINGLE-SOURCE)
@@ -28,7 +37,6 @@ export const PropertyFeed = () => {
     setIsSearching(true);
 
     const locationValue = locationOverride !== undefined ? locationOverride : searchLocation;
-    // Add this line to handle the budget override safely
     const budgetValue = budgetOverride !== undefined ? budgetOverride : searchBudget;
 
     try {
@@ -42,18 +50,14 @@ export const PropertyFeed = () => {
       // 2. Smart Budget Parser
       if (budgetValue !== 'any') {
         if (budgetValue.startsWith('<')) {
-          // Less than: Only send maxBudget
           params.append('maxBudget', budgetValue.replace('<', ''));
         } else if (budgetValue.startsWith('>')) {
-          // Greater than: Only send minBudget
           params.append('minBudget', budgetValue.replace('>', ''));
         } else if (budgetValue.includes('-')) {
-          // Range: Send both minBudget and maxBudget
           const [min, max] = budgetValue.split('-');
           params.append('minBudget', min);
           params.append('maxBudget', max);
         } else {
-          // Fallback just in case
           params.append('maxBudget', budgetValue);
         }
       }
@@ -61,7 +65,6 @@ export const PropertyFeed = () => {
       // Executes query seamlessly via your frontend apiClient
       const response = await apiClient.get(`/properties/search?${params.toString()}`);
       
-      // Fallback arrays to catch any variance in controller output wrapping
       const fetchedItems = response.data?.data?.properties || response.data?.properties || [];
       
       if (fetchedItems && fetchedItems.length > 0) {
@@ -70,15 +73,12 @@ export const PropertyFeed = () => {
           ...item,
           id: item._id || item.id,
           
-          // Image Fix: Prioritize Cloudinary arrays, then standard fallbacks
           image: (item.mediaUrls && item.mediaUrls.length > 0) 
             ? item.mediaUrls[0] 
             : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop',
             
-          // Price Formatting
           price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}/`,
           
-          // Premium Bento Grid structural mapping rules
           span: index === 0 ? 'md:col-span-2 md:row-span-2' : 
                 index === 2 ? 'md:col-span-3 md:row-span-2' : 
                 'md:col-span-1 md:row-span-1'
@@ -118,7 +118,6 @@ export const PropertyFeed = () => {
     if (!properties || !Array.isArray(properties)) return [];
     
     const aggregation = properties.reduce((acc, property) => {
-      // 🎯 SURGICAL FIX: Flexible Location Extraction Parser
       let locality = null;
       
       if (property.location) {
@@ -126,26 +125,21 @@ export const PropertyFeed = () => {
           locality = property.location.locality;
         } else if (typeof property.location === 'string') {
           try {
-            // Handles potential stringified JSON structures
             const parsed = JSON.parse(property.location);
             locality = parsed.locality;
           } catch (e) {
-            // Handles comma-separated string formats (e.g. "Apo, Abuja")
             locality = property.location.split(',')[0].trim();
             console.warn(e)
           }
         }
       }
       
-      // Secondary fallback paths if the backend flattened keys (e.g. property.locality)
       if (!locality) {
         locality = property.locality || property.district || property.neighborhood;
       }
 
-      // If still missing completely, skip this listing to protect UI layout purity
       if (!locality) return acc;
       
-      // Normalize casing to avoid duplicate blocks like "Apo" and "apo"
       const normalizedKey = locality.trim();
 
       if (!acc[normalizedKey]) {
@@ -184,20 +178,69 @@ export const PropertyFeed = () => {
       image: curatedNeighborhoodCovers[loc.name] || loc.image || premiumFallbackShowcases[index % premiumFallbackShowcases.length]
     }));
     
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties]);
 
+  // =======================================================================
+  // 🟢 3. HOSPITALITY CORES DATABASE INGESTION ENGINE
+  // =======================================================================
+  useEffect(() => {
+    if (currentView === 'hotels') {
+      const fetchHotelCollection = async () => {
+        setIsLoadingHotels(true);
+        try {
+          const response = await apiClient.get('/hotels');
+          
+          // 🔍 MONITORING TERMINAL: Press F12 in your browser to inspect this log
+          console.log('📡 [Hospitality API Payload Matrix]:', response.data);
+          
+          const payload = response.data;
+          let fetchedHotels = [];
+          
+          // Ultra-flexible structural parser to unwrap backend response arrays safely
+          if (Array.isArray(payload)) {
+            fetchedHotels = payload;
+          } else if (payload && typeof payload === 'object') {
+            fetchedHotels = payload.hotels || payload.data?.hotels || payload.data || [];
+          }
+          
+          // Hard guard clause to guarantee state only receives clean array blocks
+          setLiveHotels(Array.isArray(fetchedHotels) ? fetchedHotels : []);
+          
+        } catch (error) {
+          console.warn('🚨 [Hospitality Engine Error]: Collection database unreachable:', error);
+          setLiveHotels([]);
+        } finally {
+          setIsLoadingHotels(false);
+        }
+      };
 
-const handleLocationChange = (e) => {
-  const inputValue = e.target.value;
-  setSearchLocation(inputValue);
+      fetchHotelCollection();
+    }
+  }, [currentView]);
 
-  // If the user clears the search box, restore all properties immediately
-  if (inputValue.trim() === '') {
-    executeSearch(null, '');
-  }
-};
 
+  const handleLocationChange = (e) => {
+    const inputValue = e.target.value;
+    setSearchLocation(inputValue);
+
+    if (inputValue.trim() === '') {
+      executeSearch(null, '');
+    }
+  };
+
+  // =======================================================================
+  // CONDITIONAL VIEW BALANCING (Bypasses regular page layout if Hotels are active)
+  // =======================================================================
+  if (currentView === 'hotels') {
+  return (
+    <HotelExplorerGrid 
+      hotels={liveHotels} 
+      isLoading={isLoadingHotels}
+      onBack={() => setCurrentView('landing')} // 🟢 This will now work perfectly
+      darkMode={true}
+    />
+  );
+}
 
   return (
     <div className="bg-brand-midnight text-white min-h-screen font-sans pb-20">
@@ -282,19 +325,19 @@ const handleLocationChange = (e) => {
             <div className="flex-1 md:w-48 bg-white/5 rounded-xl flex items-center px-4 py-3.5 border border-transparent focus-within:border-brand-cobalt/50 transition-colors">
               <Filter size={18} className="text-white/40 shrink-0 mr-3" />
               <select 
-  value={searchBudget}
-  onChange={handleBudgetChange}
-  className="w-full bg-transparent border-none text-sm text-white/80 focus:outline-none appearance-none cursor-pointer"
->
-  <option value="any" className="bg-brand-midnight">Any Budget</option>
-  <option value="<100000" className="bg-brand-midnight">Less than ₦100k</option>
-  <option value="100000-500000" className="bg-brand-midnight">₦100k - ₦500k</option>
-  <option value="500000-1000000" className="bg-brand-midnight">₦500k - ₦1M</option>
-  <option value="1000000-5000000" className="bg-brand-midnight">₦1M - ₦5M</option>
-  <option value="5000000-10000000" className="bg-brand-midnight">₦5M - ₦10M</option>
-  <option value="10000000-50000000" className="bg-brand-midnight">₦10M - ₦50M</option>
-  <option value=">50000000" className="bg-brand-midnight">Greater than ₦50M</option>
-</select>
+                value={searchBudget}
+                onChange={handleBudgetChange}
+                className="w-full bg-transparent border-none text-sm text-white/80 focus:outline-none appearance-none cursor-pointer"
+              >
+                <option value="any" className="bg-brand-midnight">Any Budget</option>
+                <option value="<100000" className="bg-brand-midnight">Less than ₦100k</option>
+                <option value="100000-500000" className="bg-brand-midnight">₦100k - ₦500k</option>
+                <option value="500000-1000000" className="bg-brand-midnight">₦500k - ₦1M</option>
+                <option value="1000000-5000000" className="bg-brand-midnight">₦1M - ₦5M</option>
+                <option value="5000000-10000000" className="bg-brand-midnight">₦5M - ₦10M</option>
+                <option value="10000000-50000000" className="bg-brand-midnight">₦10M - ₦50M</option>
+                <option value=">50000000" className="bg-brand-midnight">Greater than ₦50M</option>
+              </select>
             </div>
 
             <button type="button" className="bg-white/5 p-3.5 rounded-xl border border-white/10 text-white hover:bg-white/10 transition-colors shrink-0">
@@ -336,57 +379,102 @@ const handleLocationChange = (e) => {
   </div>
 
   {/* The Snapping Horizontal Scroll Container */}
-  <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 md:px-10 pb-4">
+<div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 md:px-10 pb-4">
+  
+  {/* =========================================================================
+      PREMIUM LEFTMOST PROPERTY TYPE ANCHOR: HOTELS
+     ========================================================================= */}
+  <div 
+    onClick={() => setCurrentView('hotels')}
+    className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-brand-cobalt/20 shadow-xl shadow-brand-cobalt/5 bg-black"
+  >
+    {/* High-End Editorial Contextual Background */}
+    <img 
+      src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80" 
+      alt="Luxury Hospitality Portal" 
+      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000 ease-out"
+      loading="lazy"
+    />
+    {/* Linear Matrix Overlay Layer */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20 group-hover:via-black/20 transition-all duration-500"></div>
     
-    {isSearching ? (
-      /* World-Class Shimmer Loading Skeletons */
-      Array.from({ length: 4 }).map((_, i) => (
-        <div 
-          key={`skeleton-loc-${i}`}
-          className="relative w-[280px] h-[360px] shrink-0 bg-white/[0.03] border border-white/5 rounded-3xl animate-pulse flex flex-col justify-end p-6"
-        >
-          <div className="h-6 w-2/3 bg-white/10 rounded-md mb-2" />
-          <div className="h-4 w-1/3 bg-white/5 rounded-md" />
+    {/* Ultra-Bold Editorial Typography Stack */}
+    <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
+      <div className="flex justify-between items-start">
+        <div className="w-10 h-10 rounded-xl bg-brand-cobalt/20 backdrop-blur-md border border-brand-cobalt/30 flex items-center justify-center text-brand-cobalt">
+          <Building size={20} />
         </div>
-      ))
-    ) : !liveNeighborhoods || liveNeighborhoods.length === 0 ? (
-      /* Minimalist Luxury Empty State */
-      <div className="w-full text-center py-12 text-white/20 text-xs uppercase tracking-widest font-mono">
-        No neighborhood registries cataloged yet
+        <span className="text-[10px] uppercase font-black tracking-widest text-brand-cobalt bg-brand-cobalt/10 border border-brand-cobalt/20 px-2.5 py-1 rounded-md">
+          Premium Tier
+        </span>
       </div>
-    ) : (
-      liveNeighborhoods.map((loc) => (
-        <div 
-          key={loc.id} 
-          onClick={() => {
-            setSearchLocation(loc.name);
-            executeSearch(null, loc.name);
-          }}
-          className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-white/10 shadow-premium"
-        >
-          <img 
-            src={loc.image} 
-            alt={`${loc.name} District View`} 
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/30 to-transparent"></div>
+
+      <div>
+        <p className="text-[10px] font-mono font-black text-brand-gold uppercase tracking-widest mb-1">
+          Browse Collection
+        </p>
+        <h2 className="text-4xl font-black tracking-tighter text-white uppercase leading-none mb-2">
+          Hotels
+        </h2>
+        <p className="text-xs text-white/60 font-medium leading-normal max-w-[200px]">
+          Explore elite five-star hotel portfolios and presidential suite configurations.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* =========================================================================
+      DYNAMIC NEIGHBORHOOD REGISTRIES LAYER
+     ========================================================================= */}
+  {isSearching ? (
+    /* World-Class Shimmer Loading Skeletons */
+    Array.from({ length: 4 }).map((_, i) => (
+      <div 
+        key={`skeleton-loc-${i}`}
+        className="relative w-[280px] h-[360px] shrink-0 bg-white/[0.03] border border-white/5 rounded-3xl animate-pulse flex flex-col justify-end p-6"
+      >
+        <div className="h-6 w-2/3 bg-white/10 rounded-md mb-2" />
+        <div className="h-4 w-1/3 bg-white/5 rounded-md" />
+      </div>
+    ))
+  ) : !liveNeighborhoods || liveNeighborhoods.length === 0 ? (
+    /* Minimalist Luxury Empty State */
+    <div className="w-full flex items-center justify-center py-12 text-white/20 text-xs uppercase tracking-widest font-mono">
+      No neighborhood registries cataloged yet
+    </div>
+  ) : (
+    liveNeighborhoods.map((loc) => (
+      <div 
+        key={loc.id} 
+        onClick={() => {
+          setSearchLocation(loc.name);
+          executeSearch(null, loc.name);
+        }}
+        className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-white/10 shadow-premium"
+      >
+        <img 
+          src={loc.image} 
+          alt={`${loc.name} District View`} 
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/30 to-transparent"></div>
+        
+        <div className="absolute bottom-6 left-6 right-6 z-10">
+          <h3 className="text-xl font-display font-bold text-white mb-1 tracking-tight">{loc.name}</h3>
           
-          <div className="absolute bottom-6 left-6 right-6 z-10">
-            <h3 className="text-xl font-display font-bold text-white mb-1 tracking-tight">{loc.name}</h3>
-            
-            {/* Live Counter Pill */}
-            <div className="inline-flex items-center gap-1.5 bg-brand-midnight/60 backdrop-blur-md border border-white/5 px-2.5 py-1 rounded-md mt-1">
-              <span className="w-1 h-1 rounded-full bg-brand-gold animate-pulse" />
-              <p className="text-brand-gold text-[10px] font-mono font-bold tracking-widest uppercase">
-                {loc.count}
-              </p>
-            </div>
+          {/* Live Counter Pill */}
+          <div className="inline-flex items-center gap-1.5 bg-brand-midnight/60 backdrop-blur-md border border-white/5 px-2.5 py-1 rounded-md mt-1">
+            <span className="w-1 h-1 rounded-full bg-brand-gold animate-pulse" />
+            <p className="text-brand-gold text-[10px] font-mono font-bold tracking-widest uppercase">
+              {loc.count}
+            </p>
           </div>
         </div>
-      ))
-    )}
-  </div>
+      </div>
+    ))
+  )}
+</div>
 </div>
 
       {/* =======================================================================

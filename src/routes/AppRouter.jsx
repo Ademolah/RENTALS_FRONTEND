@@ -18,6 +18,7 @@ import { ContactUs } from '../pages/ContactUs';
 import { AboutUs } from '../pages/AboutUs';
 import { HotelAdminDashboard } from '../pages/hotel/HotelDashboard'
 import { HotelUpload } from '../pages/hotel/HotelUpload';
+import { HotelExplorerGrid } from '../pages/hotel/HotelExplorer';
 
 
 
@@ -50,6 +51,7 @@ export const AppRouter = () => {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/hotels-page" element={<HotelExplorerGrid />} />
           <Route path="/agent/accept-invite" element={<AcceptInvite />} />
         </Route>
 
