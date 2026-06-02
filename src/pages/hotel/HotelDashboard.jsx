@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiClient } from '../../services/apiClient';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export const HotelAdminDashboard = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export const HotelAdminDashboard = () => {
   const [hotelData, setHotelData] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
+  const {  logout } = useAuthStore();
 
   const tokenBg = darkMode 
   ? "bg-black text-white selection:bg-brand-cobalt selection:text-white" 
@@ -93,10 +95,9 @@ const tokenBtnSecondary = darkMode
   // =========================================================================
   // ACTION HANDLERS
   // =========================================================================
-  const handleLogout = () => {
-    // Clear tokens, context, etc.
-    toast.success("Securely disconnected from institutional matrix.");
-    navigate('/login');
+ const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const handleUploadNav = () => {

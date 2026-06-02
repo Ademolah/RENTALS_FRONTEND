@@ -9,6 +9,26 @@ export const HotelUpload = () => {
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
+  const NIGERIAN_STATES = [
+  "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
+  "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT (Abuja)", "Gombe", 
+  "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", 
+  "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", 
+  "Taraba", "Yobe", "Zamfara"
+];
+
+
+const ROOM_CATEGORIES = [
+  "Standard Room",
+  "Deluxe Suite",
+  "Executive Suite",
+  "Premium Suite",
+  "Business Suite",
+  "Presidential Suite",
+  "Penthouse Suite",
+  "Royal Suite"
+];
+
   const tokenBg = darkMode 
   ? "bg-black text-white selection:bg-brand-cobalt selection:text-white" 
   : "bg-slate-50 text-slate-900 selection:bg-brand-cobalt selection:text-white";
@@ -247,14 +267,34 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
                 </select>
               </div>
               <div className="space-y-1">
-                <label className={`text-xs uppercase transition-colors ${tokenLabel}`}>Regional State Mapping</label>
-                <input 
-                  type="text" name="state" required placeholder="Lagos"
-                  value={formData.state} onChange={handleInputChange}
-                  className={`w-full border rounded-xl px-4 py-3 text-sm font-medium opacity-60 cursor-not-allowed transition-all ${tokenInput}`}
-                  readOnly
-                />
+              <label className={`text-xs uppercase transition-colors ${tokenLabel}`}>Regional State Mapping</label>
+              <div className="relative flex items-center">
+                <select 
+                  name="state" 
+                  required
+                  value={formData.state} 
+                  onChange={handleInputChange}
+                  className={`w-full border rounded-xl px-4 py-3 text-sm font-medium transition-all appearance-none outline-none focus:ring-2 focus:ring-brand-cobalt/20 cursor-pointer ${tokenInput}`}
+                >
+                  {NIGERIAN_STATES.map((stateName) => (
+                    <option 
+                      key={stateName} 
+                      value={stateName} 
+                      className="bg-zinc-950 text-white dark:bg-zinc-950 dark:text-white light:bg-white light:text-slate-900"
+                    >
+                      {stateName}
+                    </option>
+                  ))}
+                </select>
+                
+                {/* Premium drop positioning asset overlay arrow layout */}
+                <div className="pointer-events-none absolute right-4 flex items-center opacity-40">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </div>
+            </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -306,13 +346,36 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
                 <div key={index} className={`grid grid-cols-1 sm:grid-cols-12 gap-3 border p-4 rounded-2xl relative group/row items-end transition-colors ${tokenInnerRow}`}>
                   
                   <div className="sm:col-span-5 space-y-1">
-                    <label className={`text-[10px] uppercase transition-colors ${tokenTextRowLabel}`}>Suite Category Tag</label>
-                    <input 
-                      type="text" required placeholder="Presidential Suite"
-                      value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)}
-                      className={`w-full rounded-xl px-3 py-2.5 text-sm font-medium outline-none border transition-all ${tokenInput}`}
-                    />
+                  <label className={`text-[10px] uppercase transition-colors ${tokenTextRowLabel}`}>Suite Category Tag</label>
+                  <div className="relative flex items-center">
+                    <select 
+                      required
+                      value={room.name} 
+                      onChange={(e) => handleRoomChange(index, 'name', e.target.value)}
+                      className={`w-full rounded-xl px-3 py-2.5 text-sm font-medium outline-none border transition-all appearance-none cursor-pointer focus:ring-2 focus:ring-brand-cobalt/20 ${tokenInput}`}
+                    >
+                      {/* Fallback default prompt context option if room.name is empty */}
+                      {!room.name && <option value="">Select Suite Category</option>}
+                      
+                      {ROOM_CATEGORIES.map((category) => (
+                        <option 
+                          key={category} 
+                          value={category}
+                          className="bg-zinc-950 text-white dark:bg-zinc-950 dark:text-white light:bg-white light:text-slate-900"
+                        >
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Premium alignment drop arrow overlay */}
+                    <div className="pointer-events-none absolute right-3 flex items-center opacity-40">
+                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
+</div>
 
                   <div className="sm:col-span-4 space-y-1">
                     <label className={`text-[10px] uppercase transition-colors ${tokenTextRowLabel}`}>Nightly Pricing Outlay (₦)</label>

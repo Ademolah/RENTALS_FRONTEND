@@ -2,6 +2,7 @@
 import { Star, MapPin, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ReservationModal } from './HotelReservation';
 import {useState} from 'react';
+import { HotelCardCarousel } from './HotelCardCarousel';
 
 export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
 
@@ -38,32 +39,32 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
           </p>
         </div>
 
-        {/* Structured Row Pipeline (Inspired by Booking.com Layout) */}
-        <div className="space-y-4">
-          {hotels?.map((hotel) => {
-            // Compute minimum base rate straight from the room variants map array matrix
-            const baseRate = hotel.roomTypes && hotel.roomTypes.length > 0 
-              ? Math.min(...hotel.roomTypes.map(r => Number(r.pricePerNight || 0))) 
-              : 0;
+       {/* Structured Row Pipeline (Inspired by Booking.com Layout) */}
+<div className="space-y-4">
+  {hotels?.map((hotel) => {
+    // Compute minimum base rate straight from the room variants map array matrix
+    const baseRate = hotel.roomTypes && hotel.roomTypes.length > 0 
+      ? Math.min(...hotel.roomTypes.map(r => Number(r.pricePerNight || 0))) 
+      : 0;
 
-            return (
-              <div 
-                key={hotel._id}
-                className={`border rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-0 transition-all duration-300 group ${
-                  darkMode ? "bg-white/[0.02] border-white/5 hover:border-white/10" : "bg-white border-slate-200/60 hover:shadow-xl shadow-slate-100"
-                }`}
-              >
-                {/* Column 1: Multi-Media Frame (md:span-4) */}
-                <div className="md:col-span-4 h-56 md:h-full min-h-[220px] relative overflow-hidden bg-zinc-900">
-                  <img 
-                    src={hotel.mediaUrls?.[0] || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80"} 
-                    alt={hotel.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
-                  <div className="absolute top-4 left-4 bg-brand-midnight/80 backdrop-blur-md border border-white/10 text-brand-gold px-2 py-0.5 rounded-md flex items-center gap-1 text-[10px] font-bold font-mono">
-                    <Shield size={10} /> Tier Verified
-                  </div>
-                </div>
+    return (
+      <div 
+        key={hotel._id}
+        className={`border rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-0 transition-all duration-300 group ${
+          darkMode ? "bg-white/[0.02] border-white/5 hover:border-white/10" : "bg-white border-slate-200/60 hover:shadow-xl shadow-slate-100"
+        }`}
+      >
+        {/* Column 1: Multi-Media Frame (md:span-4) */}
+        <div className="md:col-span-4 h-56 md:h-full min-h-[220px] relative overflow-hidden bg-zinc-900">
+          
+          {/* 🟢 Surgical Swap: Replaced old <img> with your modular Carousel Component */}
+          <HotelCardCarousel mediaUrls={hotel.mediaUrls} title={hotel.title} />
+          
+          {/* Premium Verification Badge with explicit z-index to stack correctly above the slides */}
+          <div className="absolute top-4 left-4 bg-brand-midnight/80 backdrop-blur-md border border-white/10 text-brand-gold px-2 py-0.5 rounded-md flex items-center gap-1 text-[10px] font-bold font-mono z-10">
+            <Shield size={10} /> Tier Verified
+          </div>
+        </div>
 
                 {/* Column 2: Structural Meta Layer Details (md:span-5) */}
                 <div className={`md:col-span-5 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r ${
