@@ -19,6 +19,7 @@ import { AboutUs } from '../pages/AboutUs';
 import { HotelAdminDashboard } from '../pages/hotel/HotelDashboard'
 import { HotelUpload } from '../pages/hotel/HotelUpload';
 import { HotelExplorerGrid } from '../pages/hotel/HotelExplorer';
+import { ReservationModal } from '../pages/hotel/HotelReservation';
 
 
 
@@ -51,6 +52,7 @@ export const AppRouter = () => {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reservation" element={<ReservationModal />} />
           <Route path="/hotels-page" element={<HotelExplorerGrid />} />
           <Route path="/agent/accept-invite" element={<AcceptInvite />} />
         </Route>

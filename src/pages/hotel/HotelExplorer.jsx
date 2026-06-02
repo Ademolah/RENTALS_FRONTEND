@@ -1,7 +1,14 @@
 
 import { Star, MapPin, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ReservationModal } from './HotelReservation';
+import {useState} from 'react';
 
 export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
+
+  // Tracks which hotel asset is actively opening the modal window
+  const [activeHotel, setActiveHotel] = useState(null);
+
+
   return (
     <div className={`min-h-screen px-4 py-8 md:px-10 transition-colors duration-300 ${
       darkMode ? "bg-black text-white" : "bg-slate-50 text-slate-900"
@@ -126,9 +133,12 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
                     </p>
                   </div>
 
-                  <button className="w-full mt-4 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3 px-4 rounded-xl text-xs tracking-wider uppercase transition-all shadow-lg shadow-brand-cobalt/10 flex items-center justify-center gap-1.5 group/btn cursor-pointer">
-                    Examine Suites <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                  </button>
+                  <button 
+                  onClick={() => setActiveHotel(hotel)} // 🟢 Sets the current hotel into state to trigger the pop-up
+                  className="w-full mt-4 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3 px-4 rounded-xl text-xs tracking-wider uppercase transition-all shadow-lg shadow-brand-cobalt/10 flex items-center justify-center gap-1.5 group/btn cursor-pointer"
+                >
+                  Make Reservation <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                </button>
                 </div>
 
               </div>
@@ -137,6 +147,15 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
         </div>
 
       </div>
+
+      <ReservationModal 
+        isOpen={activeHotel !== null}
+        onClose={() => setActiveHotel(null)} // Wipes state to close the window
+        hotel={activeHotel}
+        // Safely passes the first room configuration variant array profile to satisfy metrics mapping
+        selectedRoom={activeHotel?.roomTypes?.[0] || { pricePerNight: 0 }}
+        darkMode={darkMode}
+      />
     </div>
   );
 }

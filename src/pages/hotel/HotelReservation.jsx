@@ -1,0 +1,269 @@
+import  { useState, } from 'react';
+import { X, Calendar, User, Mail, Phone, MessageSquare, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { apiClient } from '../../services/apiClient'
+import toast from 'react-hot-toast'
+
+export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMode = true }) => {
+  const [formData, setFormData] = useState({
+    guestName: '',
+    guestEmail: '',
+    guestPhone: '',
+    checkInDate: '',
+    checkOutDate: '',
+    specialRequests: ''
+  });
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // 🟢 STEP 1: Halt execution immediately if modal is inactive or data is missing
+  if (!isOpen || !hotel || !selectedRoom) return null;
+
+  // 🟢 STEP 2: Now it is 100% safe to compute derived pricing metrics
+  let nights = 0;
+  let total = 0;
+
+  if (formData.checkInDate && formData.checkOutDate) {
+    const checkIn = new Date(formData.checkInDate);
+    const checkOut = new Date(formData.checkOutDate);
+    
+    if (checkOut > checkIn) {
+      const timeDelta = Math.abs(checkOut.getTime() - checkIn.getTime());
+      nights = Math.ceil(timeDelta / (1000 * 60 * 60 * 24));
+      total = nights * (selectedRoom.pricePerNight || 0);
+    }
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmitPipeline = async (e) => {
+    e.preventDefault();
+    if (nights === 0) {
+      setErrorMsg('Invalid timeline: Check-out date must succeed check-in.');
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      // 🟢 Swapped to unified apiClient architecture
+      const response = await apiClient.post('/reservations', {
+        hotelId: hotel._id,
+        roomTypeId: selectedRoom._id || selectedRoom.id,
+        ...formData
+      });
+
+      // Axios unpacks response payloads directly into the .data property
+      const result = response.data;
+
+      if (result.success) {
+        setIsSuccess(true);
+        toast.success('Reservation Made Successfully!');
+      } else {
+        setErrorMsg(result.message || 'Transmission pipeline execution failed.');
+      }
+    } catch (err) {
+      // Unwraps custom backend error structures seamlessly (e.g. 404 validation messages)
+      const serverErrorMsg = err.response?.data?.message;
+      setErrorMsg(serverErrorMsg || 'Unable to connect to reservations server gateway.');
+      console.warn('🚨 [Reservation Pipeline Failure]:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
+      {/* Cinematic Glass Backdrop Blur */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+
+      {/* Main Modal Surface */}
+      <div className={`relative w-full max-w-2xl rounded-3xl overflow-hidden border shadow-2xl transition-all duration-300 max-h-[90vh] flex flex-col ${
+        darkMode ? "bg-zinc-950 border-white/5 text-white" : "bg-white border-slate-200 text-slate-900"
+      }`}>
+        
+        {/* Absolute Close Control Button */}
+        <button 
+          onClick={onClose}
+          className={`absolute top-5 right-5 p-2 rounded-full border transition-colors z-10 ${
+            darkMode ? "bg-white/5 border-white/10 hover:bg-white/10 text-white/70" : "bg-slate-100 border-slate-200 hover:bg-slate-200 text-slate-600"
+          }`}
+        >
+          <X size={16} />
+        </button>
+
+        {/* SUCCESS OVERLAY STATE */}
+        {isSuccess ? (
+          <div className="p-8 md:p-12 flex flex-col items-center justify-center text-center space-y-4 my-auto animate-fade-in">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <CheckCircle2 size={32} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-black uppercase tracking-tight">Reservation Secured</h3>
+              <p className={`text-xs max-w-sm ${darkMode ? "text-white/40" : "text-slate-500"}`}>
+                Your lodging request for the <span className="font-bold text-brand-cobalt">{selectedRoom.name}</span> at <span className="font-bold">{hotel.title}</span> has been committed to the concierge dashboard ledger.
+              </p>
+            </div>
+            <button 
+              onClick={onClose}
+              className="mt-4 px-6 py-2.5 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors"
+            >
+              Acknowledge & Close
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Header Content Block */}
+            <div className={`p-6 md:p-8 border-b shrink-0 ${darkMode ? "border-white/5 bg-white/[0.01]" : "border-slate-100 bg-slate-50/50"}`}>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded border border-brand-gold/20">
+                Secure Booking
+              </span>
+              <h2 className="text-xl font-black tracking-tight uppercase mt-2">{hotel.title}</h2>
+              <p className={`text-xs mt-0.5 ${darkMode ? "text-white/40" : "text-slate-500"}`}>
+                Allocating Architecture Suite: <span className="font-bold text-brand-cobalt">{selectedRoom.name}</span> — ₦{selectedRoom.pricePerNight?.toLocaleString()}/night
+              </p>
+            </div>
+
+            {/* Main Form Area */}
+            <form onSubmit={handleSubmitPipeline} className="p-6 md:p-8 overflow-y-auto space-y-6 flex-1">
+              {errorMsg && (
+                <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                  {errorMsg}
+                </div>
+              )}
+
+              {/* Guest Personal Data Array */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className={`text-[10px] uppercase font-mono tracking-wider font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>Guest Full Name</label>
+                  <div className="relative">
+                    <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input 
+                      type="text" required name="guestName" value={formData.guestName} onChange={handleInputChange}
+                      placeholder="e.g. Alhaji Kunle Adeleke"
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none transition-all ${
+                        darkMode ? "bg-white/5 border-white/5 focus:border-white/20 text-white" : "bg-slate-50 border-slate-200 focus:border-slate-400 text-slate-900"
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={`text-[10px] uppercase font-mono tracking-wider font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>Contact Phone Number</label>
+                  <div className="relative">
+                    <Phone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input 
+                      type="tel" required name="guestPhone" value={formData.guestPhone} onChange={handleInputChange}
+                      placeholder="e.g. +234 803 999 8888"
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none transition-all ${
+                        darkMode ? "bg-white/5 border-white/5 focus:border-white/20 text-white" : "bg-slate-50 border-slate-200 focus:border-slate-400 text-slate-900"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className={`text-[10px] uppercase font-mono tracking-wider font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>Email Document Delivery Address</label>
+                <div className="relative">
+                  <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input 
+                    type="email" required name="guestEmail" value={formData.guestEmail} onChange={handleInputChange}
+                    placeholder="name@domain.com"
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none transition-all ${
+                      darkMode ? "bg-white/5 border-white/5 focus:border-white/20 text-white" : "bg-slate-50 border-slate-200 focus:border-slate-400 text-slate-900"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Check In / Out Timeline Matrices */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className={`text-[10px] uppercase font-mono tracking-wider font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>Check-In Arrival Date</label>
+                  <div className="relative">
+                    <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input 
+                      type="date" required name="checkInDate" value={formData.checkInDate} onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none transition-all ${
+                        darkMode ? "bg-white/5 border-white/5 focus:border-white/20 text-white [color-scheme:dark]" : "bg-slate-50 border-slate-200 focus:border-slate-400 text-slate-900"
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={`text-[10px] uppercase font-mono tracking-wider font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>Check-Out Departure Date</label>
+                  <div className="relative">
+                    <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input 
+                      type="date" required name="checkOutDate" value={formData.checkOutDate} onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none transition-all ${
+                        darkMode ? "bg-white/5 border-white/5 focus:border-white/20 text-white [color-scheme:dark]" : "bg-slate-50 border-slate-200 focus:border-slate-400 text-slate-900"
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Special Logistics Demands */}
+              <div className="space-y-1.5">
+                <label className={`text-[10px] uppercase font-mono tracking-wider font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>Special Provisions / Concierge Notes</label>
+                <div className="relative">
+                  <MessageSquare size={14} className="absolute left-3.5 top-3 text-slate-400" />
+                  <textarea 
+                    name="specialRequests" rows={3} value={formData.specialRequests} onChange={handleInputChange}
+                    placeholder="Specify physical suite placement adjustments, airport shuttle synchronization, or dietary parameters..."
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-medium focus:outline-none transition-all resize-none ${
+                      darkMode ? "bg-white/5 border-white/5 focus:border-white/20 text-white" : "bg-slate-50 border-slate-200 focus:border-slate-400 text-slate-900"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Premium Live Price Dynamic Output Ticker */}
+              {nights > 0 && (
+                <div className={`p-4 rounded-2xl flex items-center justify-between border border-dashed transition-all ${
+                  darkMode ? "bg-brand-cobalt/5 border-brand-cobalt/20" : "bg-slate-50 border-slate-200"
+                }`}>
+                  <div className="text-left">
+                    <p className="text-[11px] uppercase tracking-wide font-mono font-bold text-brand-cobalt">Financial Computation</p>
+                    <p className={`text-[10px] ${darkMode ? "text-white/40" : "text-slate-400"}`}>
+                      ₦{selectedRoom.pricePerNight?.toLocaleString()} × {nights} luxury nights
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-[10px] uppercase font-bold ${darkMode ? "text-white/30" : "text-slate-400"}`}>Gross Estimate</p>
+                    <h4 className="text-lg font-mono font-black text-brand-cobalt">₦{total?.toLocaleString()}</h4>
+                  </div>
+                </div>
+              )}
+
+              {/* Submission Action Executor */}
+              <button 
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-brand-cobalt hover:bg-brand-cobalt/90 disabled:opacity-50 text-white font-bold py-3 px-4 rounded-xl text-xs tracking-wider uppercase transition-all shadow-lg shadow-brand-cobalt/10 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Verifying Allocation...
+                  </>
+                ) : (
+                  <>
+                    Make Booking <ArrowRight size={14} />
+                  </>
+                )}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
