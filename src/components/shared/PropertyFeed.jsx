@@ -29,6 +29,46 @@ export const PropertyFeed = () => {
   const [liveHotels, setLiveHotels] = useState([]);
   const [isLoadingHotels, setIsLoadingHotels] = useState(false);
 
+  const HERO_PHRASES = [
+  { text: "Rent.", type: "rentals", metric: "4,200+ Premium Listings Live" },
+  { text: "Shortlet.", type: "shortlets", metric: "1,850+ Verified Stays Available" },
+  { text: "Purchase.", type: "acquisitions", metric: "₦3.5B+ Handpicked Asset Portfolio" }
+];
+
+const [phraseIdx, setPhraseIdx] = useState(0);
+  const [displayedText, setDisplayedText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    const currentPhrase = HERO_PHRASES[phraseIdx].text;
+    
+    // Smooth timing variations for writing vs backspacing
+    const typingSpeed = isDeleting ? 40 : 100;
+
+    if (!isDeleting) {
+      timer = setTimeout(() => {
+        setDisplayedText(currentPhrase.substring(0, displayedText.length + 1));
+      }, typingSpeed);
+    } else {
+      timer = setTimeout(() => {
+        setDisplayedText(currentPhrase.substring(0, displayedText.length - 1));
+      }, typingSpeed);
+    }
+
+    // Node state transition checkpoints
+    if (!isDeleting && displayedText === currentPhrase) {
+      timer = setTimeout(() => setIsDeleting(true), 2500); // Hold word on screen
+    } else if (isDeleting && displayedText === '') {
+      setIsDeleting(false);
+      setPhraseIdx((prev) => (prev + 1) % HERO_PHRASES.length); // Advance to next phrase
+    }
+
+    return () => clearTimeout(timer);
+  }, [displayedText, isDeleting, phraseIdx]);
+
+  const activeType = HERO_PHRASES[phraseIdx].type;
+
   // =======================================================================
   // 1. CENTRAL DATABASE LOOKUP ENGINE (UNIFIED & SINGLE-SOURCE)
   // =======================================================================
@@ -257,19 +297,55 @@ export const PropertyFeed = () => {
   {/* Main Typographic Column */}
   <div className="max-w-2xl relative z-10 flex-1 text-center md:text-left">
     
-    {/* High-Impact Headline with Premium Typography */}
-    <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black tracking-tight leading-[1.1] mb-6 text-white">
-      Rent, Shortlet, <br className="hidden md:block"/>
-      <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cobalt via-white to-brand-gold">
-        Or Purchase.
-      </span>
-    </h1>
-    
-    {/* Clean, targeted explanation directly guiding the user's focus */}
-    <p className="text-brand-slate/80 text-base md:text-xl leading-relaxed max-w-xl mx-auto md:mx-0 font-medium">
-      The exclusive marketplace for premium <span className="text-white font-bold">rentals</span>, bespoke <span className="text-white font-bold">shortlets</span>, and luxury <span className="text-white font-bold">acquisitions</span> curated specifically for your lifestyle.
-    </p>
-  </div>
+    {/* High-Impact Headline with Premium Self-Writing Engine */}
+      <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black tracking-tight leading-[1.1] mb-6 text-white min-h-[165px] md:min-h-[auto]">
+        Rent, Shortlet, <br className="hidden md:block"/>
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cobalt via-indigo-200 to-brand-gold relative inline-block">
+          {displayedText}
+          {/* Sleek Minimalist Terminal Blinking Cursor */}
+          <span className="absolute -right-2 md:-right-4 top-0 text-white animate-pulse font-light">|</span>
+        </span>
+      </h1>
+      
+      {/* Clean, targeted explanation directly guiding focus + Contextual Wonder */}
+      <div className="space-y-4">
+        <p className="text-brand-slate/70 text-base md:text-xl leading-relaxed max-w-xl font-medium transition-all duration-500">
+          The exclusive marketplace for premium{' '}
+          <span className={`transition-all duration-300 px-1 rounded-md ${
+            activeType === 'rentals' ? 'text-white font-black bg-brand-cobalt/10 shadow-sm shadow-brand-cobalt/5' : 'text-brand-slate/90'
+          }`}>
+            rentals
+          </span>
+          , bespoke{' '}
+          <span className={`transition-all duration-300 px-1 rounded-md ${
+            activeType === 'shortlets' ? 'text-brand-gold font-black bg-brand-gold/10 shadow-sm shadow-brand-gold/5' : 'text-brand-slate/90'
+          }`}>
+            shortlets
+          </span>
+          , and luxury{' '}
+          <span className={`transition-all duration-300 px-1 rounded-md ${
+            activeType === 'acquisitions' ? 'text-white font-black bg-white/10' : 'text-brand-slate/90'
+          }`}>
+            acquisitions
+          </span>{' '}
+          curated specifically for your lifestyle.
+        </p>
+
+        {/* 🟢 The "Wonder" Asset: Live Contextual Micro-Feed Data Ticker */}
+        <div className="h-6 overflow-hidden relative">
+          <div 
+            key={phraseIdx} 
+            className="flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-emerald-400 uppercase animate-fade-in-up"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            {HERO_PHRASES[phraseIdx].metric}
+          </div>
+        </div>
+      </div>
+      </div>
 
   {/* Right Side Visual/Metrics Pillar (Clean grid layout, zero margins shifting out of bounds) */}
   <div className="relative z-10 hidden md:flex flex-col gap-4 w-full max-w-xs shrink-0">
@@ -405,7 +481,7 @@ export const PropertyFeed = () => {
           <Building size={20} />
         </div>
         <span className="text-[10px] uppercase font-black tracking-widest text-brand-cobalt bg-brand-cobalt/10 border border-brand-cobalt/20 px-2.5 py-1 rounded-md">
-          Premium Tier
+          Premium Hotels
         </span>
       </div>
 

@@ -1,8 +1,8 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Building, LogOut, Plus, CalendarDays, TrendingUp, 
-  Users,  Clock, CheckCircle2, MoreHorizontal, MapPin, Moon, Sun
+  Users, Clock, CheckCircle2, MoreHorizontal, MapPin, Moon, Sun, XCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiClient } from '../../services/apiClient';
@@ -12,79 +12,124 @@ export const HotelAdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [hotelData, setHotelData] = useState(null);
-  const [bookings, setBookings] = useState([]);
+const [bookings, setBookings] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
-  const {  logout } = useAuthStore();
+  const { logout } = useAuthStore();
+
+  // Near your other useState hooks:
+const [processingId, setProcessingId] = useState(null); // Tracks which row is running an API call
+const [processingAction, setProcessingAction] = useState(null); // Tracks 'confirm', 'reject', or 'delete'
 
   const tokenBg = darkMode 
   ? "bg-black text-white selection:bg-brand-cobalt selection:text-white" 
   : "bg-slate-50 text-slate-900 selection:bg-brand-cobalt selection:text-white";
 
-const tokenNav = darkMode 
+  const tokenNav = darkMode 
   ? "bg-black/80 border-white/5" 
   : "bg-white/80 border-slate-200/80 shadow-sm shadow-slate-100/40";
 
-const tokenTextTitle = darkMode ? "text-white" : "text-slate-900";
-const tokenTextMuted = darkMode ? "text-white/40" : "text-slate-500";
-const tokenBorder = darkMode ? "border-white/5" : "border-slate-200/80";
+  const tokenTextTitle = darkMode ? "text-white" : "text-slate-900";
+  const tokenTextMuted = darkMode ? "text-white/40" : "text-slate-500";
+  const tokenBorder = darkMode ? "border-white/5" : "border-slate-200/80";
 
-const tokenCard = darkMode 
+  const tokenCard = darkMode 
   ? "bg-white/[0.02] border-white/5 backdrop-blur-md" 
   : "bg-white border-slate-200/80 shadow-xl shadow-slate-200/30";
 
-const tokenTableHead = darkMode 
+  const tokenTableHead = darkMode 
   ? "bg-white/[0.02] text-white/40 border-white/5" 
   : "bg-slate-100/80 text-slate-500 border-slate-200";
 
-const tokenTableRowBorder = darkMode ? "divide-white/5" : "divide-slate-100";
-const tokenTableRowHover = darkMode ? "hover:bg-white/[0.02]" : "hover:bg-slate-50/80";
+  const tokenTableRowBorder = darkMode ? "divide-white/5" : "divide-slate-100";
+  const tokenTableRowHover = darkMode ? "hover:bg-white/[0.02]" : "hover:bg-slate-50/80";
 
-const tokenRowTextMain = darkMode ? "text-white group-hover:text-brand-cobalt" : "text-slate-900 group-hover:text-brand-cobalt";
-const tokenSuiteTag = darkMode ? "bg-white/5 border-white/10 text-white/80" : "bg-slate-100 border-slate-200 text-slate-700 font-semibold";
-const tokenDateText = darkMode ? "text-white/70" : "text-slate-600";
-const tokenAmountText = darkMode ? "text-white/90" : "text-slate-900";
+  const tokenRowTextMain = darkMode ? "text-white group-hover:text-brand-cobalt" : "text-slate-900 group-hover:text-brand-cobalt";
+  const tokenSuiteTag = darkMode ? "bg-white/5 border-white/10 text-white/80" : "bg-slate-100 border-slate-200 text-slate-700 font-semibold";
+  const tokenDateText = darkMode ? "text-white/70" : "text-slate-600";
+  const tokenAmountText = darkMode ? "text-emerald-400" : "text-emerald-700";
 
-const tokenBtnSecondary = darkMode
+  const tokenBtnSecondary = darkMode
   ? "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
   : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm";
 
   // =========================================================================
-  // DATA INGESTION ENGINE (Simulated API Fetch)
+  // LIVE DATA INGESTION ENGINE
   // =========================================================================
   useEffect(() => {
     const fetchDashboardMatrix = async () => {
       try {
-        // 1. ACTUALLY USE apiClient to fetch the real hotel you just uploaded!
+        // 1. Fetch the core Hotel Asset
         const res = await apiClient.get('/hotels'); 
-        
-        // Assuming your GET /hotels returns an array of hotels, we grab the first one
-        // Adjust the mapping based on exactly how your hotelController.searchHotels responds
         const fetchedHotel = res.data?.data?.hotels?.[0] || res.data?.data?.hotel || res.data?.[0];
 
-        // 2. Mix Real Hotel Data with Simulated Stats
-        setHotelData({
-          name: fetchedHotel?.title || "The George Hotel",
-          location: fetchedHotel ? `${fetchedHotel.locality}, ${fetchedHotel.state}` : "Ikoyi, Lagos",
-          stats: {
-            occupancy: "84%",
-            revenue: "₦12.4M",
-            activeGuests: 42,
-            pendingRequests: 5
+        if (!fetchedHotel) {
+          throw new Error("No hotel assets linked to this admin profile.");
+        }
+
+        // 2. Fetch the actual Reservations linked to this specific Hotel ID
+        const resvResponse = await apiClient.get(`/hotels/${fetchedHotel._id}/reservations`);
+        const liveBookings = resvResponse.data?.data?.reservations || [];
+
+        // --- 🟢 KPI CALCULATION ENGINE ---
+        const now = new Date();
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(now.getDate() - 7);
+
+        let activeGuestsCount = 0;
+        let weeklyRevenueSum = 0;
+        let pendingCount = 0;
+
+        liveBookings.forEach(booking => {
+          const checkIn = new Date(booking.checkInDate);
+          const checkOut = new Date(booking.checkOutDate);
+          const createdAt = new Date(booking.createdAt);
+
+          // 1. Pending Requests Matrix
+          if (booking.status === 'pending') {
+            pendingCount++;
+          }
+
+          // 2. Active Guests Matrix (Confirmed bookings currently in-house)
+          if (booking.status === 'confirmed' && now >= checkIn && now <= checkOut) {
+            activeGuestsCount++;
+          }
+
+          // 3. Weekly Revenue Matrix (Sum of valid bookings created in the last 7 days)
+          if (booking.status !== 'cancelled' && booking.status !== 'rejected' && createdAt >= sevenDaysAgo) {
+            weeklyRevenueSum += (Number(booking.totalAmount) || 0);
           }
         });
 
-        // 3. Simulated Bookings (Until we build BookHotel.jsx)
-        setBookings([
-          { id: 'RES-0091', guest: 'Alexander Wright', contact: '+234 801 234 5678', suite: 'Presidential Suite', checkIn: 'Today', status: 'Confirmed', amount: '₦450,000' },
-          { id: 'RES-0092', guest: 'Sarah Johnson', contact: 'sarah.j@corporate.com', suite: 'Deluxe Room', checkIn: 'Tomorrow', status: 'Pending', amount: '₦120,000' },
-          { id: 'RES-0093', guest: 'Chief Oluwaseun', contact: '+234 902 333 4444', suite: 'Executive Suite', checkIn: 'Jun 4, 2026', status: 'Confirmed', amount: '₦280,000' },
-          { id: 'RES-0094', guest: 'Michael Chen', contact: 'm.chen@logistics.net', suite: 'Standard Room', checkIn: 'Jun 5, 2026', status: 'Checked-Out', amount: '₦85,000' },
-        ]);
+        // Smart Currency Formatter (Converts 12400000 to "12.4M")
+        const formatRevenue = (amount) => {
+          if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
+          if (amount >= 1000) return `₦${(amount / 1000).toFixed(1)}k`;
+          return `₦${amount.toLocaleString()}`;
+        };
+
+        // 4. Occupancy Rate Calculation 
+        // IMPORTANT: Adjust 'totalCapacity' if you store available rooms in your schema (e.g., fetchedHotel.totalRooms)
+        const totalCapacity = fetchedHotel.totalRooms || 50; 
+        const occupancyRate = Math.min(Math.round((activeGuestsCount / totalCapacity) * 100), 100);
+
+        // --- 🟢 INJECT LIVE DATA INTO STATE ---
+        setHotelData({
+          name: fetchedHotel.title,
+          location: `${fetchedHotel.locality}, ${fetchedHotel.state}`,
+          stats: {
+            occupancy: `${occupancyRate}%`, 
+            revenue: formatRevenue(weeklyRevenueSum),
+            activeGuests: activeGuestsCount,  
+            pendingRequests: pendingCount
+          }
+        });
+
+        setBookings(liveBookings);
         
-        setLoading(false);
       } catch (error) {
-        console.error("Dashboard fetch error:", error);
-        toast.error("Failed to authenticate real-time dashboard feeds.");
+        console.warn("🚨 [Dashboard Feed Error]:", error);
+        toast.error(error.response?.data?.message || "Failed to sync real-time dashboard feeds.");
+      } finally {
         setLoading(false);
       }
     };
@@ -95,13 +140,113 @@ const tokenBtnSecondary = darkMode
   // =========================================================================
   // ACTION HANDLERS
   // =========================================================================
- const handleLogout = () => {
+  const handleLogout = () => {
     logout();
     navigate('/');
   };
 
   const handleUploadNav = () => {
-    navigate('/hotel-admin/upload'); // Maps to your new HotelUpload.jsx route
+    navigate('/hotel-admin/upload');
+  };
+
+ const handleConfirmReservation = async (reservationId) => {
+    setProcessingId(reservationId);
+    setProcessingAction('confirm');
+    try {
+      // Hits your reservation status update route
+      await apiClient.patch(`/hotels/${reservationId}/confirm`);
+      
+      toast.success("Reservation officially confirmed!");
+      
+      // Morph state in real-time
+      setBookings(prev => 
+        prev.map(b => b._id === reservationId ? { ...b, status: 'confirmed' } : b)
+      );
+      
+      // Re-trigger metric balancing dynamically
+      setHotelData(prev => {
+        const updatedBookings = bookings.map(b => b._id === reservationId ? { ...b, status: 'confirmed' } : b);
+        return recalculateMetrics(prev, updatedBookings);
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to confirm reservation.");
+    } finally {
+      setProcessingId(null);
+      setProcessingAction(null);
+    }
+  };
+
+  // 2. REJECT / CANCEL PIPELINE
+  const handleCancelReservation = async (reservationId) => {
+    if (!window.confirm("Are you sure you want to reject this reservation request?")) return;
+    
+    setProcessingId(reservationId);
+    setProcessingAction('reject');
+    try {
+      await apiClient.patch(`/hotels/${reservationId}/cancel`);
+      toast.success("Reservation request rejected.");
+      
+      setBookings(prev => 
+        prev.map(b => b._id === reservationId ? { ...b, status: 'cancelled' } : b)
+      );
+
+      setHotelData(prev => {
+        const updatedBookings = bookings.map(b => b._id === reservationId ? { ...b, status: 'cancelled' } : b);
+        return recalculateMetrics(prev, updatedBookings);
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to reject reservation.");
+    } finally {
+      setProcessingId(null);
+      setProcessingAction(null);
+    }
+  };
+
+  // 3. PURGE / DELETE PIPELINE (Only available for dead states)
+  const handleDeleteReservation = async (reservationId) => {
+    if (!window.confirm("Archiving this record will permanently remove it from the live feed. Proceed?")) return;
+    
+    setProcessingId(reservationId);
+    setProcessingAction('delete');
+    try {
+      await apiClient.delete(`/hotels/${reservationId}`);
+      toast.success("Record permanently archived.");
+      
+      // Completely slice out of local rendering matrix
+      setBookings(prev => prev.filter(b => b._id !== reservationId));
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to purge record.");
+    } finally {
+      setProcessingId(null);
+      setProcessingAction(null);
+    }
+  };
+
+  // Helper utility to keep your top KPI cards running perfectly in sync with button clicks!
+  const recalculateMetrics = (currentData, totalBookings) => {
+    const now = new Date();
+    let activeGuestsCount = 0;
+    let pendingCount = 0;
+
+    totalBookings.forEach(booking => {
+      const checkIn = new Date(booking.checkInDate);
+      const checkOut = new Date(booking.checkOutDate);
+      if (booking.status === 'pending') pendingCount++;
+      if (booking.status === 'confirmed' && now >= checkIn && now <= checkOut) activeGuestsCount++;
+    });
+
+    const totalCapacity = currentData.stats.totalCapacity || 50;
+    const occupancyRate = Math.min(Math.round((activeGuestsCount / totalCapacity) * 100), 100);
+
+    return {
+      ...currentData,
+      stats: {
+        ...currentData.stats,
+        pendingRequests: pendingCount,
+        activeGuests: activeGuestsCount,
+        occupancy: `${occupancyRate}%`
+      }
+    };
   };
 
   // =========================================================================
@@ -119,11 +264,9 @@ const tokenBtnSecondary = darkMode
   return (
     <div className={`min-h-screen pb-12 transition-colors duration-300 ${tokenBg}`}>
     
-    {/* 1. ELITE GLOBAL NAVIGATION BAR */}
     <nav className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-colors duration-300 ${tokenNav}`}>
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-8 py-4">
         
-        {/* Corporate Identity Branding */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-brand-cobalt/10 border border-brand-cobalt/20 rounded-xl flex items-center justify-center text-brand-cobalt shrink-0">
             <Building size={20} />
@@ -136,10 +279,7 @@ const tokenBtnSecondary = darkMode
           </div>
         </div>
 
-        {/* Action Triggers */}
         <div className="flex items-center gap-2.5">
-          
-          {/* Tactical Ambient Mode Toggle Switch */}
           <button
             type="button"
             onClick={() => setDarkMode(!darkMode)}
@@ -148,7 +288,6 @@ const tokenBtnSecondary = darkMode
                 ? "bg-white/5 border-white/10 text-yellow-400 hover:bg-white/10" 
                 : "bg-white border-slate-200 text-brand-midnight hover:bg-slate-100 shadow-sm"
             }`}
-            title={darkMode ? "Switch to Gallery Light Mode" : "Switch to Luxury Dark Mode"}
           >
             {darkMode ? <Sun size={15} /> : <Moon size={15} />}
           </button>
@@ -176,21 +315,17 @@ const tokenBtnSecondary = darkMode
 
     <main className="max-w-7xl mx-auto px-4 md:px-8 mt-8 space-y-8">
       
-      {/* Mobile Upload Fallback */}
       <button onClick={handleUploadNav} className="w-full md:hidden flex items-center justify-center gap-2 bg-brand-cobalt text-white px-4 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-cobalt/10">
         <Plus size={16} /> Upload New Property
       </button>
 
-      {/* 2. KPI TELEMETRY GRID */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Pass custom attributes or let child components adapt automatically via parent layout scope parameters */}
         <KPICard title="Current Occupancy" value={hotelData?.stats.occupancy} icon={<CalendarDays size={18} />} trend="+2.4%" isDark={darkMode} />
         <KPICard title="Weekly Revenue" value={hotelData?.stats.revenue} icon={<TrendingUp size={18} />} trend="+12%" isDark={darkMode} />
         <KPICard title="Active Guests" value={hotelData?.stats.activeGuests} icon={<Users size={18} />} isDark={darkMode} />
-        <KPICard title="Pending Bookings" value={hotelData?.stats.pendingRequests} icon={<Clock size={18} />} alert isDark={darkMode} />
+        <KPICard title="Pending Bookings" value={hotelData?.stats.pendingRequests} icon={<Clock size={18} />} alert={hotelData?.stats.pendingRequests > 0} isDark={darkMode} />
       </div>
 
-      {/* 3. CORE RESERVATION MATRIX */}
       <div className={`border rounded-3xl overflow-hidden transition-all duration-300 ${tokenCard}`}>
         <div className={`p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${tokenBorder}`}>
           <div>
@@ -203,46 +338,123 @@ const tokenBtnSecondary = darkMode
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className={`text-[10px] uppercase tracking-wider border-b transition-colors ${tokenTableHead}`}>
-                <th className="px-6 py-4 font-bold">Guest Details</th>
-                <th className="px-6 py-4 font-bold">Suite Config</th>
-                <th className="px-6 py-4 font-bold">Check-In</th>
-                <th className="px-6 py-4 font-bold">Pricing</th>
-                <th className="px-6 py-4 font-bold">Status</th>
-                <th className="px-6 py-4 text-right font-bold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className={`divide-y text-sm ${tokenTableRowBorder}`}>
-              {bookings.map((booking) => (
-                <tr key={booking.id} className={`transition-colors group ${tokenTableRowHover}`}>
-                  <td className="px-6 py-4">
-                    <div className={`font-bold transition-colors ${tokenRowTextMain}`}>{booking.guest}</div>
-                    <div className={`text-[11px] mt-0.5 transition-colors ${tokenTextMuted}`}>{booking.contact}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`border px-2.5 py-1 rounded-md text-xs font-medium transition-all ${tokenSuiteTag}`}>
-                      {booking.suite}
-                    </span>
-                  </td>
-                  <td className={`px-6 py-4 font-medium transition-colors ${tokenDateText}`}>{booking.checkIn}</td>
-                  <td className={`px-6 py-4 font-mono font-bold transition-colors ${tokenAmountText}`}>{booking.amount}</td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={booking.status} />
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className={`transition-colors p-2 rounded-lg border cursor-pointer ${tokenBtnSecondary}`}>
-                      <MoreHorizontal size={16} />
+  <table className="w-full text-left border-collapse">
+    <thead>
+      <tr className={`text-[10px] uppercase tracking-wider border-b transition-colors ${tokenTableHead}`}>
+        <th className="px-6 py-4 font-bold">Guest Details</th>
+        <th className="px-6 py-4 font-bold">Suite Config</th>
+        <th className="px-6 py-4 font-bold">Check-In</th>
+        <th className="px-6 py-4 font-bold">Pricing</th>
+        <th className="px-6 py-4 font-bold">Status</th>
+        <th className="px-6 py-4 text-right font-bold">Actions</th>
+      </tr>
+    </thead>
+    <tbody className={`divide-y text-sm ${tokenTableRowBorder}`}>
+      {bookings.length === 0 ? (
+        <tr>
+          <td colSpan="6" className={`text-center py-10 text-sm font-medium ${tokenTextMuted}`}>
+            No reservations found for this property yet.
+          </td>
+        </tr>
+      ) : (
+        bookings.map((booking) => (
+          <tr key={booking._id} className={`transition-colors group ${tokenTableRowHover}`}>
+            <td className="px-6 py-4">
+              <div className={`font-bold transition-colors ${tokenRowTextMain}`}>{booking.guestName}</div>
+              <div className={`text-[11px] mt-0.5 transition-colors ${tokenTextMuted}`}>
+                {booking.guestPhone} <span className="mx-1">•</span> {booking.guestEmail}
+              </div>
+            </td>
+            <td className="px-6 py-4">
+              <span className={`border px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${tokenSuiteTag}`}>
+                {booking.roomTypeName}
+              </span>
+            </td>
+            <td className={`px-6 py-4 font-medium transition-colors ${tokenDateText}`}>
+              {new Date(booking.checkInDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </td>
+            <td className={`px-6 py-4 font-mono font-bold transition-colors ${tokenAmountText}`}>
+              ₦{booking.totalAmount?.toLocaleString()}
+            </td>
+            <td className="px-6 py-4">
+              <StatusBadge status={booking.status} isDark={darkMode} />
+            </td>
+            <td className="px-6 py-4 text-right">
+              <div className="flex items-center justify-end gap-2">
+                
+                {/* ─── CASE A: PENDING STATUS (DUAL INTERACTION DECK) ─── */}
+                {booking.status === 'pending' && (
+                  <>
+                    {/* Approve / Accept Request */}
+                    <button
+                      onClick={() => handleConfirmReservation(booking._id)}
+                      disabled={processingId !== null}
+                      className={`transition-all px-3 py-1.5 rounded-lg text-[11px] uppercase tracking-wider font-bold flex items-center gap-1 cursor-pointer shadow-sm ${
+                        darkMode
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30"
+                          : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/10"
+                      } ${processingId === booking._id && processingAction === 'confirm' ? 'animate-pulse' : ''} ${
+                        processingId !== null ? 'opacity-40 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {processingId === booking._id && processingAction === 'confirm' ? '...' : 'Accept'}
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
+                    {/* Reject / Dismiss Request */}
+                    <button
+                      onClick={() => handleCancelReservation(booking._id)}
+                      disabled={processingId !== null}
+                      title="Reject Request"
+                      className={`transition-all p-1.5 rounded-lg border cursor-pointer ${
+                        darkMode
+                          ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
+                          : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                      } ${processingId !== null ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    >
+                      {processingId === booking._id && processingAction === 'reject' ? (
+                        <span className="text-[10px] px-1 font-bold">...</span>
+                      ) : (
+                        <XCircle size={15} />
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {/* ─── CASE B: TERMINATED STATES (DATA PURGE CONTROL) ─── */}
+                {(booking.status === 'cancelled' || booking.status === 'rejected' || booking.status === 'failed') && (
+                  <button
+                    onClick={() => handleDeleteReservation(booking._id)}
+                    disabled={processingId !== null}
+                    title="Purge Record Permanently"
+                    className={`transition-all px-2.5 py-1.5 rounded-lg border text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 cursor-pointer ${
+                      darkMode
+                        ? "bg-white/[0.02] border-white/5 text-white/40 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20"
+                        : "bg-white border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
+                    } ${processingId !== null ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  >
+                    {processingId === booking._id && processingAction === 'delete' ? 'Purging' : 'Purge'}
+                  </button>
+                )}
+
+                {/* ─── CASE C: ACTIVE / CONFIRMED MATRIX (OVERFLOW BACKUP) ─── */}
+                {booking.status === 'confirmed' && (
+                  <button 
+                    className={`transition-colors p-2 rounded-lg border cursor-pointer ${tokenBtnSecondary}`}
+                    title="Manage Confirmed Reservation"
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
+                )}
+
+              </div>
+            </td>
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+</div>
+</div>
     </main>
   </div>
   );
@@ -253,7 +465,6 @@ const tokenBtnSecondary = darkMode
 // =========================================================================
 
 function KPICard({ title, value, icon, trend, alert, isDark }) {
-  // Absolute explicit token evaluation based on the passed state
   const tokenCard = isDark 
     ? "bg-white/[0.02] border-white/5" 
     : "bg-white border-slate-200/80 shadow-xl shadow-slate-200/30";
@@ -285,22 +496,29 @@ function StatusBadge({ status, isDark }) {
     ? "bg-white/5 text-white/50 border-white/10" 
     : "bg-slate-100 text-slate-600 border-slate-200"; // Default / Checked-Out
   
-  if (status === 'Confirmed') {
+  if (status === 'confirmed') {
     style = isDark 
-      ? "bg-green-500/10 text-green-400 border-green-500/20" 
-      : "bg-green-50 text-green-700 border-green-200/80";
+      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+      : "bg-emerald-50 text-emerald-700 border-emerald-200/80";
   }
   
-  if (status === 'Pending') {
+  if (status === 'pending') {
     style = isDark 
       ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" 
       : "bg-yellow-50 text-yellow-700 border-yellow-200/80";
   }
 
+  if (status === 'cancelled' || status === 'rejected') {
+    style = isDark 
+      ? "bg-red-500/10 text-red-400 border-red-500/20" 
+      : "bg-red-50 text-red-700 border-red-200/80";
+  }
+
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border transition-all duration-300 ${style}`}>
-      {status === 'Confirmed' && <CheckCircle2 size={10} />}
-      {status === 'Pending' && <Clock size={10} />}
+      {status === 'confirmed' && <CheckCircle2 size={10} />}
+      {status === 'pending' && <Clock size={10} />}
+      {(status === 'cancelled' || status === 'rejected') && <XCircle size={10} />}
       {status}
     </span>
   );

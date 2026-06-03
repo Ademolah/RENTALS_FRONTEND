@@ -319,7 +319,7 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
             <div className="space-y-1">
               <label className={`text-xs uppercase transition-colors ${tokenLabel}`}>Hospitality Descriptive Overview</label>
               <textarea 
-                name="description" required rows={4} placeholder="Introduce your estate portfolio, highlighting signature hospitality spaces, security provisions, and elite culinary offerings..."
+                name="description" required rows={4} placeholder="Introduce your Hotel portfolio, highlighting signature hospitality spaces, security provisions, and elite culinary offerings..."
                 value={formData.description} onChange={handleInputChange}
                 className={`w-full rounded-xl px-4 py-3 outline-none border resize-none leading-relaxed transition-all text-sm font-medium ${tokenInput}`}
               />
