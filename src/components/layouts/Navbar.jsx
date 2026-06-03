@@ -63,13 +63,13 @@ export const Navbar = () => {
           {/* LEFT CLUSTER: Brand Identity & Public Core Navigation */}
           <div className="flex items-center gap-10">
             {/* Brand Logo */}
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-brand-cobalt flex items-center justify-center shadow-lg shadow-brand-cobalt/20 transition-transform group-hover:scale-105">
-                <span className="text-white font-bold font-display text-xl tracking-tighter">R</span>
-              </div>
-              <span className="text-white font-display font-bold text-xl tracking-wide">
-                Rentals<span className="text-brand-cobalt">.</span>
-              </span>
+            <Link to="/" className="flex items-center group">
+              <img 
+                src="/Rentals-Navbar.png" 
+                alt="Rentals Platform" 
+                className="h-7 w-auto sm:h-8 md:h-8.5 object-contain transition-transform duration-300 group-hover:scale-[1.02] select-none"
+                draggable="false"
+              />
             </Link>
 
             {/* Desktop Core Navigation Links */}

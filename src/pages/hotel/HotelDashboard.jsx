@@ -71,36 +71,40 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
         const liveBookings = resvResponse.data?.data?.reservations || [];
 
         // --- 🟢 KPI CALCULATION ENGINE ---
-        const now = new Date();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(now.getDate() - 7);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
 
         let activeGuestsCount = 0;
         let weeklyRevenueSum = 0;
         let pendingCount = 0;
 
         liveBookings.forEach(booking => {
-          const checkIn = new Date(booking.checkInDate);
-          const checkOut = new Date(booking.checkOutDate);
           const createdAt = new Date(booking.createdAt);
+          
+          // Defensive Programming: Force lowercase to avoid casing discrepancies
+          const currentStatus = booking.status?.toLowerCase() || '';
 
           // 1. Pending Requests Matrix
-          if (booking.status === 'pending') {
+          if (currentStatus === 'pending') {
             pendingCount++;
           }
 
-          // 2. Active Guests Matrix (Confirmed bookings currently in-house)
-          if (booking.status === 'confirmed' && now >= checkIn && now <= checkOut) {
+          // 2. Active Guests Matrix (Counts all confirmed reservations)
+          if (currentStatus === 'confirmed') {
             activeGuestsCount++;
           }
 
-          // 3. Weekly Revenue Matrix (Sum of valid bookings created in the last 7 days)
-          if (booking.status !== 'cancelled' && booking.status !== 'rejected' && createdAt >= sevenDaysAgo) {
+          // 3. Weekly Revenue Matrix
+          if (currentStatus !== 'cancelled' && currentStatus !== 'rejected' && createdAt >= sevenDaysAgo) {
             weeklyRevenueSum += (Number(booking.totalAmount) || 0);
           }
         });
 
-        // Smart Currency Formatter (Converts 12400000 to "12.4M")
+        // Smart Currency Formatter
         const formatRevenue = (amount) => {
           if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
           if (amount >= 1000) return `₦${(amount / 1000).toFixed(1)}k`;
@@ -108,7 +112,6 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
         };
 
         // 4. Occupancy Rate Calculation 
-        // IMPORTANT: Adjust 'totalCapacity' if you store available rooms in your schema (e.g., fetchedHotel.totalRooms)
         const totalCapacity = fetchedHotel.totalRooms || 50; 
         const occupancyRate = Math.min(Math.round((activeGuestsCount / totalCapacity) * 100), 100);
 
@@ -120,7 +123,8 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
             occupancy: `${occupancyRate}%`, 
             revenue: formatRevenue(weeklyRevenueSum),
             activeGuests: activeGuestsCount,  
-            pendingRequests: pendingCount
+            pendingRequests: pendingCount,
+            totalCapacity: totalCapacity // Stored to assist click re-calculations
           }
         });
 
@@ -224,15 +228,17 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
 
   // Helper utility to keep your top KPI cards running perfectly in sync with button clicks!
   const recalculateMetrics = (currentData, totalBookings) => {
-    const now = new Date();
     let activeGuestsCount = 0;
     let pendingCount = 0;
 
     totalBookings.forEach(booking => {
-      const checkIn = new Date(booking.checkInDate);
-      const checkOut = new Date(booking.checkOutDate);
-      if (booking.status === 'pending') pendingCount++;
-      if (booking.status === 'confirmed' && now >= checkIn && now <= checkOut) activeGuestsCount++;
+      // Force lowercase to match main engine
+      const currentStatus = booking.status?.toLowerCase() || '';
+      
+      if (currentStatus === 'pending') pendingCount++;
+      
+      // 🟢 Keep logic synced: Count all confirmed records
+      if (currentStatus === 'confirmed') activeGuestsCount++;
     });
 
     const totalCapacity = currentData.stats.totalCapacity || 50;

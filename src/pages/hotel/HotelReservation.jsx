@@ -49,6 +49,9 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
 
     setIsLoading(true);
     setErrorMsg('');
+    // 🛑 CRITICAL SAFETY: Ensure any previous success states are dropped 
+    // the moment a fresh submission pipeline begins processing.
+    setIsSuccess(false); 
 
     try {
       // 🟢 Swapped to unified apiClient architecture
@@ -61,7 +64,8 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
       // Axios unpacks response payloads directly into the .data property
       const result = response.data;
 
-      if (result.success) {
+      // Check for backend success wrapper structure (adjust if your API returns result.status === 'success')
+      if (result.success || result.status === 'success') {
         setIsSuccess(true);
         toast.success('Reservation Made Successfully!');
       } else {
@@ -74,6 +78,26 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
       console.warn('🚨 [Reservation Pipeline Failure]:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const resetBookingForm = () => {
+    // 1. Drop the success modal layout block
+    setIsSuccess(false);
+    
+    // 2. Clear out any lingering error alerts
+    setErrorMsg('');
+    
+    // 3. Reset your form fields back to their blank initialization states
+    if (setFormData) {
+      setFormData({
+        guestName: '',
+        guestEmail: '',
+        guestPhone: '',
+        checkInDate: '',
+        checkOutDate: '',
+        // Include any other structural keys your form maps to here
+      });
     }
   };
 
@@ -99,23 +123,26 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
 
         {/* SUCCESS OVERLAY STATE */}
         {isSuccess ? (
-          <div className="p-8 md:p-12 flex flex-col items-center justify-center text-center space-y-4 my-auto animate-fade-in">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <CheckCircle2 size={32} />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-xl font-black uppercase tracking-tight">Reservation Secured</h3>
-              <p className={`text-xs max-w-sm ${darkMode ? "text-white/40" : "text-slate-500"}`}>
-                Your lodging request for the <span className="font-bold text-brand-cobalt">{selectedRoom.name}</span> at <span className="font-bold">{hotel.title}</span> has been committed to the concierge dashboard ledger.
-              </p>
-            </div>
-            <button 
-              onClick={onClose}
-              className="mt-4 px-6 py-2.5 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors"
-            >
-              Acknowledge & Close
-            </button>
+        <div className="p-8 md:p-12 flex flex-col items-center justify-center text-center space-y-4 my-auto animate-fade-in">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <CheckCircle2 size={32} />
           </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-black uppercase tracking-tight">Reservation Secured</h3>
+            <p className={`text-xs max-w-sm ${darkMode ? "text-white/40" : "text-slate-500"}`}>
+              Your lodging request for the <span className="font-bold text-brand-cobalt">{selectedRoom?.name || selectedRoom?.title}</span> at <span className="font-bold">{hotel?.title}</span> has been committed to the concierge dashboard ledger.
+            </p>
+          </div>
+          <button 
+            onClick={() => {
+              resetBookingForm(); // 1. Wipes the state and drops isSuccess back to false
+              onClose();          // 2. Closes the modal window framework smoothly
+            }}
+            className="mt-4 px-6 py-2.5 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            Acknowledge & Close
+          </button>
+        </div>
         ) : (
           <>
             {/* Header Content Block */}

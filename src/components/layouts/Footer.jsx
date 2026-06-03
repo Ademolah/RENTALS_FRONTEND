@@ -17,13 +17,13 @@ export const Footer = () => {
           
           {/* Column 1: Core Corporate DNA */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <Link to="/" className="flex items-center gap-2.5 group w-fit">
-              <div className="w-9 h-9 rounded-xl bg-brand-cobalt flex items-center justify-center shadow-lg shadow-brand-cobalt/20">
-                <span className="text-white font-bold font-display text-xl tracking-tighter">R</span>
-              </div>
-              <span className="text-white font-display font-bold text-xl tracking-wide">
-                Rentals<span className="text-brand-cobalt">.</span>
-              </span>
+            <Link to="/" className="flex items-center group">
+              <img 
+                src="/Rentals-Navbar.png" 
+                alt="Rentals Platform" 
+                className="h-7 w-auto sm:h-8 md:h-8.5 object-contain transition-transform duration-300 group-hover:scale-[1.02] select-none"
+                draggable="false"
+              />
             </Link>
             <p className="text-sm leading-relaxed max-w-sm text-slate-400">
               The premium real estate network offering end-to-end cloud infrastructure for verified digital property portfolios. Experience institutional-grade verification engines engineered for modern asset deployment.
