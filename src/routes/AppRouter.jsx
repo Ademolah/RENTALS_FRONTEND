@@ -20,6 +20,7 @@ import { HotelAdminDashboard } from '../pages/hotel/HotelDashboard'
 import { HotelUpload } from '../pages/hotel/HotelUpload';
 import { HotelExplorerGrid } from '../pages/hotel/HotelExplorer';
 import { ReservationModal } from '../pages/hotel/HotelReservation';
+import { HotelApplicationForm } from '../pages/hotel/HotelApplication';
 
 
 
@@ -64,6 +65,7 @@ export const AppRouter = () => {
           {/* Default protected area for standard users */}
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/register-agency" element={<AgencyRegistration />} />
+          <Route path="/hotel-application" element={<HotelApplicationForm />} />
         </Route>
 
         {/* ==========================================

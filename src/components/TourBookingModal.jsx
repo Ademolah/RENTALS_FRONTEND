@@ -177,19 +177,19 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <div>
                 <h4 className="text-sm font-bold text-white">Contact Listing Agent</h4>
-                <p className="text-xs text-white/50 mt-0.5">{property.agent.name} is available to assist you.</p>
+                <p className="text-xs text-white/50 mt-0.5">{property.agent?.name || "Premium Concierge Desk"} is available to assist you.</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-cobalt to-purple-500 flex items-center justify-center text-white font-bold">
-                {property.agent.name.charAt(0)}
+                {property.agent?.name.charAt(0) || "P"}
               </div>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3">
-              <a href={`tel:${property.agent.phone}`} className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-3 px-4 text-sm text-white font-medium transition-colors">
+              <a href={`tel:${property.agent?.phone}`} className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-3 px-4 text-sm text-white font-medium transition-colors">
                 <Phone size={16} className="text-emerald-400" />
-                {property.agent.phone}
+                {property.agent?.phone}
               </a>
-              <a href={`mailto:${property.agent.email}`} className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-3 px-4 text-sm text-white font-medium transition-colors">
+              <a href={`mailto:${property.agent?.email}`} className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-3 px-4 text-sm text-white font-medium transition-colors">
                 <Mail size={16} className="text-brand-cobalt" />
                 Email Agent
               </a>

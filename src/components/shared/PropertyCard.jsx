@@ -1,18 +1,39 @@
-import { useState } from 'react';
-import { MapPin, BedDouble, Bath, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { TourBookingModal } from '../TourBookingModal';
 
-export const PropertyCard = ({ property }) => {
+
+import { useState } from 'react';
+import { MapPin, BedDouble, Bath, X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { TourBookingModal } from '../TourBookingModal';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/useAuthStore';
+import { apiClient } from '../../services/apiClient';
+
+export const PropertyCard = ({ property , hideAction = false}) => {
 
   // Surgical State Additions for Full Screen Engine
   const [isOpen, setIsOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const navigate = useNavigate();
+  
+  // 🟢 SURGICAL UPDATE: Extract 'user' state to check active collection statuses
+  const { isAuthenticated, setUser, user } = useAuthStore();
 
-  // Safely grab all available media URLs or fall back to the primary mapped image
+  // 🟢 SURGICAL UPDATE: Live Database Fallbacks for Media Assets
   const images = property.mediaUrls && property.mediaUrls.length > 0 
     ? property.mediaUrls 
-    : [property.image];
+    : [property.image || ''];
+    
+  const cardBackgroundImage = property.image || images[0];
+
+  // 🟢 SURGICAL UPDATE: Fallback parser for currency and numeric evaluations
+  const displayPrice = property.price || 
+    (property.pricePerAnnum ? `₦${Number(property.pricePerAnnum).toLocaleString()}` : 'Price on Application');
+
+  // 🟢 SURGICAL UPDATE: Evaluate if this specific property layout is currently saved
+  const isSaved = user?.savedCollections?.some(item => 
+    typeof item === 'string' ? item === property._id : item?._id === property._id
+  );
 
   const handleNext = (e) => {
     e.stopPropagation(); // Avoid closing the modal
@@ -24,23 +45,69 @@ export const PropertyCard = ({ property }) => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  const handleSaveToCollection = async (e) => {
+    e.stopPropagation(); // Prevents launching the full-screen media viewer
+
+    // 🛑 CONDITION 1: User is NOT logged in
+    if (!isAuthenticated) {
+      toast.error('Sign in to build your collection', {
+        style: {
+          borderRadius: '10px',
+          background: '#1e293b',
+          color: '#fff',
+        },
+      });
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 800);
+      return;
+    }
+
+    // 🟢 CONDITION 2: User IS logged in -> Route through Property Endpoint
+    try {
+      // We surgically leverage your existing property routing architecture
+      const response = await apiClient.post(`/properties/${property._id}/save`);
+      
+      if (response.data?.success) {
+        // Synchronize the global store user profile state if returned by the endpoint
+        if (setUser && response.data.user) {
+          setUser(response.data.user);
+        }
+
+        toast.success(isSaved ? 'Removed from collection' : 'Added to your collection', {
+          icon: isSaved ? '🗑️' : '❤️',
+          style: {
+            borderRadius: '10px',
+            background: '#1e293b',
+            color: '#fff',
+          },
+        });
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Unable to update collections.';
+      toast.error(errorMsg);
+      console.error('Collection sync failure:', error);
+    }
+  };
 
   return (
     <>
-      {/* 1. Main Bento Grid Card Wrapper (Added cursor-pointer and onClick) */}
+      {/* 1. Main Bento Grid Card Wrapper (Added aspect ratio and min-height anchors for dashboard stability) */}
       <div 
         onClick={() => setIsOpen(true)}
         className={`
           group relative overflow-hidden w-full h-full 
           md:rounded-[2rem] shadow-premium shrink-0
           snap-start snap-always cursor-pointer
+          aspect-[4/5] min-h-[420px] md:min-h-[460px]
           ${property.span || 'col-span-1 row-span-1'} 
         `}
       >
-        {/* Background Image with Hover Zoom Effect */}
+        {/* Background Image with Hover Zoom Effect (Updated to use cardBackgroundImage fallback) */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-          style={{ backgroundImage: `url(${property.image})` }}
+          style={{ backgroundImage: `url(${cardBackgroundImage})` }}
         />
         
         {/* Deep Midnight Gradient Overlay for Text Readability */}
@@ -56,9 +123,25 @@ export const PropertyCard = ({ property }) => {
           </div>
         )}
 
+        {/* 🟢 NEW: Floating Save/Love Action Button */}
+        <button 
+          onClick={handleSaveToCollection}
+          className="absolute top-5 right-5 z-20 bg-black/30 hover:bg-black/50 backdrop-blur-md p-3 rounded-full text-white transition-all duration-300 transform hover:scale-110 shadow-lg border border-white/10 group/btn"
+          aria-label="Save to Collection"
+        >
+          {/* 🟢 SURGICAL UPDATE: Core visualization highlights coral immediately if item is saved */}
+          <Heart 
+            size={22} 
+            className={`transition-all duration-300 ${
+              isSaved 
+                ? 'text-brand-coral fill-brand-coral' 
+                : 'text-white group-hover/btn:text-brand-coral group-hover/btn:fill-brand-coral/20'
+            }`} 
+          />
+        </button>
+
         {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-col justify-end">
-
           
           <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 w-fit transition-colors ${
             property.isAvailable 
@@ -69,48 +152,50 @@ export const PropertyCard = ({ property }) => {
             {property.isAvailable ? "Market Active" : "Off-Market"}
           </div>
 
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold text-white mb-3 leading-tight tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-display font-extrabold text-white mb-3 leading-tight tracking-tight">
             {property.title}
           </h2>
 
           {/* Structural Metrics */}
-          <div className="flex items-center text-brand-slate/90 mb-8 gap-5 text-sm md:text-base font-medium">
+          <div className="flex items-center text-brand-slate/90 mb-6 gap-4 text-xs md:text-sm font-medium">
             <span className="flex items-center gap-1.5">
-              <MapPin size={18} className="text-brand-cobalt" /> 
-              {property.locality}
+              <MapPin size={16} className="text-brand-cobalt" /> 
+              {property.locality || 'Nigeria'}
             </span>
             <span className="flex items-center gap-1.5">
-              <BedDouble size={18} className="text-brand-slate/60" /> 
-              {property.beds} Beds
+              <BedDouble size={16} className="text-brand-slate/60" /> 
+              {property.beds || 0} Beds
             </span>
             <span className="flex items-center gap-1.5">
-              <Bath size={18} className="text-brand-slate/60" /> 
-              {property.baths} Baths
+              <Bath size={16} className="text-brand-slate/60" /> 
+              {property.baths || 0} Baths
             </span>
           </div>
 
           {/* Action Bar */}
-        <div className="flex items-center justify-between gap-4 mt-auto w-full">
-          
-          {/* 🎯 SURGICAL UPDATE 1: Bento Card Dynamic Pricing Suffix */}
-          <p className="text-xl sm:text-2xl font-bold text-white tracking-tight shrink-0 flex items-baseline gap-1">
-            {property.price}
-            <span className="text-xs sm:text-sm text-white/50 font-medium uppercase tracking-widest">
-              {['shortlet', 'apartment'].includes(property.propertyType) ? 'Month' : 'Year'}
-            </span>
-          </p>
-          {/* END SURGICAL UPDATE 1 */}
-          
-          <button 
-            onClick={(e) => {
-              e.stopPropagation(); // Prevents launching studio view
-              setIsBookingModalOpen(true); // 🚨 Opens the Concierge Desk
-            }} 
-            className="bg-brand-coral hover:bg-brand-coral/90 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wide whitespace-nowrap transition-all transform active:scale-95 shadow-md hover:shadow-lg shadow-brand-coral/20 shrink-0"
-          >
-            Book Tour
-          </button>
-        </div>
+          <div className="flex items-center justify-between gap-4 mt-auto w-full">
+            
+            {/* 🎯 SURGICAL UPDATE 1: Swapped property.price to custom displayPrice logic */}
+            <p className="text-lg sm:text-xl font-bold text-white tracking-tight shrink-0 flex items-baseline gap-1">
+              {displayPrice}
+              <span className="text-[10px] sm:text-xs text-white/50 font-medium uppercase tracking-widest">
+                {['shortlet', 'apartment'].includes(property.propertyType) ? 'Month' : 'Year'}
+              </span>
+            </p>
+            
+            {!hideAction && (
+            <button 
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation(); 
+                setIsBookingModalOpen(true); 
+              }} 
+              className="bg-brand-coral hover:bg-brand-coral/90 text-white px-4 py-2 rounded-xl text-xs font-bold tracking-wide whitespace-nowrap transition-all transform active:scale-95 shadow-md hover:shadow-lg shadow-brand-coral/20 shrink-0"
+            >
+              Book Tour
+            </button>
+  )}
+          </div>
         </div>
       </div>
 
@@ -170,25 +255,24 @@ export const PropertyCard = ({ property }) => {
           >
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 border-b border-white/5 pb-8 mb-8">
               <div>
-                <h1 className="text-4xl md:text-6xl font-display font-black tracking-tight mb-4">
+                <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight mb-4">
                   {property.title}
                 </h1>
-                <div className="flex items-center gap-2 text-brand-slate/80 font-medium text-base">
+                <div className="flex items-center gap-2 text-brand-slate/80 font-medium text-sm md:text-base">
                   <MapPin size={20} className="text-brand-cobalt" />
-                  <span>{property.locality}, {property.state || 'Nigeria'}</span>
+                  <span>{property.locality || 'Lagos'}, {property.state || 'Nigeria'}</span>
                 </div>
               </div>
               <div className="text-left md:text-right shrink-0">
-                <p className="text-sm uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Premium Valuation</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Premium Valuation</p>
                 
-                {/* 🎯 SURGICAL UPDATE 2: Studio Viewer Dynamic Pricing Suffix */}
-                <p className="text-3xl md:text-5xl font-extrabold text-white tracking-tight flex items-baseline justify-start md:justify-end gap-2">
-                  {property.price}
-                  <span className="text-lg md:text-2xl text-white/40 font-medium uppercase tracking-widest">
+                {/* 🎯 SURGICAL UPDATE 2: Swapped to displayPrice logic here as well */}
+                <p className="text-2xl md:text-4xl font-extrabold text-white tracking-tight flex items-baseline justify-start md:justify-end gap-2">
+                  {displayPrice}
+                  <span className="text-sm md:text-lg text-white/40 font-medium uppercase tracking-widest">
                     {['shortlet', 'apartment'].includes(property.propertyType) ? '/ Mo' : '/ Yr'}
                   </span>
                 </p>
-                {/* END SURGICAL UPDATE 2 */}
 
               </div>
             </div>
@@ -197,11 +281,11 @@ export const PropertyCard = ({ property }) => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
                 <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Bedrooms</span>
-                <span className="flex items-center gap-2 text-xl font-bold"><BedDouble className="text-brand-slate/40" /> {property.beds} Double</span>
+                <span className="flex items-center gap-2 text-lg font-bold"><BedDouble className="text-brand-slate/40" /> {property.beds || 0} Double</span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
                 <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Bathrooms</span>
-                <span className="flex items-center gap-2 text-xl font-bold"><Bath className="text-brand-slate/40" /> {property.baths} Bath</span>
+                <span className="flex items-center gap-2 text-lg font-bold"><Bath className="text-brand-slate/40" /> {property.baths || 0} Bath</span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
                 <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Property Type</span>
@@ -209,15 +293,15 @@ export const PropertyCard = ({ property }) => {
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
                 <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Service Charge</span>
-                <span className="text-lg font-bold text-white">₦{Number(property.serviceCharge || 0).toLocaleString()}</span>
+                <span className="text-base font-bold text-white">₦{Number(property.serviceCharge || 0).toLocaleString()}</span>
               </div>
             </div>
 
             {/* Description Text block */}
             {property.description && (
               <div className="mb-12">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-white/40 mb-3">Architectural Overview</h3>
-                <p className="text-brand-slate leading-relaxed text-base md:text-lg max-w-3xl">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-3">Architectural Overview</h3>
+                <p className="text-brand-slate leading-relaxed text-sm md:text-base max-w-3xl">
                   {property.description}
                 </p>
               </div>
@@ -226,14 +310,11 @@ export const PropertyCard = ({ property }) => {
         </div>
       )}
 
-      
-    <TourBookingModal 
-      isOpen={isBookingModalOpen} 
-      onClose={() => setIsBookingModalOpen(false)} 
-      property={property} 
-    />
+      <TourBookingModal 
+        isOpen={isBookingModalOpen} 
+        onClose={() => setIsBookingModalOpen(false)} 
+        property={property} 
+      />
     </>
   );
-  
 };
-

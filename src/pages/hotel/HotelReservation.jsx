@@ -113,7 +113,10 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
         
         {/* Absolute Close Control Button */}
         <button 
-          onClick={onClose}
+          onClick={() => {
+              resetBookingForm(); 
+              onClose();          
+            }}
           className={`absolute top-5 right-5 p-2 rounded-full border transition-colors z-10 ${
             darkMode ? "bg-white/5 border-white/10 hover:bg-white/10 text-white/70" : "bg-slate-100 border-slate-200 hover:bg-slate-200 text-slate-600"
           }`}
