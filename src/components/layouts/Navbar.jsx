@@ -122,7 +122,7 @@ export const Navbar = () => {
                         className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors"
                       >
                         <LayoutDashboard size={16} className="text-brand-cobalt" />
-                        Command Dashboard
+                        Profile
                       </Link>
                       <Link
                         to="/profile/settings"

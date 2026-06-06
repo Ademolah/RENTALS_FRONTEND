@@ -2,7 +2,7 @@ import  { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Shield, Building2, FileText, CheckCircle, XCircle, 
-  ChevronRight, X, Clock, AlertTriangle, LogOut, Loader2 
+  ChevronRight, X, Clock, AlertTriangle, LogOut, Loader2, BedDouble
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiClient } from '../services/apiClient'; // Adjust path to your axios instance
@@ -27,16 +27,34 @@ export const SuperAdminDashboard = () => {
     : 'A';
 
   // =======================================================================
-  // 1. PRODUCTION DATA INGESTION
+  // 1. PREMIUM UNIFIED DATA INGESTION
   // =======================================================================
   useEffect(() => {
     const fetchPendingApplications = async () => {
       try {
-        // Assuming you have an endpoint to get pending agencies
-        const response = await apiClient.get('/admin/agencies?status=PENDING');
-        setApplications(response.data.data.agencies || []);
+        setIsLoading(true);
+        // Pinging the unified endpoint that parallel-fetches both portfolios
+        const response = await apiClient.get('/admin/applications?status=PENDING');
+        
+        // ⚡️ VISUAL NORMALIZATION: Add explicit tracking properties for the UI data tables
+        const normalizedAgencies = (response.data.data.agencies || []).map(agency => ({
+          ...agency,
+          type: 'agency',
+          displayName: agency.corporateName || 'Unnamed Agency',
+          displayEmail: agency.agencyEmail || 'No Email Linked'
+        }));
+
+        const normalizedHotels = (response.data.data.hotels || []).map(hotel => ({
+          ...hotel,
+          type: 'hotel',
+          displayName: hotel.businessName || 'Premium Hotel Group',
+          displayEmail: hotel.applicantEmail || 'No Email Linked'
+        }));
+
+        // Merge both arrays cleanly into a unified chronological or structured state
+        setApplications([...normalizedAgencies, ...normalizedHotels]);
       } catch (err) {
-        toast.error(err.response?.data?.message || 'Failed to securely fetch applications.');
+        toast.error(err.response?.data?.message || 'Failed to securely fetch unified pending applications.');
       } finally {
         setIsLoading(false);
       }
@@ -46,10 +64,12 @@ export const SuperAdminDashboard = () => {
   }, []);
 
   // =======================================================================
-  // 2. BACKEND ACTION HANDLERS
+  // 2. BACKEND ACTION HANDLERS (UNIFIED PIPELINE)
   // =======================================================================
   const executeReview = async () => {
-    if (reviewState.decision === 'REJECTED' && reviewState.notes.length < 10) {
+    if (!selectedApp || !selectedApp._id) return;
+
+    if (reviewState.decision === 'REJECTED' && reviewState.notes.trim().length < 10) {
       toast.error('You must provide a detailed reason for rejection.');
       return;
     }
@@ -57,30 +77,38 @@ export const SuperAdminDashboard = () => {
     setIsProcessing(true);
     
     try {
-      // Pinging the exact endpoint we built in the adminController
-      await apiClient.patch(`/admin/agency/${selectedApp._id}/review`, {
+      // 🧠 INTELLIGENT DISPATCH: Pinging the unified evaluation controller route
+      await apiClient.patch(`/admin/applications/${selectedApp._id}/review`, {
         decision: reviewState.decision,
-        adminNotes: reviewState.notes
+        adminNotes: reviewState.notes,
+        type: selectedApp.type // ⚡️ Explictly passed to accelerate backend lookup performance
       });
 
-      // Optimistic UI Removal
+      // Optimistic UI Removal (Works flawlessly across both types seamlessly)
       setApplications(prev => prev.filter(app => app._id !== selectedApp._id));
       
-      toast.success(`Agency ${reviewState.decision === 'APPROVED' ? 'Activated' : 'Rejected'} successfully!`, {
-        icon: reviewState.decision === 'APPROVED' ? '✅' : '🚨',
-        style: { background: '#1E293B', color: '#fff', border: '1px border-white/10' }
+      const isApproved = reviewState.decision === 'APPROVED';
+      const labelType = selectedApp.type === 'hotel' ? 'Hotel Partner' : 'Corporate Agency';
+
+      toast.success(`${labelType} application ${isApproved ? 'Activated' : 'Rejected'} successfully!`, {
+        icon: isApproved ? '✅' : '🚨',
+        style: { 
+          background: '#0B1329', 
+          color: '#fff', 
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '12px'
+        }
       });
       
-      // Reset State
+      // Reset State Closures
       setSelectedApp(null);
       setReviewState({ decision: null, notes: '' });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Transaction failed. Please try again.');
+      toast.error(err.response?.data?.message || 'Transaction processing failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
   };
-
  const handleLogout = () => {
     logout();
     navigate('/');
@@ -136,10 +164,11 @@ export const SuperAdminDashboard = () => {
       </div>
     </header>
 
+      
       <main className="p-6 md:p-10 max-w-[1400px] mx-auto">
         <div className="mb-8 md:mb-12">
-          <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight">Agency Approvals</h1>
-          <p className="text-white/40 mt-2 text-sm md:text-base">Review and verify corporate entities requesting platform access.</p>
+          <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight">Partner Approvals</h1>
+          <p className="text-white/40 mt-2 text-sm md:text-base">Review and verify corporate agencies and hotel entities requesting platform access.</p>
         </div>
 
         {/* =======================================================================
@@ -149,8 +178,8 @@ export const SuperAdminDashboard = () => {
           
           {/* Desktop Table Header (Hidden on Mobile) */}
           <div className="hidden md:grid grid-cols-12 gap-4 p-6 border-b border-white/10 text-xs font-bold text-white/40 uppercase tracking-wider">
-            <div className="col-span-4">Corporate Entity</div>
-            <div className="col-span-3">CAC Registration</div>
+            <div className="col-span-4">Applicant / Entity</div>
+            <div className="col-span-3">Registration ID</div>
             <div className="col-span-3">Submission Date</div>
             <div className="col-span-2 text-right">Action</div>
           </div>
@@ -165,7 +194,7 @@ export const SuperAdminDashboard = () => {
             <div className="p-12 text-center text-white/40 flex flex-col items-center">
               <CheckCircle size={48} className="mb-4 text-emerald-500/50" />
               <p className="text-lg font-medium text-white">Inbox Zero</p>
-              <p className="text-sm">All agency applications have been processed.</p>
+              <p className="text-sm">All partner applications have been processed.</p>
             </div>
           ) : (
             <div className="divide-y divide-white/5">
@@ -180,22 +209,37 @@ export const SuperAdminDashboard = () => {
                   {/* Entity Profile */}
                   <div className="w-full md:col-span-4 flex items-center justify-between md:justify-start gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#0F172A] border border-white/10 flex items-center justify-center shrink-0">
-                        <Building2 size={18} className="text-brand-gold" />
+                      {/* 🟢 SURGICAL UPDATE: Dynamic Icon based on application type */}
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#0F172A] border border-white/10 flex items-center justify-center shrink-0 relative overflow-hidden">
+                        {app.type === 'hotel' ? (
+                          <BedDouble size={18} className="text-brand-coral" />
+                        ) : (
+                          <Building2 size={18} className="text-brand-gold" />
+                        )}
+                        {/* Subtle colored glow based on type */}
+                        <div className={`absolute bottom-0 w-full h-1 ${app.type === 'hotel' ? 'bg-brand-coral/50' : 'bg-brand-gold/50'}`} />
                       </div>
                       <div>
-                        <h3 className="font-bold text-base md:text-lg text-white line-clamp-1">{app.corporateName}</h3>
-                        <p className="text-xs md:text-sm text-white/40 truncate">{app.agencyEmail}</p>
+                        {/* 🟢 SURGICAL UPDATE: Uses normalized displayName and displayEmail */}
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-base md:text-lg text-white line-clamp-1">{app.displayName}</h3>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase tracking-widest ${app.type === 'hotel' ? 'bg-brand-coral/20 text-brand-coral' : 'bg-brand-gold/20 text-brand-gold'}`}>
+                            {app.type}
+                          </span>
+                        </div>
+                        <p className="text-xs md:text-sm text-white/40 truncate">{app.displayEmail}</p>
                       </div>
                     </div>
                     {/* Mobile Only Quick Action Chevron */}
                     <ChevronRight size={20} className="md:hidden text-white/20 group-hover:text-white" />
                   </div>
 
-                  {/* CAC Number (Stacks nicely on mobile) */}
+                  {/* Registration Number (Stacks nicely on mobile) */}
                   <div className="md:col-span-3 w-full pl-14 md:pl-0">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/5 border border-white/10 text-xs md:text-sm font-mono text-white/80">
-                      <FileText size={14} className="text-white/40" /> {app.cacNumber}
+                      <FileText size={14} className="text-white/40" /> 
+                      {/* 🟢 SURGICAL UPDATE: Fallback chain for different collection schemas */}
+                      {app.cacNumber || app.registrationNumber || app.rcNumber || 'Pending ID'}
                     </span>
                   </div>
 
@@ -236,10 +280,11 @@ export const SuperAdminDashboard = () => {
             <div className="p-6 md:p-8 border-b border-white/10 flex items-start justify-between sticky top-0 bg-[#1E293B]/95 backdrop-blur-md z-10">
               <div className="pr-4">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-3 border border-yellow-500/20">
-                  <AlertTriangle size={12} /> Pending Verification
+                  <AlertTriangle size={12} /> Pending {selectedApp.type === 'hotel' ? 'Hotel' : 'Agency'} Verification
                 </span>
                 <h2 className="text-2xl md:text-3xl font-display font-black text-white leading-tight">
-                  {selectedApp.corporateName}
+                  {/* 🟢 SURGICAL UPDATE: Normalized Name */}
+                  {selectedApp.displayName}
                 </h2>
               </div>
               <button 
@@ -256,26 +301,38 @@ export const SuperAdminDashboard = () => {
               {/* Data Cards (Responsive Stacking) */}
               <div className="bg-[#0F172A] border border-white/5 rounded-2xl p-5 md:p-6 space-y-5">
                 <div>
-                  <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-bold">CAC Registration</p>
-                  <p className="font-mono text-lg text-white">{selectedApp.cacNumber}</p>
+                  <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-bold">
+                    {selectedApp.type === 'hotel' ? 'Hotel Registration' : 'CAC Registration'}
+                  </p>
+                  <p className="font-mono text-lg text-white">
+                    {selectedApp.cacNumber || selectedApp.registrationNumber || selectedApp.rcNumber || 'Not Provided'}
+                  </p>
                 </div>
                 <div className="h-px w-full bg-white/5" />
                 <div>
                   <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-bold">Contact Email</p>
-                  <p className="text-white break-all">{selectedApp.agencyEmail}</p>
+                  <p className="text-white break-all">{selectedApp.displayEmail}</p>
                 </div>
                 <div className="h-px w-full bg-white/5" />
                 <div>
                   <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-bold">Registered Headquarters</p>
-                  <p className="text-white text-sm leading-relaxed">{selectedApp.hqAddress}</p>
+                  <p className="text-white text-sm leading-relaxed">
+                    {selectedApp.registeredAddress || 'Address pending physical verification.'}
+                  </p>
                 </div>
-                <div className="h-px w-full bg-white/5" />
-                <div>
-                  <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-bold">Requested UI Template</p>
-                  <span className="inline-block mt-1 capitalize px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm font-bold text-brand-gold">
-                    {selectedApp.selectedTemplate || 'Default'} Architecture
-                  </span>
-                </div>
+                
+                {/* 🟢 SURGICAL UPDATE: Only show template selection if it exists on the schema */}
+                {selectedApp.selectedTemplate && (
+                  <>
+                    <div className="h-px w-full bg-white/5" />
+                    <div>
+                      <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-bold">Requested UI Template</p>
+                      <span className="inline-block mt-1 capitalize px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm font-bold text-brand-gold">
+                        {selectedApp.selectedTemplate} Architecture
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Action Area */}
