@@ -50,19 +50,40 @@ export const PropertyCard = ({ property , hideAction = false}) => {
 
     // 🛑 CONDITION 1: User is NOT logged in
     if (!isAuthenticated) {
-      toast.error('Sign in to build your collection', {
-        style: {
-          borderRadius: '10px',
-          background: '#1e293b',
-          color: '#fff',
-        },
-      });
-      
-      setTimeout(() => {
-        navigate('/login');
-      }, 800);
-      return;
-    }
+  toast.custom((t) => (
+    <div
+      className={`${
+        t.visible ? 'animate-enter' : 'animate-leave'
+      } max-w-sm w-full bg-[#0F172A]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl pointer-events-auto flex p-4 transition-all duration-300`}
+    >
+      <div className="flex-1 w-0 flex items-center gap-4">
+        {/* Welcoming & Elegant Heart Icon Shell */}
+        <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0 text-rose-400">
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </div>
+        
+        {/* Inviting Copy Context */}
+        <div className="flex-1">
+          <p className="text-xs font-mono uppercase tracking-widest text-rose-400/80 font-bold">Save Your Favorites</p>
+          <p className="text-sm font-medium text-white/90 mt-0.5 tracking-wide leading-relaxed">
+            Create a free account to save this listing and curate your dream collection.
+          </p>
+        </div>
+      </div>
+    </div>
+  ), {
+    duration: 3000
+  });
+
+  // Smooth, inviting transition to the login/signup gateway
+  setTimeout(() => {
+    navigate('/login');
+  }, 1200);
+  
+  return;
+}
 
     // 🟢 CONDITION 2: User IS logged in -> Route through Property Endpoint
     try {

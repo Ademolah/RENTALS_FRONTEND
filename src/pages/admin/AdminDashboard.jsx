@@ -614,10 +614,10 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
                       ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                       : isProfilePending
                         ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                        : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                      isProfileActive ? 'bg-emerald-400' : isProfilePending ? 'bg-amber-400' : 'bg-rose-400'
+                      isProfileActive ? 'bg-emerald-400' : isProfilePending ? 'bg-amber-400' : 'bg-emerald-400'
                     }`} />
                     {agent.status || 'UNVERIFIED'}
                   </span>

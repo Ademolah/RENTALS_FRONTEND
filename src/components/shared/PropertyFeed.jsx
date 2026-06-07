@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React from 'react';
@@ -139,7 +140,7 @@ const [phraseIdx, setPhraseIdx] = useState(0);
   // Run database lookup exactly once on initialization
   useEffect(() => {
     executeSearch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const handleBudgetChange = (e) => {
