@@ -25,6 +25,8 @@ export const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true); // Initializes as true, preventing the need for sync updates!
   const [actioningId, setActioningId] = useState(null);
 
+  const [agents, setAgents] = useState([]);
+const [isLoadingAgents, setIsLoadingAgents] = useState(true);
   
   
 
@@ -119,6 +121,22 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
       console.error('Failed to occupy clipboard:', err);
     }
   };
+
+  useEffect(() => {
+  const fetchAgencyRoster = async () => {
+    try {
+      // Calls the new route we just built
+      const response = await apiClient.get('/agencies/agents');
+      setAgents(response.data.data.agents || []);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to sync broker roster.');
+    } finally {
+      setIsLoadingAgents(false);
+    }
+  };
+
+  fetchAgencyRoster();
+}, []);
 
   useEffect(() => {
     const fetchDashboardProperties = async () => {
@@ -254,11 +272,21 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl">
-            <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Onboarded Broker Roster</p>
-            <p className="text-4xl font-display font-black mt-2">0 <span className="text-sm font-normal text-white/40">Verified Agents</span></p>
-            <div className="absolute right-4 bottom-4 text-white/5">
-              <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl transition-all hover:bg-white/10 group">
+            <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-1">Onboarded Broker Roster</p>
+            
+            {/* Dynamic Data Rendering with Loading Skeleton Fallback */}
+            {isLoadingAgents ? (
+              <div className="h-10 w-16 bg-white/10 rounded-lg animate-pulse mt-2" />
+            ) : (
+              <p className="text-4xl md:text-4xl font-display font-black text-white mt-2">
+                {agents.length} <span className="text-sm font-medium text-white/40 tracking-wide uppercase">Verified Agents</span>
+              </p>
+            )}
+
+            {/* Decorative Icon Background */}
+            <div className="absolute right-4 bottom-4 text-white/5 group-hover:text-white/10 transition-colors duration-500 transform group-hover:scale-110">
+              <svg className="w-16 h-16 md:w-20 md:h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
               </svg>
             </div>
@@ -385,7 +413,7 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
         </div>
       </div>
 
-      {/* Bookings Queue Container */}
+     
       {/* Bookings Queue Container */}
       <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1 hide-scrollbar">
         {isLoading ? (
@@ -491,28 +519,117 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
           <div className="lg:col-span-2 space-y-8">
             
             {/* Agency Roster Monitoring */}
-            <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl">
-              <h3 className="text-xl font-display font-bold mb-4">Staff Registry</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-white/60">
-                  <thead className="text-xs text-white/40 uppercase font-mono border-b border-white/5">
-                    <tr>
-                      <th className="py-3 px-2">Broker Name</th>
-                      <th className="py-3 px-2">Email Handle</th>
-                      <th className="py-3 px-2">Clearance Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {/* Empty State UI placeholder until agents populate the table */}
-                    <tr>
-                      <td colSpan="3" className="py-12 text-center text-white/30 font-medium">
-                        No active agents synced to your administrative shell yet.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+            {/* Agency Roster Monitoring */}
+<div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl transition-all duration-300">
+  <div className="flex items-center justify-between mb-6">
+    <div>
+      <h3 className="text-xl font-display font-bold text-white">Staff Registry</h3>
+      <p className="text-xs text-white/40 mt-0.5">Live credential and operational tracking for your verified brokers.</p>
+    </div>
+    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono tracking-wider uppercase text-white/60">
+      Roster Scope: Global
+    </span>
+  </div>
+
+  <div className="overflow-x-auto selection:bg-white/10">
+    <table className="w-full text-left text-sm text-white/60 min-w-[600px]">
+      <thead className="text-xs text-white/40 uppercase font-mono border-b border-white/10">
+        <tr>
+          <th className="py-4 px-3 font-bold tracking-wider">Broker Name</th>
+          <th className="py-4 px-3 font-bold tracking-wider">Email Handle</th>
+          <th className="py-4 px-3 font-bold tracking-wider">Clearance Status</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-white/5">
+        {/* 1. LOADING STATE LAYER */}
+        {isLoadingAgents ? (
+          Array.from({ length: 3 }).map((_, idx) => (
+            <tr key={`skeleton-${idx}`} className="animate-pulse">
+              <td className="py-4 px-3 flex items-center gap-3">
+                <div className="w-9 h-9 bg-white/10 rounded-full" />
+                <div className="space-y-2">
+                  <div className="h-4 w-28 bg-white/10 rounded" />
+                  <div className="h-3 w-16 bg-white/5 rounded" />
+                </div>
+              </td>
+              <td className="py-4 px-3">
+                <div className="h-4 w-40 bg-white/5 rounded" />
+              </td>
+              <td className="py-4 px-3">
+                <div className="h-6 w-20 bg-white/10 rounded-md" />
+              </td>
+            </tr>
+          ))
+        ) : /* 2. EMPTY STATE LAYER */
+        agents.length === 0 ? (
+          <tr>
+            <td colSpan="3" className="py-16 text-center text-white/30 font-medium">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <svg className="w-8 h-8 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <p className="text-sm text-white/40">No active agents synced to your administrative shell yet.</p>
               </div>
-            </div>
+            </td>
+          </tr>
+        ) : (
+          /* 3. DYNAMIC LIVE DATA MAP */
+          agents.map((agent) => {
+            const isProfileActive = agent.status?.toUpperCase() === 'ACTIVE';
+            const isProfilePending = agent.status?.toUpperCase() === 'PENDING';
+            
+            return (
+              <tr 
+                key={agent._id} 
+                className="hover:bg-white/[0.02] transition-colors group duration-150"
+              >
+                {/* Broker Identity Profile */}
+                <td className="py-4 px-3 font-medium text-white flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#0F172A] border border-white/10 flex items-center justify-center text-xs font-bold text-brand-gold shrink-0 overflow-hidden group-hover:border-white/20 transition-colors">
+                    {agent.avatar ? (
+                      <img src={agent.avatar} alt="Broker Signature Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      `${agent.firstName?.[0] || ''}${agent.lastName?.[0] || ''}`.toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-display font-bold text-white tracking-wide group-hover:text-brand-gold transition-colors">
+                      {agent.firstName} {agent.lastName}
+                    </p>
+                    <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mt-0.5">
+                      Joined {new Date(agent.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                </td>
+
+                {/* Email Address */}
+                <td className="py-4 px-3 font-mono text-xs text-white/50 group-hover:text-white/80 transition-colors">
+                  {agent.email}
+                </td>
+
+                {/* Clearance Execution Status Badges */}
+                <td className="py-4 px-3">
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border ${
+                    isProfileActive 
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                      : isProfilePending
+                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                        : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                      isProfileActive ? 'bg-emerald-400' : isProfilePending ? 'bg-amber-400' : 'bg-rose-400'
+                    }`} />
+                    {agent.status || 'UNVERIFIED'}
+                  </span>
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
 
             {/* =======================================================================
                2. ENTERPRISE PROPERTY LEDGER (NEW CRUD & AVAILABILITY SECTION)
