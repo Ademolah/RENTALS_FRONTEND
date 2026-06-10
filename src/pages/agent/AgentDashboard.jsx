@@ -147,7 +147,7 @@ export const AgentDashboard = () => {
             className="shrink-0 w-full md:w-auto bg-brand-coral hover:bg-brand-coral/90 text-white px-8 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-brand-coral/10 transform active:scale-95 flex items-center justify-center gap-2"
           >
             <Plus size={18} strokeWidth={3} />
-            Launch Upload Studio
+            Upload Property
           </Link>
         </div>
 

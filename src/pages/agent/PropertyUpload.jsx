@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../services/apiClient';
-import { Upload, X, ArrowLeft, Building2, MapPin, DollarSign, Layers } from 'lucide-react';
+import { Upload, X, ArrowLeft, Building2, MapPin, DollarSign, Layers, Video } from 'lucide-react';
 import toast from 'react-hot-toast'
 
 
@@ -259,25 +259,47 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
     
   </div>
 
-    <div className="space-y-1">
-      <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1"><Layers size={12}/> Property Classification</label>
-      <select 
-        name="propertyType" 
-        value={formData.propertyType} 
-        onChange={handleInputChange}
-        required
-        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none cursor-pointer"
-      >
-        <option value="" disabled className="bg-[#1E293B] text-white/40">Select Property Category</option>
-        <option value="house" className="bg-[#1E293B] text-white">Detached House / Duplex</option>
-        <option value="penthouse" className="bg-[#1E293B] text-white">Luxury Penthouse</option>
-        <option value="apartment" className="bg-[#1E293B] text-white">Serviced Apartment</option>
-        <option value="shortlet" className="bg-[#1E293B] text-white">Luxury Shortlet / Vacation Rental</option>
-        <option value="land" className="bg-[#1E293B] text-white">Premium Land Allocation</option>
-        <option value="commercial" className="bg-[#1E293B] text-white">Commercial Office Space</option>
-        <option value="terraced" className="bg-[#1E293B] text-white">Terraced Townhouse</option>
-      </select>
+    <div className="space-y-3"> {/* 🟢 Changed from space-y-1 to space-y-3 to give the banner proper luxury breathing room */}
+  <div className="space-y-1">
+    <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1">
+      <Layers size={12}/> Property Classification
+    </label>
+    <select 
+      name="propertyType" 
+      value={formData.propertyType} 
+      onChange={handleInputChange}
+      required
+      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none cursor-pointer"
+    >
+      <option value="" disabled className="bg-[#1E293B] text-white/40">Select Property Category</option>
+      <option value="house" className="bg-[#1E293B] text-white">Detached House / Duplex</option>
+      <option value="penthouse" className="bg-[#1E293B] text-white">Luxury Penthouse</option>
+      <option value="apartment" className="bg-[#1E293B] text-white">Serviced Apartment</option>
+      <option value="shortlet" className="bg-[#1E293B] text-white">Luxury Shortlet / Vacation Rental</option>
+      <option value="land" className="bg-[#1E293B] text-white">Premium Land Allocation</option>
+      <option value="commercial" className="bg-[#1E293B] text-white">Commercial Office Space</option>
+      <option value="terraced" className="bg-[#1E293B] text-white">Terraced Townhouse</option>
+    </select>
+  </div>
+
+  {/* 🟢 SURGICAL UPDATE: Bold, premium notification banner */}
+  {(formData.propertyType === 'apartment' || formData.propertyType === 'shortlet') && (
+    <div className="bg-brand-cobalt/10 border border-brand-cobalt/30 rounded-xl p-3.5 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+      {/* Cinematic/Video Sparkle Icon Indicator */}
+      <div className="p-1.5 bg-brand-cobalt/20 rounded-lg text-brand-cobalt shrink-0 mt-0.5">
+        <Video size={16} className="animate-pulse" />
+      </div>
+      <div className="space-y-0.5">
+        <p className="text-xs font-bold text-white tracking-wide">
+          Cinematic Walkthrough Enabled
+        </p>
+        <p className="text-[11px] text-brand-slate/70 leading-relaxed">
+          Because you selected a premium listing type, you can now upload short video walkthroughs alongside your photos in the media section below to maximize client engagement.
+        </p>
+      </div>
     </div>
+  )}
+</div>
     
   </div>
             </div>
@@ -415,66 +437,66 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
               </span>
             </div>
             
-            {/* Dropzone Interactive Area */}
-            {/* Dropzone Interactive Area */}
-<div className="border-2 border-dashed border-white/10 hover:border-brand-cobalt/40 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 relative group bg-white/[0.01] hover:bg-white/[0.03]">
-  <input 
-    type="file" 
-    multiple 
-    // 🟢 SURGICAL UPDATE: Dynamically unlocks video MIME formats based on property type selection
-    accept={allowsVideo ? "image/png, image/jpeg, image/jpg, image/webp, video/mp4, video/webm, video/quicktime" : "image/png, image/jpeg, image/jpg, image/webp"} 
-    onChange={handleFileChange}
-    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-  />
-  
-  <div className="space-y-2 pointer-events-none">
-    <Upload className="mx-auto text-white/20 group-hover:text-brand-cobalt group-hover:scale-110 transition-all duration-300" size={26} />
-    <p className="text-xs font-bold text-white/70 group-hover:text-white transition-colors">
-      {/* 🟢 SURGICAL UPDATE: Dynamic Title */}
-      {allowsVideo ? "Upload Property Media Gallery" : "Upload Property Images"}
-    </p>
-    <p className="text-[11px] text-white/30 max-w-[240px] mx-auto leading-normal">
-      {/* 🟢 SURGICAL UPDATE: Dynamic Help Subtext */}
-      {allowsVideo 
-        ? "Select up to 7 assets. Premium photos (PNG, JPG, WEBP) or high-end video walkthroughs (MP4, MOV)."
-        : "Select up to 7 high-resolution premium photos at once. PNG, JPG, or WEBP formats."}
-    </p>
-  </div>
-</div>
+                        
+                        {/* Dropzone Interactive Area */}
+            <div className="border-2 border-dashed border-white/10 hover:border-brand-cobalt/40 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 relative group bg-white/[0.01] hover:bg-white/[0.03]">
+              <input 
+                type="file" 
+                multiple 
+                // 🟢 SURGICAL UPDATE: Dynamically unlocks video MIME formats based on property type selection
+                accept={allowsVideo ? "image/png, image/jpeg, image/jpg, image/webp, video/mp4, video/webm, video/quicktime" : "image/png, image/jpeg, image/jpg, image/webp"} 
+                onChange={handleFileChange}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+              />
+              
+              <div className="space-y-2 pointer-events-none">
+                <Upload className="mx-auto text-white/20 group-hover:text-brand-cobalt group-hover:scale-110 transition-all duration-300" size={26} />
+                <p className="text-xs font-bold text-white/70 group-hover:text-white transition-colors">
+                  {/* 🟢 SURGICAL UPDATE: Dynamic Title */}
+                  {allowsVideo ? "Upload Property Media Gallery" : "Upload Property Images"}
+                </p>
+                <p className="text-[11px] text-white/30 max-w-[240px] mx-auto leading-normal">
+                  {/* 🟢 SURGICAL UPDATE: Dynamic Help Subtext */}
+                  {allowsVideo 
+                    ? "Select up to 7 assets. Premium photos (PNG, JPG, WEBP) or high-end video walkthroughs (MP4, MOV)."
+                    : "Select up to 7 high-resolution premium photos at once. PNG, JPG, or WEBP formats."}
+                </p>
+              </div>
+            </div>
 
-{/* Upload Staging Line Previews */}
-{images.length > 0 && (
-  <div className="grid grid-cols-3 gap-2 pt-2">
-    {images.map((file, idx) => (
-      <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group bg-white/5">
-        
-        {/* 🟢 SURGICAL UPDATE: Safely separate rendering loops based on raw file type metadata */}
-        {file.type.startsWith('video/') ? (
-          <video 
-            src={URL.createObjectURL(file)} 
-            className="w-full h-full object-cover"
-            muted
-            playsInline
-          />
-        ) : (
-          <img 
-            src={URL.createObjectURL(file)} 
-            alt="Staged asset" 
-            className="w-full h-full object-cover"
-          />
-        )}
-        
-        <button 
-          type="button" onClick={() => removeImage(idx)}
-          className="absolute inset-0 bg-brand-coral/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white"
-        >
-          <X size={14} />
-        </button>
-      </div>
-    ))}
-  </div>
-)}
-</div>
+            {/* Upload Staging Line Previews */}
+            {images.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 pt-2">
+                {images.map((file, idx) => (
+                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group bg-white/5">
+                    
+                    {/* 🟢 SURGICAL UPDATE: Safely separate rendering loops based on raw file type metadata */}
+                    {file.type.startsWith('video/') ? (
+                      <video 
+                        src={URL.createObjectURL(file)} 
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <img 
+                        src={URL.createObjectURL(file)} 
+                        alt="Staged asset" 
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    
+                    <button 
+                      type="button" onClick={() => removeImage(idx)}
+                      className="absolute inset-0 bg-brand-coral/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            </div>
 
             {/* Final Submission Execution */}
             <button 

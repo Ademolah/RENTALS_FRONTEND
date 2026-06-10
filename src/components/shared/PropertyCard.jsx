@@ -117,7 +117,7 @@ export const PropertyCard = ({ property , hideAction = false}) => {
     }
   };
 
-  return (
+ return (
     <>
       {/* 1. Main Bento Grid Card Wrapper */}
       <div 
@@ -130,7 +130,7 @@ export const PropertyCard = ({ property , hideAction = false}) => {
           ${property.span || 'col-span-1 row-span-1'} 
         `}
       >
-        {/* 🟢 SURGICAL UPDATE 1: Dynamic Background Component Swap */}
+        {/* 🟢 SURGICAL ADJUSTMENT 1: Added pointer-events-none and isolated layout boundaries */}
         {checkIsVideo(cardBackgroundImage) ? (
           <video
             src={cardBackgroundImage}
@@ -138,7 +138,8 @@ export const PropertyCard = ({ property , hideAction = false}) => {
             loop
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none transition-transform duration-1000 group-hover:scale-105"
+            style={{ contentVisibility: 'auto' }} // Forces modern layout engines to contain subpixel dimensions safely
           />
         ) : (
           <div
@@ -178,7 +179,6 @@ export const PropertyCard = ({ property , hideAction = false}) => {
 
         {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-col justify-end">
-          
           <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 w-fit transition-colors ${
             property.isAvailable 
               ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
@@ -236,7 +236,8 @@ export const PropertyCard = ({ property , hideAction = false}) => {
       {/* 2. Full Screen World-Class Media Viewer Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-brand-midnight/98 backdrop-blur-2xl overflow-y-auto flex flex-col"
+          // 🟢 SURGICAL ADJUSTMENT 2: Added overflow-x-hidden to fully protect the screen width axis
+          className="fixed inset-0 z-50 bg-brand-midnight/98 backdrop-blur-2xl overflow-y-auto overflow-x-hidden flex flex-col"
           onClick={() => setIsOpen(false)}
         >
           {/* Top Sticky Header Controls */}
@@ -251,8 +252,6 @@ export const PropertyCard = ({ property , hideAction = false}) => {
 
           {/* Picture Theatre Frame */}
           <div className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center bg-black/20 px-4 group/carousel">
-            
-            {/* 🟢 SURGICAL UPDATE 2: Carousel Viewport Component Swap */}
             {checkIsVideo(images[currentImageIndex]) ? (
               <video
                 src={images[currentImageIndex]}
@@ -271,18 +270,18 @@ export const PropertyCard = ({ property , hideAction = false}) => {
               />
             )}
 
-            {/* Render left/right swipe controls strictly if mediaUrls contains multiple entries */}
+            {/* Render left/right swipe controls */}
             {images.length > 1 && (
               <>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                  className="absolute left-6 md:left-12 bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-full transition-all backdrop-blur-md shadow-xl transform active:scale-90"
+                  onClick={(e) => handlePrev(e)}
+                  className="absolute left-6 md:left-12 bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-full transition-all backdrop-blur-md shadow-xl transform active:scale-90 z-20"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                  className="absolute right-6 md:right-12 bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-full transition-all backdrop-blur-md shadow-xl transform active:scale-90"
+                  onClick={(e) => handleNext(e)}
+                  className="absolute right-6 md:right-12 bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-full transition-all backdrop-blur-md shadow-xl transform active:scale-90 z-20"
                 >
                   <ChevronRight size={24} />
                 </button>
@@ -315,7 +314,7 @@ export const PropertyCard = ({ property , hideAction = false}) => {
                 <p className="text-2xl md:text-4xl font-extrabold text-white tracking-tight flex items-baseline justify-start md:justify-end gap-2">
                   {displayPrice}
                   <span className="text-sm md:text-lg text-white/40 font-medium uppercase tracking-widest">
-                    {['shortlet', 'apartment'].includes(property.propertyType) ? '/ Mo' : '/ Yr'}
+                    {['shortlet', 'apartment'].includes(property.propertyType) ? 'Mo' : 'Yr'}
                   </span>
                 </p>
               </div>
