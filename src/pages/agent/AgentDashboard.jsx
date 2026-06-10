@@ -120,7 +120,7 @@ export const AgentDashboard = () => {
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <span className="bg-brand-cobalt/20 text-brand-cobalt border border-brand-cobalt/30 text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded text-white">
+                <span className="bg-brand-cobalt/20  border border-brand-cobalt/30 text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded text-white">
                   Verified Broker
                 </span>
                 <span className="text-white/40 text-xs font-mono">Agency ID: {user?.agencyId || 'Pending'}</span>

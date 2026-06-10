@@ -13,6 +13,13 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
+
+  const handleResetRedirect = () => {
+  setIsResetLoading(true);
+  
+    setTimeout(() => setIsResetLoading(false), 2500);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,54 +67,73 @@ export const Login = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            type="email"
-            placeholder="Email Address"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-          />
+  <input
+    type="email"
+    placeholder="Email Address"
+    required
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
+  />
 
-          <div className="relative w-full">
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            
-            className="w-full bg-brand-slate/5 border border-white/10 rounded-xl pl-4 pr-12 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
-          />
-          
-          <button
-            type="button" 
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors cursor-pointer p-1 focus:outline-none"
-            title={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? (
-              <EyeOff size={18} className="transition-transform duration-200 active:scale-95" />
-            ) : (
-              <Eye size={18} className="transition-transform duration-200 active:scale-95" />
-            )}
-          </button>
-        </div>
+  <div className="relative w-full">
+    <input
+      type={showPassword ? "text" : "password"}
+      placeholder="Password"
+      required
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="w-full bg-brand-slate/5 border border-white/10 rounded-xl pl-4 pr-12 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium"
+    />
+    
+    <button
+      type="button" 
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors cursor-pointer p-1 focus:outline-none"
+      title={showPassword ? "Hide password" : "Show password"}
+    >
+      {showPassword ? (
+        <EyeOff size={18} className="transition-transform duration-200 active:scale-95" />
+      ) : (
+        <Eye size={18} className="transition-transform duration-200 active:scale-95" />
+      )}
+    </button>
+  </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-brand-coral hover:bg-brand-coral/90 text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] disabled:opacity-50 mt-4 text-sm tracking-wide uppercase"
-          >
-            {loading ? 'Authenticating...' : 'Sign In'}
-          </button>
-        </form>
+  <button
+    type="submit"
+    disabled={loading}
+    className="w-full bg-brand-coral hover:bg-brand-coral/90 text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] disabled:opacity-50 mt-4 text-sm tracking-wide uppercase"
+  >
+    {loading ? 'Authenticating...' : 'Sign In'}
+  </button>
+</form>
 
-        <div className="mt-8 text-center">
-          <Link to="/register" className="text-brand-slate/60 hover:text-white text-sm transition-colors">
-            Don't have an account? <span className="text-brand-coral font-bold">Join Network</span>
-          </Link>
-        </div>
+{/* 🟢 SURGICAL UPDATE: Centered Secondary Action Suite */}
+<div className="mt-8 flex flex-col items-center gap-3.5 text-center">
+  <a 
+  href="mailto:admin@rentalsng.com?subject=Rentals%20Core%20Service%20-%20Password%20Reset%20Request" 
+  onClick={handleResetRedirect}
+  className={`text-xs font-medium transition-colors tracking-wide select-none ${
+    isResetLoading 
+      ? 'text-brand-coral pointer-events-none cursor-default' 
+      : 'text-white/40 hover:text-brand-coral'
+  }`}
+>
+  {isResetLoading ? (
+    <span className="flex items-center gap-2 justify-center">
+      <span className="w-1.5 h-1.5 rounded-full bg-brand-coral animate-ping" />
+      <span className="animate-pulse">Launching Mail Client...</span>
+    </span>
+  ) : (
+    'Forgot Password?'
+  )}
+</a>
+  
+  <Link to="/register" className="text-brand-slate/60 hover:text-white text-sm transition-colors">
+    Don't have an account? <span className="text-brand-coral font-bold">Join Network</span>
+  </Link>
+</div>
       </div>
     </div>
   );
