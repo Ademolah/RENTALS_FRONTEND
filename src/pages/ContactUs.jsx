@@ -1,18 +1,77 @@
 import  { useState } from 'react';
 import { Mail, Phone,  MapPin,  Send, CheckCircle } from 'lucide-react';
 import { Navbar } from '../components/layouts/Navbar';
+import emailjs from '@emailjs/browser';
+import toast from 'react-hot-toast';
 
 
 export const ContactUs = () => {
-  const [formState, setFormState] = useState({ name: '', email: '', message: '' });
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [form, setForm] = useState({
+        from_name: '',
+        from_email: '',
+        message: '',
+      });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Ingestion hook logic connects here
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 4000);
-  };
+      const [isSubmitted, setIsSubmitted] = useState(false);
+    
+      const [errors, setErrors] = useState({});
+    
+      const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+      };
+    
+      const validate = () => {
+        const newErrors = {};
+        if (!form.from_name.trim()) newErrors.from_name = 'Name is required';
+        if (!form.from_email.trim()) {
+          newErrors.from_email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(form.from_email)) {
+          newErrors.from_email = 'Email is invalid';
+        }
+       
+        if (!form.message.trim()) newErrors.message = 'Message is required';
+    
+        return newErrors;
+      };
+    
+      const sendEmail = (e) => {
+  e.preventDefault();
+  const validationErrors = validate();
+
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+  
+  setIsSubmitted(true);
+  setErrors({});
+
+  toast.promise(
+    emailjs.send(
+      'service_5xchz5i',
+      'template_gehipuf',
+      form,
+      '5rER37I1dsORgSj8n'
+    ),
+    {
+      loading: 'Sending...',
+      success: 'Message sent successfully!',
+      error: 'Failed to send message. Try again later.',
+    }
+  ).then(() => {
+    // Clear out form inputs locally
+    setForm({
+      from_name: '',
+      from_email: '',
+      message: '',
+    });
+
+    // 🟢 SURGICAL ADDITION: Refresh layout after the success notification has been read
+    setTimeout(() => {
+      window.location.reload();
+    }, 1800); // 1.8 seconds lets the toast slide in smoothly and complete its lifecycle
+  });
+};
 
   return (
     <main className="min-h-screen bg-[#0F172A] text-slate-300 pt-32 pb-20 px-6 md:px-10 relative overflow-hidden">
@@ -88,29 +147,33 @@ export const ContactUs = () => {
               </div>
             ) : null}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <form onSubmit={sendEmail} className="flex flex-col gap-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Full Corporate Name</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Full Name</label>
                   <input 
                     type="text" 
                     required
-                    value={formState.name}
-                    onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                    value={form.from_name}
+                    onChange={handleChange}
+                    name="from_name"
                     placeholder="Charles Ademola"
                     className="bg-white/5 border border-white/5 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-cobalt/40 focus:ring-1 focus:ring-brand-cobalt/40 transition-all"
                   />
+                  {errors.from_name && <p className="text-red-500 text-sm mt-1">{errors.from_name}</p>}
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Secure Identity Email</label>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Identity Email</label>
                   <input 
                     type="email" 
                     required
-                    value={formState.email}
-                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
+                    value={form.from_email}
+                    onChange={handleChange}
+                    name="from_email"
                     placeholder="charles@domain.com"
                     className="bg-white/5 border border-white/5 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-cobalt/40 focus:ring-1 focus:ring-brand-cobalt/40 transition-all"
                   />
+                  {errors.from_email && <p className="text-red-500 text-sm mt-1">{errors.from_email}</p>}
                 </div>
               </div>
 
@@ -119,8 +182,9 @@ export const ContactUs = () => {
                 <textarea 
                   rows={6}
                   required
-                  value={formState.message}
-                  onChange={(e) => setFormState({ ...formState, message: e.target.value })}
+                  value={form.message}
+                  onChange={handleChange}
+                  name="message"
                   placeholder="Describe your enterprise architectural objectives or application requirements..."
                   className="bg-white/5 border border-white/5 rounded-xl px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-brand-cobalt/40 focus:ring-1 focus:ring-brand-cobalt/40 transition-all resize-none"
                 />
