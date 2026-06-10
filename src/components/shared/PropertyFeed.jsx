@@ -8,6 +8,8 @@ import { apiClient } from '../../services/apiClient';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast'
 import { HotelExplorerGrid } from '../../pages/hotel/HotelExplorer'
+import verifiedSpacesImg from '../../assets/facade2.jpg'
+import portfolioYieldImg from '../../assets/modern-facade.jpg'
 
 
 export const PropertyFeed = () => {
@@ -348,36 +350,64 @@ const [phraseIdx, setPhraseIdx] = useState(0);
       </div>
       </div>
 
-  {/* Right Side Visual/Metrics Pillar (Clean grid layout, zero margins shifting out of bounds) */}
-  <div className="relative z-10 hidden md:flex flex-col gap-4 w-full max-w-xs shrink-0">
-    
-    {/* Metric Card 1 */}
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-premium relative overflow-hidden group">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-brand-cobalt/20 flex items-center justify-center text-brand-cobalt shrink-0">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-        </div>
-        <div>
-          <p className="text-white font-black text-2xl tracking-tight">Verified Spaces</p>
-          <p className="text-brand-slate/50 text-xs font-bold uppercase tracking-wider mt-0.5">Rentals & Shortlets</p>
-        </div>
-      </div>
-    </div>
-    
-    {/* Metric Card 2 */}
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-premium relative overflow-hidden group">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold shrink-0">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-        </div>
-        <div>
-          <p className="text-white font-black text-2xl tracking-tight">Acquisitions</p>
-          <p className="text-brand-slate/50 text-xs font-bold uppercase tracking-wider mt-0.5">Secure Premium Purchase</p>
-        </div>
-      </div>
-    </div>
 
+{/* 🟢 SURGICAL UPDATE: Added '-mt-8 mb-6' to shift layout upward and protect breathing room */}
+<div className="relative z-10 hidden md:flex flex-col gap-4 w-full max-w-xs shrink-0 select-none -mt-8 mb-6">
+  
+  {/* Metric Card 1: Verified Spaces */}
+  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-premium relative h-44 overflow-hidden group transition-all duration-500 hover:border-white/20">
+    {/* Full-Bleed Background Image (Supports standard .jpg / .jpeg) */}
+    <img 
+      src={verifiedSpacesImg}
+      alt="Premium Architectural Facade" 
+      className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 group-hover:scale-105 transition-all duration-700 ease-out grayscale group-hover:grayscale-0"
+    />
+    {/* Premium Gradient Overlay Shield */}
+    <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A] via-[#0F172A]/85 to-transparent z-10" />
+    
+    {/* Core Context Content */}
+    <div className="absolute inset-0 z-20 p-6 flex flex-col justify-between">
+      <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[9px] font-mono uppercase tracking-widest text-white/50 w-max">
+        Verified Real Estate
+      </span>
+      <div>
+        <p className="text-white font-display font-black text-3xl tracking-tight leading-none">
+          148 <span className="text-xs font-normal text-white/40 font-sans tracking-normal ml-1">Active Portfolios</span>
+        </p>
+        <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mt-2.5 font-mono">
+          Rentals & Luxury Shortlets
+        </p>
+      </div>
+    </div>
   </div>
+
+  {/* Metric Card 2: Asset Utilization */}
+  <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] shadow-premium relative h-44 overflow-hidden group transition-all duration-500 hover:border-white/20">
+    {/* Full-Bleed Background Image */}
+    <img 
+      src={portfolioYieldImg}
+      alt="Luxury Interior Aesthetic"
+      className="absolute inset-0 w-full h-full object-cover opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700 ease-out grayscale group-hover:grayscale-0"
+    />
+    {/* Premium Gradient Overlay Shield */}
+    <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A] via-[#0F172A]/85 to-transparent z-10" />
+    
+    {/* Core Context Content */}
+    <div className="absolute inset-0 z-20 p-6 flex flex-col justify-between">
+      <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[9px] font-mono uppercase tracking-widest text-white/50 w-max">
+        Asset Utilization
+      </span>
+      <div>
+        <p className="text-white font-display font-black text-3xl tracking-tight leading-none">
+          94.2% <span className="text-xs font-normal text-emerald-400 font-sans tracking-normal ml-1">Optimal</span>
+        </p>
+        <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mt-2.5 font-mono">
+          Operational Occupancy
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 
       {/* =======================================================================
@@ -434,7 +464,7 @@ const [phraseIdx, setPhraseIdx] = useState(0);
       </div>
 
      {/* =======================================================================
-    3{/* =======================================================================
+
     3. HORIZONTAL LOCATION EXPLORER (PRISTINE, FUNCTIONAL & LIVE)
     ======================================================================= */}
 <div className="mb-20">

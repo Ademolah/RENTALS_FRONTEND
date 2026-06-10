@@ -35,6 +35,11 @@ export const PropertyCard = ({ property , hideAction = false}) => {
     typeof item === 'string' ? item === property._id : item?._id === property._id
   );
 
+  const checkIsVideo = (url) => {
+    if (!url) return false;
+    return url.includes('/video/upload/') || url.match(/\.(mp4|webm|mov|quicktime)$/i);
+  };
+
   const handleNext = (e) => {
     e.stopPropagation(); // Avoid closing the modal
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -114,7 +119,7 @@ export const PropertyCard = ({ property , hideAction = false}) => {
 
   return (
     <>
-      {/* 1. Main Bento Grid Card Wrapper (Added aspect ratio and min-height anchors for dashboard stability) */}
+      {/* 1. Main Bento Grid Card Wrapper */}
       <div 
         onClick={() => setIsOpen(true)}
         className={`
@@ -125,11 +130,22 @@ export const PropertyCard = ({ property , hideAction = false}) => {
           ${property.span || 'col-span-1 row-span-1'} 
         `}
       >
-        {/* Background Image with Hover Zoom Effect (Updated to use cardBackgroundImage fallback) */}
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-          style={{ backgroundImage: `url(${cardBackgroundImage})` }}
-        />
+        {/* 🟢 SURGICAL UPDATE 1: Dynamic Background Component Swap */}
+        {checkIsVideo(cardBackgroundImage) ? (
+          <video
+            src={cardBackgroundImage}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+          />
+        ) : (
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
+            style={{ backgroundImage: `url(${cardBackgroundImage})` }}
+          />
+        )}
         
         {/* Deep Midnight Gradient Overlay for Text Readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/50 to-transparent opacity-95" />
@@ -144,13 +160,12 @@ export const PropertyCard = ({ property , hideAction = false}) => {
           </div>
         )}
 
-        {/* 🟢 NEW: Floating Save/Love Action Button */}
+        {/* Floating Save/Love Action Button */}
         <button 
           onClick={handleSaveToCollection}
           className="absolute top-5 right-5 z-20 bg-black/30 hover:bg-black/50 backdrop-blur-md p-3 rounded-full text-white transition-all duration-300 transform hover:scale-110 shadow-lg border border-white/10 group/btn"
           aria-label="Save to Collection"
         >
-          {/* 🟢 SURGICAL UPDATE: Core visualization highlights coral immediately if item is saved */}
           <Heart 
             size={22} 
             className={`transition-all duration-300 ${
@@ -195,8 +210,6 @@ export const PropertyCard = ({ property , hideAction = false}) => {
 
           {/* Action Bar */}
           <div className="flex items-center justify-between gap-4 mt-auto w-full">
-            
-            {/* 🎯 SURGICAL UPDATE 1: Swapped property.price to custom displayPrice logic */}
             <p className="text-lg sm:text-xl font-bold text-white tracking-tight shrink-0 flex items-baseline gap-1">
               {displayPrice}
               <span className="text-[10px] sm:text-xs text-white/50 font-medium uppercase tracking-widest">
@@ -205,17 +218,17 @@ export const PropertyCard = ({ property , hideAction = false}) => {
             </p>
             
             {!hideAction && (
-            <button 
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation(); 
-                setIsBookingModalOpen(true); 
-              }} 
-              className="bg-brand-coral hover:bg-brand-coral/90 text-white px-4 py-2 rounded-xl text-xs font-bold tracking-wide whitespace-nowrap transition-all transform active:scale-95 shadow-md hover:shadow-lg shadow-brand-coral/20 shrink-0"
-            >
-              Book Tour
-            </button>
-  )}
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  setIsBookingModalOpen(true); 
+                }} 
+                className="bg-brand-coral hover:bg-brand-coral/90 text-white px-4 py-2 rounded-xl text-xs font-bold tracking-wide whitespace-nowrap transition-all transform active:scale-95 shadow-md hover:shadow-lg shadow-brand-coral/20 shrink-0"
+              >
+                Book Tour
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -238,24 +251,37 @@ export const PropertyCard = ({ property , hideAction = false}) => {
 
           {/* Picture Theatre Frame */}
           <div className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center bg-black/20 px-4 group/carousel">
-            <img 
-              src={images[currentImageIndex]} 
-              alt={`${property.title} viewing frame`}
-              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl transition-all duration-500"
-              onClick={(e) => e.stopPropagation()}
-            />
+            
+            {/* 🟢 SURGICAL UPDATE 2: Carousel Viewport Component Swap */}
+            {checkIsVideo(images[currentImageIndex]) ? (
+              <video
+                src={images[currentImageIndex]}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl transition-all duration-500"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <img 
+                src={images[currentImageIndex]} 
+                alt={`${property.title} viewing frame`}
+                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl transition-all duration-500"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
 
             {/* Render left/right swipe controls strictly if mediaUrls contains multiple entries */}
             {images.length > 1 && (
               <>
                 <button 
-                  onClick={handlePrev}
+                  onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                   className="absolute left-6 md:left-12 bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-full transition-all backdrop-blur-md shadow-xl transform active:scale-90"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button 
-                  onClick={handleNext}
+                  onClick={(e) => { e.stopPropagation(); handleNext(); }}
                   className="absolute right-6 md:right-12 bg-white/5 hover:bg-white/10 border border-white/10 text-white p-4 rounded-full transition-all backdrop-blur-md shadow-xl transform active:scale-90"
                 >
                   <ChevronRight size={24} />
@@ -286,15 +312,12 @@ export const PropertyCard = ({ property , hideAction = false}) => {
               </div>
               <div className="text-left md:text-right shrink-0">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Premium Valuation</p>
-                
-                {/* 🎯 SURGICAL UPDATE 2: Swapped to displayPrice logic here as well */}
                 <p className="text-2xl md:text-4xl font-extrabold text-white tracking-tight flex items-baseline justify-start md:justify-end gap-2">
                   {displayPrice}
                   <span className="text-sm md:text-lg text-white/40 font-medium uppercase tracking-widest">
                     {['shortlet', 'apartment'].includes(property.propertyType) ? '/ Mo' : '/ Yr'}
                   </span>
                 </p>
-
               </div>
             </div>
 
