@@ -152,123 +152,124 @@ export const Register = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="flex gap-4">
-            <input
-              type="text"
-              name="firstName"
-              placeholder="First Name"
-              required
-              onChange={handleChange}
-              className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
-            />
-            <input
-              type="text"
-              name="lastName"
-              placeholder="Last Name"
-              required
-              onChange={handleChange}
-              className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
-            />
-          </div>
+  <div className="flex gap-4">
+    <input
+      type="text"
+      name="firstName"
+      placeholder="First Name"
+      required
+      onChange={handleChange}
+      className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
+    />
+    <input
+      type="text"
+      name="lastName"
+      placeholder="Last Name"
+      required
+      onChange={handleChange}
+      className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
+    />
+  </div>
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            required
-            onChange={handleChange}
-            className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
-          />
+  <input
+    type="email"
+    name="email"
+    placeholder="Email Address"
+    required
+    onChange={handleChange}
+    className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
+  />
 
-          {/* 📞 PREMIUM PARSED TELEPHONY GROUP */}
-          <div className="relative flex gap-2 w-full z-20" ref={dropdownRef}>
-            {/* Custom Interactive Flag Trigger Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-1.5 h-full bg-brand-slate/5 border border-white/10 rounded-xl px-3 text-white text-sm font-medium hover:bg-white/10 hover:border-white/20 transition-all focus:outline-none min-w-[90px] justify-between cursor-pointer"
-              >
-                <span className="text-base">{selectedCountry.flag}</span>
-                <span className="text-white/80 text-xs font-semibold">{selectedCountry.dialCode}</span>
-                <ChevronDown size={14} className={`text-white/30 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+  {/* 📞 PREMIUM SURGICALLY ALIGNED TELEPHONY FIELD */}
+  <div className="relative w-full z-20" ref={dropdownRef}>
+    {/* Absolute Floating Country Code Selector Engine */}
+    <div className="absolute left-1 top-1 bottom-1 flex items-center z-30">
+      <button
+        type="button"
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        className="flex items-center gap-1.5 h-full px-3 text-white text-sm font-medium hover:bg-white/5 rounded-l-lg transition-all focus:outline-none min-w-[85px] justify-between cursor-pointer"
+      >
+        <span className="text-base">{selectedCountry.flag}</span>
+        <span className="text-white/80 text-xs font-semibold">{selectedCountry.dialCode}</span>
+        <ChevronDown size={12} className={`text-white/30 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+      </button>
 
-              {/* Seamless Flyout Country Drawer */}
-              {isDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-72 max-h-64 overflow-y-auto bg-brand-midnight/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl scrollbar-thin scrollbar-thumb-white/10 animate-in fade-in slide-in-from-top-2 duration-150">
-                  {AFRICAN_COUNTRIES.map((country) => (
-                    <button
-                      key={country.code}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCountry(country);
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm transition-colors duration-150 hover:bg-white/5 cursor-pointer ${
-                        selectedCountry.code === country.code ? 'bg-brand-cobalt/20 text-brand-coral font-bold' : 'text-white/80'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2.5 truncate">
-                        <span className="text-base flex-shrink-0">{country.flag}</span>
-                        <span className="truncate text-xs font-medium">{country.name}</span>
-                      </span>
-                      <span className="text-xs text-white/40 font-mono pl-2">{country.dialCode}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Local Telephone Number Input Element */}
-            <input
-              type="tel"
-              name="phoneNumber"
-              placeholder="Phone Number"
-              required
-              value={formData.phoneNumber}
-              onChange={handleChange} // 👈 Keeps state bindings clean
-              onKeyPress={(e) => {
-                if (!/[0-9]/.test(e.key)) {
-                  e.preventDefault(); // This is already doing the heavy lifting of locking out non-digits beautifully
-                }
-              }}
-              className="flex-1 bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm tracking-wide"
-            />
-          </div>
-
-          <div className="relative w-full">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Create Password"
-              required
-              onChange={handleChange}
-              className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
-            />
-            
+      {/* Flyout Country Menu Drawer */}
+      {isDropdownOpen && (
+        <div className="absolute left-0 top-full mt-2 w-72 max-h-64 overflow-y-auto bg-brand-midnight/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl scrollbar-thin scrollbar-thumb-white/10 animate-in fade-in slide-in-from-top-2 duration-150">
+          {AFRICAN_COUNTRIES.map((country) => (
             <button
-              type="button" 
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors cursor-pointer p-1 focus:outline-none"
-              title={showPassword ? "Hide password" : "Show password"}
+              key={country.code}
+              type="button"
+              onClick={() => {
+                setSelectedCountry(country);
+                setIsDropdownOpen(false);
+              }}
+              className={`w-full flex items-center justify-between px-4 py-3 text-left text-sm transition-colors duration-150 hover:bg-white/5 cursor-pointer ${
+                selectedCountry.code === country.code ? 'bg-brand-cobalt/20 text-brand-coral font-bold' : 'text-white/80'
+              }`}
             >
-              {showPassword ? (
-                <EyeOff size={18} className="transition-transform duration-200 active:scale-95" />
-              ) : (
-                <Eye size={18} className="transition-transform duration-200 active:scale-95" />
-              )}
+              <span className="flex items-center gap-2.5 truncate">
+                <span className="text-base flex-shrink-0">{country.flag}</span>
+                <span className="truncate text-xs font-medium">{country.name}</span>
+              </span>
+              <span className="text-xs text-white/40 font-mono pl-2">{country.dialCode}</span>
             </button>
-          </div>
+          ))}
+        </div>
+      )}
+    </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-brand-coral hover:bg-brand-coral/90 text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] disabled:opacity-50 mt-4 text-sm tracking-wide uppercase"
-          >
-            {loading ? 'Creating Account...' : 'Register'}
-          </button>
-        </form>
+    {/* Integrated Local Telephone Number Input Element */}
+    <input
+      type="tel"
+      name="phoneNumber"
+      placeholder="Phone Number"
+      required
+      value={formData.phoneNumber}
+      onChange={handleChange}
+      onKeyPress={(e) => {
+        if (!/[0-9]/.test(e.key)) {
+          e.preventDefault();
+        }
+      }}
+      // 🟢 NOTICE THE LEFT PADDING (pl-[95px]) -> Ensures text streams gracefully past the floating flag trigger area without collision
+      className="w-full bg-brand-slate/5 border border-white/10 rounded-xl pr-4 pl-[95px] py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm tracking-wide"
+    />
+  </div>
+
+  <div className="relative w-full">
+    <input
+      type={showPassword ? "text" : "password"}
+      name="password"
+      placeholder="Create Password"
+      required
+      onChange={handleChange}
+      className="w-full bg-brand-slate/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-cobalt transition-colors font-medium text-sm"
+    />
+    
+    <button
+      type="button" 
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors cursor-pointer p-1 focus:outline-none"
+      title={showPassword ? "Hide password" : "Show password"}
+    >
+      {showPassword ? (
+        <EyeOff size={18} className="transition-transform duration-200 active:scale-95" />
+      ) : (
+        <Eye size={18} className="transition-transform duration-200 active:scale-95" />
+      )}
+    </button>
+  </div>
+
+  <button
+    type="submit"
+    disabled={loading}
+    className="w-full bg-brand-coral hover:bg-brand-coral/90 text-white font-bold py-4 rounded-xl transition-all transform active:scale-[0.98] disabled:opacity-50 mt-4 text-sm tracking-wide uppercase"
+  >
+    {loading ? 'Creating Account...' : 'Register'}
+  </button>
+</form>
 
         <div className="mt-8 text-center">
           <Link to="/login" className="text-brand-slate/60 hover:text-white text-sm transition-colors">
