@@ -418,7 +418,7 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
 
                 {/* 2. REGIONAL STATE JURISDICTION (PRIMARY DROPDOWN) */}
                 <div className="space-y-1">
-                  <label className="text-xs text-white/40 font-bold uppercase">Regional State Jurisdiction</label>
+                  <label className="text-xs text-white/40 font-bold uppercase">Regional State</label>
                   <div className="relative">
                     <select 
                       name="state" 
