@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://rentals-backend-epcv.onrender.com/sitemap.xml"
+    }
+  ]
+}
