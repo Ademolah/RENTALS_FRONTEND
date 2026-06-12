@@ -24,7 +24,7 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
               darkMode ? "bg-white/5 border-white/10 text-white/70 hover:bg-white/10" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100 shadow-sm"
             }`}
           >
-            <ArrowLeft size={14} strokeWidth={3} /> Return to Map Space
+            <ArrowLeft size={14} strokeWidth={3} /> Return
           </button>
           <span className={`text-xs font-mono tracking-wider ${darkMode ? "text-white/40" : "text-slate-500"}`}>
             {hotels?.length || 0} Exclusive Matches Discovered
