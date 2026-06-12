@@ -198,7 +198,7 @@ export const Navbar = () => {
               <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-slate-500 mb-2">Workspace</p>
               <Link to={getDashboardPath()} className="flex items-center gap-3 text-slate-300 hover:text-white transition-colors text-base font-semibold">
                 <LayoutDashboard size={18} className="text-brand-gold" />
-                Command Dashboard
+                Profile
               </Link>
               <Link to="/profile/settings" className="flex items-center gap-3 text-slate-300 hover:text-white transition-colors text-base font-semibold">
                 <User size={18} className="text-slate-400" />
