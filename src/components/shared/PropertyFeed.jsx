@@ -120,7 +120,7 @@ const [phraseIdx, setPhraseIdx] = useState(0);
             ? item.mediaUrls[0] 
             : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop',
             
-          price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}/`,
+          price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}`,
           
           span: index === 0 ? 'md:col-span-2 md:row-span-2' : 
                 index === 2 ? 'md:col-span-3 md:row-span-2' : 

@@ -28,13 +28,34 @@ export const PropertyUpload = () => {
 const allowsVideo = formData.propertyType === 'apartment' || formData.propertyType === 'shortlet';
 
   const NIGERIA_LOCATIONS = {
-  "Abuja (FCT)": ["Maitama", "Wuse", "Asokoro", "Garki", "Gwarinpa", "Jabi", "Utako", "Apo", "Lugbe", "Kubwa", "Gudu", "Lokogoma"],
-  "Lagos": ["Ikoyi", "Victoria Island", "Lekki Phase 1", "Ikeja GRA", "Surulere", "Yaba", "Epe", "Ajah", "Banana Island", "Magodo", "Maryland"],
-  "Rivers": ["Port Harcourt City", "Obio-Akpor", "Eleme", "Oyigbo", "Bonny", "GRA Phase 1-3", "Trans Amadi"],
-  "Oyo": ["Ibadan North", "Ibadan South-West", "Oluyole", "Bodija", "Agodi GRA", "Samonda"],
-  "Ogun": ["Abeokuta", "Ota", "Ibafo", "Mowe", "Arepo", "Sagamu"],
-  "Enugu": ["Enugu East", "Enugu North", "Enugu South", "Independence Layout", "GRA"],
-  "Kano": ["Kano Municipal", "Nassarawa", "Tarauni", "Kumbotso", "Gwale"],
+  "Abuja (FCT)": [
+  "Central Business District", "Asokoro", "Maitama", "Wuse I", "Wuse II", "Garki I", "Garki II", "Area 1", "Area 2", "Area 3", "Area 7", "Area 8", "Area 10", "Area 11", "Guzape", "Jabi", "Utako", "Kado", "Mabushi", "Wuye", "Gudu", "Durumi", "Katampe", "Katampe Extension", "Apo", "Apo Dutse", "Apo Resettlement", "Gaduwa", "Jahi", "Dakibiyu", "Kukwaba", "Gwarinpa", "Life Camp", "Lokogoma", "Galadimawa", "Kabusa", "Karmo", "Kafe", "Nbora", "Dakwo", "Lugbe", "Idu", "Mpape", "Dei-Dei", "Kubwa", "Nyanya", "Karu", "Gwagwa", "Karimu", "Bwari", "Dutse-Alhaji", "Gwagwalada", "Kuje", "Kwali", "Abaji"
+]
+,
+  "Lagos": [
+  "Agege", "Ajah", "Alimosho", "Amuwo-Odofin", "Apapa", "Badagry", "Bariga", "Egbeda", "Ejigbo", "Epe", "Eti-Osa", "FESTAC Town", "Gbagada", "Ibeju-Lekki", "Idumota", "Ifako-Ijaiye", "Ikeja", "Ikorodu", "Ikoyi", "Ilasamaja", "Il植e", "Ilari", "Ilupeju", "Ipaja", "Isolo", "Itire", "Iyana Ipaja", "Jibowu", "Ketu", "Kosofe", "Lagos Island", "Lagos Mainland", "Lawanson", "Lekki", "Magodo", "Maryland", "Mende", "Mushin", "Obalende", "Ogba", "Ogudu", "Ojo", "Oshodi", "Oworonshoki", "Oyingbo", "Palmgrove", "Shomolu", "Surulere", "Victoria Island", "Yaba"
+]
+,
+  "Rivers": [
+  "Abaji", "Abalama", "Abara", "Abonnema", "Abua", "Abuloma", "Ada George", "Afam", "Agip", "Ahoada", "Akinima", "Akpajo", "Alakahia", "Aluu", "Amadi Ama", "Andoni", "Apani", "Arapokwu", "Asari-Toru", "Ataba", "Azuabie", "Bane", "Billie", "Bodo", "Bonny Island", "Bori", "Borikiri", "Buguma", "Choba", "D-Line", "Degema", "Deeyor", "Diobu", "Eagle Island", "Eberi", "Ebubu", "Egbema", "Elekahia", "Elele", "Elelenwo", "Eleme", "Eliozu", "Elimgbu", "Emelego", "Emohua", "Etche", "Eteo", "Garrison", "Gokana", "Igwuruta", "Igbo-Etche", "Ikwerre", "Iloabuchi", "Iwofe", "Khana", "Koro Koro", "Kula", "Marine Base", "Mbiama", "Mgboba", "Nchia", "New GRA", "Nkoro", "Nkpogu", "Ogba", "Ogbogoro", "Ogbunabali", "Ogu", "Okehi", "Okrika", "Old GRA", "Old Township", "Omoku", "Omuma", "Onne", "Opobo", "Oroworukwo", "Oyo", "Oyigbo", "Peter Odili Road", "Rumuigbo", "Rumukalagbor", "Rumukurushi", "Rumuodara", "Rumuodomaya", "Rumuokoro", "Rumuokwuta", "Rumuola", "Rumuomasi", "Rumuwoji", "Sogho", "Tai", "Trans Amadi", "Umuagbai", "Woji"
+]
+,
+  "Oyo": [
+  "Abebi", "Afonso", "Agodi", "Agodi GRA", "Akanran", "Akobo", "Alakia", "Alalubosa", "Apata", "Atiba", "Awotan", "Bodija", "Challenge", "Challawa", "Eleyele", "Egbeda", "Felele", "Fiditi", "Ibadan", "Ibarapa", "Idi-Ape", "Idi-Ishin", "Idi-Ose", "Ido", "Ifeloju", "Igana", "Ijaye", "Ikolaba", "Ikoyi-Olesin", "Ilafin", "Ilora", "Inalende", "Irepo", "Iseyin", "Isokan", "Itesiwaju", "Iwajowa", "Iwo Road", "Iyana Church", "Jericho", "Kajola", "Kishi", "Lalupon", "Moniya", "NTC", "New GRA", "Ogbomoso", "Ogo Oluwa", "Ojoo", "Oke-Ado", "Oke-Bola", "Olorunsogo", "Oluyole", "Oluyole Estate", "Omio Adio", "Onireke", "Oorelope", "Oorun", "Orita Challenge", "Oritamefa", "Oshogbo Road", "Oyo", "Saki", "Samonda", "Sango", "Seyi", "Surulere Oyo", "Tapa"
+]
+,
+  "Ogun": [
+  "Abeokuta", "Adatan", "Adigbe", "AgBARA", "Ag bado", "Ag go-Ikeye", "Aiyetoro", "Akute", "Alagbado", "Arepo", "Asero", "Atan", "Ayetoro", "Bakatari", "Berger", "Ibafo", "IbARA", "Ibiade", "Ibogun", "Idiroko", "Ifo", "Igbesa", "Ijebu-Igbo", "Ijebu-Ife", "Ijebu-Mure", "Ijebu-Ode", "Ikenne", "Ilaro", "Ilisan-Remo", "Ilishan", "Imeko", "Imodi", "Iperu", "Iperu-Remo", "Isara", "Isara-Remo", "Isheri", "Isheri North", "Isheri Olofin", "Itori", "Iwoye", "Lafenwa", "Magboro", "Mowe", "Obada-Oko", "Obafemi Owode", "Odeda", "Odogbolu", "Ogbere", "Ogi", "Ogun Waterside", "Oke-Yeke", "Okun-Owa", "Oloke", "Olomore", "Onikolobo", "Oru-Ijebu", "Oshodi-Ota", "Ota", "Otta", "Owode", "Owode-Egba", "Owode-Yewa", "Paki", "Redemption Camp", "Sabo Abeokuta", "Sabo Shagamu", "Sagamu", "Sango-Ota", "Shagamu", "Simawa", "Wasimi"
+]
+,
+  "Edo": [
+  "Abudu", "Affenmai", "Agbede", "Agenebode", "Aka-Njoku", "Akoko-Edo", "Akon", "Auchi", "Benin City", "Egor", "Ekperi", "Ekpoma", "Etsako", "Ewu", "Fugar", "Garrick", "Idogbo", "Igarra", "Igueben", "Ikpoba Hill", "Ikpoba-Okha", "Irrua", "Ise", "Isiohor", "Ivbiaro", "Iwogban", "Jattu", "NIFOR", "Oba Market", "Obadan", "Obakhokho", "Obanyator", "Obarisi", "Ogbeson", "Oghada", "Ogida", "Ogor", "Oregbeni", "Ovia North-East", "Ovia South-West", "Owan", "Okada", "Okha", "Oluku", "Oredo", "Ososo", "Sabongida-Ora", "Siluko", "Ugbekun", "Ugbowo", "Ughoton", "Uhen", "Uhi", "Ubiaja", "Uromi", "Useh", "Usen", "Utoka"
+]
+,
+  "Kano": [
+  "Ajingi", "Albasu", "Badawa", "Bagwai", "Bebeji", "Bichi", "Bompai", "Bunkure", "Challawa", "Dala", "Danbatta", "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko", "Garun Mallam", "Gaya", "Gezawa", "Gwale", "Gwarzo", "Gyadi-Gyadi", "Hotoro", "Jaba", "Kabuga", "Kabo", "Kano Municipal", "Karaye", "Kazaure Road", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura", "Madobi", "Makoda", "Mariri", "Minjibir", "Nassarawa", "Naibawa", "Nassarawa GRA", "Rano", "Rimin Gado", "Rogo", "Sabo Gari", "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil", "Yankaba", "Zoo Road"
+]
+,
   // Add other states and their LGAs/Localities here...
 };
 
@@ -148,7 +169,57 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
                 <Building2 size={16} className="text-brand-cobalt" />
                 <h3 className="text-sm font-bold tracking-wider uppercase font-mono text-white/70">Structural Identity</h3>
               </div>
+
+              {/* 1. PROPERTY CLASSIFICATION (MOVED FIRST) */}
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1">
+                    <Layers size={12}/> Property Classification
+                  </label>
+                  <select 
+                    name="propertyType" 
+                    value={formData.propertyType} 
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled className="bg-[#1E293B] text-white/40">Select Property Category</option>
+                    
+                    <optgroup label="Properties For Rent / Lease" className="bg-[#1E293B] text-brand-cobalt font-bold text-xs uppercase tracking-wider">
+                      <option value="house" className="text-white normal-case font-medium">Detached House / Duplex (Rent)</option>
+                      <option value="penthouse" className="text-white normal-case font-medium">Luxury Penthouse</option>
+                      <option value="apartment" className="text-white normal-case font-medium">Serviced Apartment</option>
+                      <option value="shortlet" className="text-white normal-case font-medium">Luxury Shortlet / Vacation Rental</option>
+                      <option value="commercial" className="text-white normal-case font-medium">Commercial Office Space</option>
+                      <option value="terraced" className="text-white normal-case font-medium">Terraced Townhouse (Rent)</option>
+                    </optgroup>
+
+                    <optgroup label="Properties For Outright Sale" className="bg-[#1E293B] text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                      <option value="house_sale" className="text-white normal-case font-medium">House Asset (Bungalow, Duplex, Triplex For Sale)</option>
+                      <option value="land" className="text-white normal-case font-medium">Premium Land Allocation (For Sale)</option>
+                    </optgroup>
+                  </select>
+                </div>
+
+                {/* Dynamic Notification Banner */}
+                {['apartment', 'shortlet'].includes(formData.propertyType) && (
+                  <div className="bg-brand-cobalt/10 border border-brand-cobalt/30 rounded-xl p-3.5 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="p-1.5 bg-brand-cobalt/20 rounded-lg text-brand-cobalt shrink-0 mt-0.5">
+                      <Video size={16} className="animate-pulse" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-white tracking-wide">
+                        Cinematic Walkthrough Enabled
+                      </p>
+                      <p className="text-[11px] text-brand-slate/70 leading-relaxed">
+                        Because you selected a premium listing type, you can now upload short video walkthroughs alongside your photos in the media section below to maximize client engagement.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
               
+              {/* 2. LISTING TITLE */}
               <div className="space-y-1">
                 <label className="text-xs text-white/40 font-bold uppercase">Listing Title</label>
                 <input 
@@ -158,8 +229,9 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
                 />
               </div>
 
+              {/* 3. DESCRIPTION */}
               <div className="space-y-1">
-                <label className="text-xs text-white/40 font-bold uppercase">Description Narrative</label>
+                <label className="text-xs text-white/40 font-bold uppercase">Description / Features</label>
                 <textarea 
                   name="description" required rows="4" placeholder="Detail the interior specifications, automated automation systems, and luxury amenities..."
                   value={formData.description} onChange={handleInputChange}
@@ -167,142 +239,120 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  
-  <div className="space-y-1">
-    
-    {/* 🎯 SURGICAL UPDATE: Reactive Valuation (Now includes Serviced Apartments) */}
-    <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1 transition-all duration-300">
-      <DollarSign size={12}/> 
-      {['shortlet', 'apartment'].includes(formData.propertyType) ? 'Valuation (NGN / Month)' : 'Valuation (NGN / Year)'}
-    </label>
-    
-    <div className="relative flex items-center group">
-      <input 
-        type="number" 
-        name="pricePerAnnum" 
-        required 
-        placeholder={['shortlet', 'apartment'].includes(formData.propertyType) ? '3500000' : '45000000'}
-        value={formData.pricePerAnnum} 
-        onChange={handleInputChange}
-        className="w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-24 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-all text-sm font-medium focus:bg-white/[0.07]"
-      />
-      
-      <div className="absolute right-3 pointer-events-none select-none animate-in fade-in zoom-in-95 duration-300">
-        <span className={`text-[9px] uppercase font-mono font-bold tracking-widest px-2.5 py-1 rounded-md border transition-all ${
-          ['shortlet', 'apartment'].includes(formData.propertyType) 
-            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
-            : 'bg-brand-cobalt/10 text-brand-cobalt border-brand-cobalt/20'
-        }`}>
-          {['shortlet', 'apartment'].includes(formData.propertyType) ? 'Per Month' : 'Per Annum'}
-        </span>
-      </div>
-    </div>
-    {/* END SURGICAL UPDATE */}
+              {/* 4. FINANCIAL ARCHITECTURE PANEL */}
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1">
+                  
+                  {/* Dynamic Pricing Context Label */}
+                  <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1 transition-all duration-300">
+                    <DollarSign size={12}/> 
+                    {['land', 'house_sale'].includes(formData.propertyType)
+                      ? 'Valuation (Total Cost / Outright Sale)' 
+                      : ['shortlet', 'apartment'].includes(formData.propertyType) 
+                      ? 'Valuation (NGN / Month)' 
+                      : 'Valuation (NGN / Year)'}
+                  </label>
+                  
+                  <div className="relative flex items-center group">
+                    <input 
+                      type="number" 
+                      name="pricePerAnnum" 
+                      required 
+                      placeholder={['land', 'house_sale'].includes(formData.propertyType) ? '125000000' : ['shortlet', 'apartment'].includes(formData.propertyType) ? '3500000' : '45000000'}
+                      value={formData.pricePerAnnum} 
+                      onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-24 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-all text-sm font-medium focus:bg-white/[0.07]"
+                    />
+                    
+                    {/* Dynamic Badges (Hidden completely for outright sales: land and house_sale) */}
+                    {formData.propertyType && !['land', 'house_sale'].includes(formData.propertyType) && (
+                      <div className="absolute right-3 pointer-events-none select-none animate-in fade-in zoom-in-95 duration-300">
+                        <span className={`text-[9px] uppercase font-mono font-bold tracking-widest px-2.5 py-1 rounded-md border transition-all ${
+                          ['shortlet', 'apartment'].includes(formData.propertyType) 
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+                            : 'bg-brand-cobalt/10 text-brand-cobalt border-brand-cobalt/20'
+                        }`}>
+                          {['shortlet', 'apartment'].includes(formData.propertyType) ? 'Per Month' : 'Per Annum'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
+                {/* Market Availability Toggle Block */}
+                <div className="pt-2 w-full">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between transition-all duration-300 hover:border-white/20">
+                    <div className="space-y-0.5">
+                      <label className="text-xs text-white/40 font-bold uppercase block">Market Availability Status</label>
+                      <p className="text-xs text-white/60 font-medium">
+                        {formData.isAvailable 
+                          ? "Listing is active, public, and open for clients to tour" 
+                          : "Listing is marked private, hidden, or temporarily off-market"}
+                      </p>
+                    </div>
 
-    {/* =======================================================================
-        AVAILABILITY TOGGLE (PREMIUM UI ELEMENT)
-        ======================================================================= */}
-    <div className="pt-6 col-span-full w-full">
-      <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between transition-all duration-300 hover:border-white/20">
-        <div className="space-y-0.5">
-          <label className="text-xs text-white/40 font-bold uppercase block">Market Availability Status</label>
-          <p className="text-xs text-white/60 font-medium">
-            {formData.isAvailable 
-              ? "Listing is active, public, and open for clients to tour" 
-              : "Listing is marked private, hidden, or temporarily off-market"}
-          </p>
-        </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
+                      className={`
+                        relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                        transition-colors duration-300 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-cobalt/50
+                        ${formData.isAvailable ? 'bg-emerald-500' : 'bg-white/10'}
+                      `}
+                    >
+                      <span
+                        className={`
+                          pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 
+                          transition duration-300 ease-in-out
+                          ${formData.isAvailable ? 'translate-x-5' : 'translate-x-0'}
+                        `}
+                      />
+                    </button>
+                  </div>
+                </div>
 
-        {/* The Custom Switch Mechanism */}
-        <button
-          type="button"
-          onClick={() => setFormData(prev => ({ ...prev, isAvailable: !prev.isAvailable }))}
-          className={`
-            relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
-            transition-colors duration-300 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-cobalt/50
-            ${formData.isAvailable ? 'bg-emerald-500' : 'bg-white/10'}
-          `}
-        >
-          {/* Toggle Handle Knob */}
-          <span
-            className={`
-              pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 
-              transition duration-300 ease-in-out
-              ${formData.isAvailable ? 'translate-x-5' : 'translate-x-0'}
-            `}
-          />
-        </button>
-      </div>
-    </div>
-
-    {/* Appended Financial Constraints */}
-    <div className="grid grid-cols-2 gap-4 pt-2">
-      <div className="space-y-1">
-        <label className="text-xs text-white/40 font-bold uppercase">Service Charge </label>
-        <input 
-          type="number" name="serviceCharge" placeholder="0" min="0"
-          value={formData.serviceCharge} onChange={handleInputChange}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="text-xs text-white/40 font-bold uppercase">Caution Fee </label>
-        <input 
-          type="number" name="cautionFee" placeholder="0" min="0"
-          value={formData.cautionFee} onChange={handleInputChange}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
-        />
-      </div>
-    </div>
-    
-  </div>
-
-    <div className="space-y-3"> {/* 🟢 Changed from space-y-1 to space-y-3 to give the banner proper luxury breathing room */}
-  <div className="space-y-1">
-    <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1">
-      <Layers size={12}/> Property Classification
-    </label>
-    <select 
-      name="propertyType" 
-      value={formData.propertyType} 
-      onChange={handleInputChange}
-      required
-      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium appearance-none cursor-pointer"
-    >
-      <option value="" disabled className="bg-[#1E293B] text-white/40">Select Property Category</option>
-      <option value="house" className="bg-[#1E293B] text-white">Detached House / Duplex</option>
-      <option value="penthouse" className="bg-[#1E293B] text-white">Luxury Penthouse</option>
-      <option value="apartment" className="bg-[#1E293B] text-white">Serviced Apartment</option>
-      <option value="shortlet" className="bg-[#1E293B] text-white">Luxury Shortlet / Vacation Rental</option>
-      <option value="land" className="bg-[#1E293B] text-white">Premium Land Allocation</option>
-      <option value="commercial" className="bg-[#1E293B] text-white">Commercial Office Space</option>
-      <option value="terraced" className="bg-[#1E293B] text-white">Terraced Townhouse</option>
-    </select>
-  </div>
-
-  {/* 🟢 SURGICAL UPDATE: Bold, premium notification banner */}
-  {(formData.propertyType === 'apartment' || formData.propertyType === 'shortlet') && (
-    <div className="bg-brand-cobalt/10 border border-brand-cobalt/30 rounded-xl p-3.5 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-      {/* Cinematic/Video Sparkle Icon Indicator */}
-      <div className="p-1.5 bg-brand-cobalt/20 rounded-lg text-brand-cobalt shrink-0 mt-0.5">
-        <Video size={16} className="animate-pulse" />
-      </div>
-      <div className="space-y-0.5">
-        <p className="text-xs font-bold text-white tracking-wide">
-          Cinematic Walkthrough Enabled
-        </p>
-        <p className="text-[11px] text-brand-slate/70 leading-relaxed">
-          Because you selected a premium listing type, you can now upload short video walkthroughs alongside your photos in the media section below to maximize client engagement.
-        </p>
-      </div>
-    </div>
-  )}
-</div>
-    
-  </div>
+                {/* Contextual Financial Constraints (Service Charge & Caution Fee) */}
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="space-y-1">
+                    <label className="text-xs text-white/40 font-bold uppercase">Service Charge </label>
+                    <input 
+                      type="number" 
+                      name="serviceCharge" 
+                      placeholder={['land', 'house_sale'].includes(formData.propertyType) ? 'N/A' : '0'} 
+                      min="0"
+                      disabled={['land', 'house_sale'].includes(formData.propertyType) || !['shortlet', 'apartment'].includes(formData.propertyType)}
+                      value={['shortlet', 'apartment'].includes(formData.propertyType) ? formData.serviceCharge : ''} 
+                      onChange={handleInputChange}
+                      className={`w-full border rounded-xl px-4 py-3 text-sm font-medium transition-colors focus:outline-none ${
+                        ['land', 'house_sale'].includes(formData.propertyType) || !['shortlet', 'apartment'].includes(formData.propertyType)
+                          ? 'bg-white/[0.02] border-white/5 text-white/20 placeholder:text-white/10 cursor-not-allowed select-none'
+                          : 'bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:border-brand-cobalt'
+                      }`}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-white/40 font-bold uppercase">Caution Fee </label>
+                    <input 
+                      type="number" 
+                      name="cautionFee" 
+                      placeholder={['land', 'house_sale'].includes(formData.propertyType) ? 'N/A' : '0'} 
+                      min="0"
+                      disabled={['land', 'house_sale'].includes(formData.propertyType)}
+                      value={['land', 'house_sale'].includes(formData.propertyType) ? '' : formData.cautionFee} 
+                      onChange={handleInputChange}
+                      className={`w-full border rounded-xl px-4 py-3 text-sm font-medium transition-colors focus:outline-none ${
+                        ['land', 'house_sale'].includes(formData.propertyType)
+                          ? 'bg-white/[0.02] border-white/5 text-white/20 placeholder:text-white/10 cursor-not-allowed select-none'
+                          : 'bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:border-brand-cobalt'
+                      }`}
+                    />
+                  </div>
+                </div>
+                
+              </div>
+              
             </div>
+          
 
             {/* Location Constraints Block */}
             <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">

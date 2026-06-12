@@ -117,7 +117,7 @@ export const PropertyCard = ({ property , hideAction = false}) => {
     }
   };
 
- return (
+return (
     <>
       {/* 1. Main Bento Grid Card Wrapper */}
       <div 
@@ -212,9 +212,12 @@ export const PropertyCard = ({ property , hideAction = false}) => {
           <div className="flex items-center justify-between gap-4 mt-auto w-full">
             <p className="text-lg sm:text-xl font-bold text-white tracking-tight shrink-0 flex items-baseline gap-1">
               {displayPrice}
-              <span className="text-[10px] sm:text-xs text-white/50 font-medium uppercase tracking-widest">
-                {['shortlet', 'apartment'].includes(property.propertyType) ? 'Month' : 'Year'}
-              </span>
+              {/* 🎯 SURGICAL DATA ADJUSTMENT: Suppress layout pricing denominator suffix for outright sales entries */}
+              {!['land', 'house_sale'].includes(property.propertyType) && (
+                <span className="text-[10px] sm:text-xs text-white/50 font-medium uppercase tracking-widest">
+                   {['shortlet', 'apartment'].includes(property.propertyType) ? 'Month' : 'Year'}
+                </span>
+              )}
             </p>
             
             {!hideAction && (
@@ -310,12 +313,17 @@ export const PropertyCard = ({ property , hideAction = false}) => {
                 </div>
               </div>
               <div className="text-left md:text-right shrink-0">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">Premium Valuation</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold mb-1">
+                  {['land', 'house_sale'].includes(property.propertyType) ? 'Outright Purchase Valuation' : 'Premium Valuation'}
+                </p>
                 <p className="text-2xl md:text-4xl font-extrabold text-white tracking-tight flex items-baseline justify-start md:justify-end gap-2">
                   {displayPrice}
-                  <span className="text-sm md:text-lg text-white/40 font-medium uppercase tracking-widest">
-                    {['shortlet', 'apartment'].includes(property.propertyType) ? 'Mo' : 'Yr'}
-                  </span>
+                  {/* 🎯 SURGICAL DATA ADJUSTMENT: Suppress details short-hand denominator label for outright sales assets */}
+                  {!['land', 'house_sale'].includes(property.propertyType) && (
+                    <span className="text-sm md:text-lg text-white/40 font-medium uppercase tracking-widest">
+                       {['shortlet', 'apartment'].includes(property.propertyType) ? 'Mo' : 'Yr'}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -332,11 +340,20 @@ export const PropertyCard = ({ property , hideAction = false}) => {
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
                 <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Property Type</span>
-                <span className="text-sm font-medium text-white/80 truncate">{property.propertyType || 'Not specified'}</span>
+                <span className="text-sm font-medium text-white/80 truncate capitalize">
+                  {property.propertyType === 'house_sale' ? 'House For Sale' : property.propertyType || 'Not specified'}
+                </span>
               </div>
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 flex flex-col gap-2">
                 <span className="text-white/40 text-xs font-bold uppercase tracking-wider">Service Charge</span>
-                <span className="text-base font-bold text-white">₦{Number(property.serviceCharge || 0).toLocaleString()}</span>
+                <span className="text-base font-bold text-white">
+                  {/* 🎯 SURGICAL DATA ADJUSTMENT: Reflect complete structural lack of service charges dynamically */}
+                  {['land', 'house_sale'].includes(property.propertyType) 
+                    ? 'N/A (Outright Sale)' 
+                    : property.serviceCharge && Number(property.serviceCharge) > 0
+                    ? `₦${Number(property.serviceCharge).toLocaleString()}`
+                    : '₦0'}
+                </span>
               </div>
             </div>
 
