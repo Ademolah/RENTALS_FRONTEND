@@ -147,7 +147,7 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
     const fetchDashboardProperties = async () => {
       try {
         // We pass ?isAvailable=all so the CEO sees off-market properties too
-        const response = await apiClient.get('/properties?isAvailable=all');
+        const response = await apiClient.get('/properties/agency-portfolio?isAvailable=all');
         setProperties(response.data.data.properties);
       } catch (error) {
         console.error("Failed to load enterprise ledger:", error);

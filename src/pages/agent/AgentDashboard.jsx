@@ -26,7 +26,7 @@ const [isDarkMode, setIsDarkMode] = useState(true);
     const fetchAgentProperties = async () => {
       try {
         // Fetch properties (isAvailable=all ensures we see off-market ones too)
-        const response = await apiClient.get('/properties?isAvailable=all');
+        const response = await apiClient.get('/properties/agency-portfolio?isAvailable=all');
         
         
         setProperties(response.data.data.properties);
