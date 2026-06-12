@@ -104,9 +104,9 @@ export const ContactUs = () => {
                   <MapPin size={18} />
                 </div>
                 <div>
-                  <h4 className="text-white font-bold text-sm tracking-wide">Nigeria Sovereign Hub</h4>
+                  <h4 className="text-white font-bold text-sm tracking-wide">Nigeria Office Address</h4>
                   <p className="text-slate-400 text-xs mt-1 leading-relaxed">
-                    District Suite 4B, Executive Enclave, Bodija, Ibadan, Oyo State.
+                    Floor 3, Novare gateway Mall, Musa Yaradua Way, Airport Road, Abuja.
                   </p>
                 </div>
               </div>
@@ -116,8 +116,8 @@ export const ContactUs = () => {
                   <Mail size={18} />
                 </div>
                 <div>
-                  <h4 className="text-white font-bold text-sm tracking-wide">Digital Desk</h4>
-                  <p className="text-slate-400 text-xs mt-1">relations@rentalsluxury.network</p>
+                  <h4 className="text-white font-bold text-sm tracking-wide">Email Us</h4>
+                  <p className="text-slate-400 text-xs mt-1">support@rentalsafrica.com</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -125,8 +125,8 @@ export const ContactUs = () => {
                   <Phone size={18} />
                 </div>
                 <div>
-                  <h4 className="text-white font-bold text-sm tracking-wide">Digital Desk</h4>
-                  <p className="text-slate-400 text-xs mt-1">relations@rentalsluxury.network</p>
+                  <h4 className="text-white font-bold text-sm tracking-wide">Call Us</h4>
+                  <p className="text-slate-400 text-xs mt-1">+234 1 234 5678</p>
                 </div>
               </div>
             </div>

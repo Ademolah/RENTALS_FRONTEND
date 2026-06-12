@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
 import toast from 'react-hot-toast';
 import { EditPropertyModal } from '../../components/EditPropertyModal';
-import {CalendarDays, Clock, Loader2, CheckCircle2} from 'lucide-react';
+import {CalendarDays, Clock, Loader2, CheckCircle2, Moon, Sun, LayoutDashboard, Building2, Users2, Compass, Plus, LogOut, ShieldCheck,  Phone} from 'lucide-react';
 
 export const AdminDashboard = () => {
   const { user, logout } = useAuthStore();
@@ -26,7 +26,12 @@ export const AdminDashboard = () => {
   const [actioningId, setActioningId] = useState(null);
 
   const [agents, setAgents] = useState([]);
-const [isLoadingAgents, setIsLoadingAgents] = useState(true);
+  const [isLoadingAgents, setIsLoadingAgents] = useState(true);
+  // 1. Theme Configuration State (Defaults to dark mode)
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // 2. Tabbed Workspace State (Defaults to the overview workspace)
+  const [activeTab, setActiveTab] = useState('overview');
   
   
 
@@ -212,548 +217,660 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
   const activeListingsCount = properties.filter(p => p.isAvailable).length;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-white p-6 md:p-10 font-sans">
-      <div className="max-w-[1400px] mx-auto space-y-10">
-        
-        {/* =======================================================================
-           HEADER ARCHITECTURE
-           ======================================================================= */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-white/10 pb-8">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="bg-brand-cobalt text-xs font-black tracking-widest uppercase px-3 py-1 rounded-md text-white">
-                Enterprise Layer
-              </span>
-              <span className="text-white/40 text-xs font-mono">ID: {user?.agencyId || 'No Agency Synced'}</span>
-            </div>
-            <h1 className="text-4xl font-display font-black tracking-tight text-white mt-2">
-              CEO Management Console
-            </h1>
-            <p className="text-brand-slate/60 text-sm mt-1 font-medium">
-              Oversee corporate properties, register field staff, and track transactional velocity.
-            </p>
-          </div>
-
-          {/* Core Controls */}
-          <div className="flex items-center gap-4">
-            <Link 
-              to="/agent/upload" 
-              className="bg-brand-coral hover:bg-brand-coral/90 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-brand-coral/10 transform active:scale-95 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"></path>
-              </svg>
-              Upload New Listing
-            </Link>
-            
-            <button 
-              onClick={handleLogout}
-              className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4 text-brand-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-              </svg>
-              Sign Out
-            </button>
-          </div>
-        </div>
-
-        {/* =======================================================================
-           ANALYTICAL STATISTICS MATRIX
-           ======================================================================= */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl">
-            <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Active Agency Portfolio</p>
-            <p className="text-4xl font-display font-black mt-2"> {isLoadingProps ? '-' : activeListingsCount} <span className="text-sm font-normal text-white/40">Units Listed</span></p>
-            <div className="absolute right-4 bottom-4 text-white/5">
-              <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-              </svg>
-            </div>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl transition-all hover:bg-white/10 group">
-            <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-1">Onboarded Broker Roster</p>
-            
-            {/* Dynamic Data Rendering with Loading Skeleton Fallback */}
-            {isLoadingAgents ? (
-              <div className="h-10 w-16 bg-white/10 rounded-lg animate-pulse mt-2" />
-            ) : (
-              <p className="text-4xl md:text-4xl font-display font-black text-white mt-2">
-                {agents.length} <span className="text-sm font-medium text-white/40 tracking-wide uppercase">Verified Agents</span>
-              </p>
-            )}
-
-            {/* Decorative Icon Background */}
-            <div className="absolute right-4 bottom-4 text-white/5 group-hover:text-white/10 transition-colors duration-500 transform group-hover:scale-110">
-              <svg className="w-16 h-16 md:w-20 md:h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-              </svg>
-            </div>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl">
-            <p className="text-white/40 text-xs font-bold uppercase tracking-widest">System Operational Integrity</p>
-            <p className="text-4xl font-display font-black mt-2 text-emerald-400">Secure</p>
-            <div className="absolute right-4 bottom-4 text-white/5">
-              <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* =======================================================================
-           THE MAGIC LINK INTERACTIVE INVITATION LAYER
-           ======================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Agent Invitation Form */}
-          <div className="lg:col-span-1 bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl flex flex-col justify-between">
-            <div>
-              <h3 className="text-xl font-display font-bold mb-2">Invite Secure Agent</h3>
-              <p className="text-brand-slate/60 text-xs leading-relaxed mb-6 font-medium">
-                Issue a single-use, cryptographically verified magic token enabling a broker to register directly under your firm.
-              </p>
-
-              {inviteSuccess && (
-                <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl text-xs font-medium mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  {inviteSuccess}
-                </div>
-              )}
-
-              {inviteError && (
-                <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-xs font-medium mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  {inviteError}
-                </div>
-              )}
-
-              <form onSubmit={handleSendInvite} className="space-y-4">
-                <input 
-                  type="email"
-                  required
-                  placeholder="agent@company.com"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
-                />
-                
-                <button 
-                  type="submit"
-                  disabled={inviteLoading}
-                  className="w-full bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3.5 rounded-xl text-xs tracking-wider uppercase transition-all transform active:scale-[0.98] disabled:opacity-40"
-                >
-                  {inviteLoading ? 'Generating Link...' : 'Generate Invite Link'}
-                </button>
-              </form>
-
-              {/* Dynamic Copiable Token Display Box */}
-              {generatedLink && (
-                <div className="mt-5 bg-black/30 border border-white/5 rounded-2xl p-4 space-y-2.5 animate-in zoom-in-95 duration-300">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-brand-cobalt">Onboarding Link</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active (24h)</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl p-2 pl-3 overflow-hidden group/box">
-                    <p className="text-xs font-mono text-white/40 truncate flex-1 select-all">
-                      {generatedLink}
-                    </p>
-                    
-                    <button
-                      type="button"
-                      onClick={handleCopyLink}
-                      className={`shrink-0 flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold text-xs transition-all duration-300 transform active:scale-95 ${
-                        copied 
-                          ? 'bg-emerald-500 text-white' 
-                          : 'bg-white/5 hover:bg-brand-cobalt text-white/80 hover:text-white'
-                      }`}
-                    >
-                      {copied ? (
-                        <>
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path>
-                          </svg>
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                          </svg>
-                          Copy
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="border-t border-white/5 pt-4 mt-6 text-[11px] text-white/30 flex items-center gap-2 font-mono">
-              <svg className="w-3.5 h-3.5 text-brand-cobalt" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-              </svg>
-              Encrypted Security Vault Active
-            </div>
-          </div>
-
-<div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl flex flex-col justify-between">
-    <div className="w-full">
+  <div className={`min-h-screen transition-colors duration-300 font-sans ${
+    isDarkMode ? 'bg-[#0F172A] text-white' : 'bg-[#F8FAFC] text-[#0F172A]'
+  }`}>
+    
+    {/* Global Frame Wrapper */}
+    <div className="max-w-[1400px] mx-auto p-4 sm:p-6 md:p-10 space-y-6 md:space-y-8">
       
-      {/* Header Deck */}
-      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
-        <div>
-          <h3 className="text-xl font-display font-bold">Upcoming Tour Booking</h3>
-          <p className="text-white/40 text-xs font-medium mt-0.5">Real-time property evaluations requested by explorers.</p>
+      {/* =======================================================================
+         HEADER ARCHITECTURE WITH LIVE THEME CONTROLLERS
+         ======================================================================= */}
+      <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 md:pb-8 border-b ${
+        isDarkMode ? 'border-white/10' : 'border-slate-200'
+      }`}>
+        <div className="space-y-1 w-full lg:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="bg-brand-cobalt text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-md text-white shadow-sm">
+              Enterprise Layer
+            </span>
+            <span className={`text-xs font-mono px-2 py-0.5 rounded ${
+              isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-500'
+            }`}>
+              ID: {user?.agencyId || 'No Agency Synced'}
+            </span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-display font-black tracking-tight mt-1.5">
+            CEO Management Console
+          </h1>
+          <p className={`text-sm font-medium ${isDarkMode ? 'text-white/60' : 'text-slate-600'}`}>
+            Oversee corporate properties, register field staff, and track transactional velocity.
+          </p>
         </div>
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-          <span className="text-[10px] font-bold text-amber-400 tracking-wide uppercase">Live Pipeline</span>
+
+        {/* Global Toolbar Framework */}
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          {/* Light / Dark Mode Premium Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-3.5 rounded-xl border transition-all duration-300 transform active:scale-95 flex items-center justify-center ${
+              isDarkMode 
+                ? 'bg-white/5 hover:bg-white/10 border-white/10 text-brand-gold' 
+                : 'bg-white border-slate-200 hover:bg-slate-50 text-amber-500 shadow-sm'
+            }`}
+            title={isDarkMode ? "Switch to Light Spectrum" : "Switch to Midnight Spectrum"}
+          >
+            {isDarkMode ? <Sun size={18} className="animate-pulse" /> : <Moon size={18} />}
+          </button>
+
+          <Link 
+            to="/agent/upload" 
+            className="flex-1 sm:flex-initial bg-brand-coral hover:bg-brand-coral/90 text-white px-5 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-brand-coral/10 transform active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            <span className="inline">Upload Listing</span>
+          </Link>
+          
+          <button 
+            onClick={handleLogout}
+            className={`flex-1 sm:flex-initial border font-bold text-sm px-5 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
+              isDarkMode 
+                ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' 
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm'
+            }`}
+          >
+            <LogOut size={16} className="text-brand-coral" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
 
-     
-      {/* Bookings Queue Container */}
-      <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1 hide-scrollbar">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12 text-white/40 gap-2 text-xs font-mono">
-            <Loader2 size={14} className="animate-spin text-brand-cobalt" /> Syncing data registries...
+      {/* =======================================================================
+         ANALYTICAL STATISTICS MATRIX GRID
+         ======================================================================= */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {/* Metric 1 */}
+        <div className={`border rounded-2xl p-5 md:p-6 relative overflow-hidden backdrop-blur-xl shadow-sm transition-all ${
+          isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'
+        }`}>
+          <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Active Agency Portfolio</p>
+          <p className="text-3xl md:text-4xl font-display font-black mt-2">
+            {isLoadingProps ? '-' : activeListingsCount} <span className={`text-xs font-normal tracking-wide uppercase ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Units Listed</span>
+          </p>
+          <div className={`absolute right-4 bottom-4 transition-transform duration-500 ${isDarkMode ? 'text-white/5' : 'text-slate-100'}`}>
+            <Building2 size={56} strokeWidth={1} />
           </div>
-        ) : prioritizedBookings.length === 0 ? (
-          <div className="py-12 text-center text-white/30 text-xs font-medium">
-            No active property tours currently scheduled.
+        </div>
+
+        {/* Metric 2 */}
+        <div className={`border rounded-2xl p-5 md:p-6 relative overflow-hidden backdrop-blur-xl shadow-sm transition-all group ${
+          isDarkMode ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white border-slate-100 hover:bg-slate-50/50'
+        }`}>
+          <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Onboarded Broker Roster</p>
+          {isLoadingAgents ? (
+            <div className={`h-10 w-16 rounded-lg animate-pulse mt-2 ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
+          ) : (
+            <p className="text-3xl md:text-4xl font-display font-black mt-2">
+              {agents.length} <span className={`text-xs font-medium tracking-wide uppercase ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Verified Agents</span>
+            </p>
+          )}
+          <div className={`absolute right-4 bottom-4 transition-transform duration-500 transform group-hover:scale-110 ${isDarkMode ? 'text-white/5' : 'text-slate-100'}`}>
+            <Users2 size={56} strokeWidth={1} />
           </div>
-        ) : (
-          prioritizedBookings.map((booking) => (
-            <div 
-              key={booking._id} 
-              className={`bg-white/[0.02] border hover:border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
-                booking.status === 'PENDING' ? 'border-white/5' : 'border-transparent opacity-80'
+        </div>
+
+        {/* Metric 3 */}
+        <div className={`border rounded-2xl p-5 md:p-6 relative overflow-hidden backdrop-blur-xl shadow-sm transition-all sm:col-span-2 lg:col-span-1 ${
+          isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'
+        }`}>
+          <p className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>System Operational Integrity</p>
+          <p className="text-3xl md:text-4xl font-display font-black mt-2 text-emerald-500 flex items-center gap-2">
+            Secure <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping" />
+          </p>
+          <div className={`absolute right-4 bottom-4 transition-transform duration-500 ${isDarkMode ? 'text-white/5' : 'text-slate-100'}`}>
+            <ShieldCheck size={56} strokeWidth={1} />
+          </div>
+        </div>
+      </div>
+
+      {/* =======================================================================
+         SEGMENTED CONTROL SEGMENTED NAVIGATION (ANTI-ENDLESS SCROLL WORKSPACE)
+         ======================================================================= */}
+      <div className={`p-1.5 rounded-2xl flex items-center gap-1 overflow-x-auto custom-premium-scrollbar border shadow-inner ${
+        isDarkMode ? 'bg-black/20 border-white/5' : 'bg-slate-200/60 border-slate-200'
+      }`}>
+        {[
+          { id: 'overview', label: 'Overview Matrix', icon: <LayoutDashboard size={14} /> },
+          { id: 'properties', label: `Properties (${properties.length})`, icon: <Building2 size={14} /> },
+          { id: 'staff', label: `Staff Registry (${agents.length})`, icon: <Users2 size={14} /> },
+          { id: 'tours', label: `Tour Pipeline (${prioritizedBookings.length})`, icon: <Compass size={14} /> },
+        ].map((tab) => {
+          const isSelected = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold tracking-wide uppercase whitespace-nowrap transition-all duration-200 ${
+                isSelected
+                  ? isDarkMode
+                    ? 'bg-brand-cobalt text-white shadow-md shadow-brand-cobalt/10'
+                    : 'bg-white text-brand-cobalt shadow-sm'
+                  : isDarkMode
+                    ? 'text-white/40 hover:text-white hover:bg-white/5'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
-              {/* Identity & Asset Column */}
-              <div className="space-y-1.5 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-white truncate">{booking.explorer?.fullName}</span>
-                  <span className={`text-[9px] font-extrabold tracking-widest px-2 py-0.5 rounded uppercase shrink-0 ${
-                    booking.status === 'PENDING' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                    booking.status === 'CONFIRMED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-white/40'
-                  }`}>
-                    {booking.status}
-                  </span>
-                </div>
-                
-                {/* Communication Access Sub-metrics */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/50">
-                  <span className="flex items-center gap-1">
-                    <CalendarDays size={12} className="text-brand-cobalt" /> 
-                    {formatBookingDate(booking.schedule?.date)}
-                  </span>
-                  <span className="flex items-center gap-1 capitalize"><Clock size={12} className="text-white/30" /> {booking.schedule?.timeSlot}</span>
-                  <a href={`tel:${booking.explorer?.phone}`} className="flex items-center gap-1 text-emerald-400/80 hover:text-emerald-400 font-mono text-[11px]">{booking.explorer?.phone}</a>
-                </div>
-              </div>
-
-              {/* Action Operations Controller */}
-              <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                {actioningId === booking._id ? (
-                  <div className="px-4 py-2 flex items-center justify-center">
-                    <Loader2 size={18} className="animate-spin text-brand-cobalt" />
-                  </div>
-                ) : booking.status === 'PENDING' ? (
-                  <>
-                    <button 
-                      onClick={() => handleUpdateStatus(booking._id, 'CANCELLED')}
-                      className="px-3 py-2 bg-white/5 hover:bg-rose-500/10 text-white/60 hover:text-rose-400 border border-white/5 rounded-xl text-xs font-bold transition-all"
-                    >
-                      Decline
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateStatus(booking._id, 'CONFIRMED')}
-                      className="px-4 py-2 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 transition-all"
-                    >
-                      Accept Tour
-                    </button>
-                  </>
-                ) : booking.status === 'CONFIRMED' ? (
-                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                <span className="text-[11px] font-bold text-emerald-400 px-3 py-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20 flex items-center gap-1.5 shadow-sm shadow-emerald-500/5">
-                  <CheckCircle2 size={14} /> Confirmed
-                </span>
-                {/* NEW: The Final Pipeline Trigger */}
-                <button 
-                  onClick={() => handleUpdateStatus(booking._id, 'COMPLETED')}
-                  className="text-[10px] uppercase tracking-wider font-bold text-slate-400 hover:text-white px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all"
-                >
-                  Mark as Concluded
-                </button>
-              </div>
-                  
-                ) : (
-                  <span className="text-[11px] font-mono text-white/20 px-3 py-1 bg-black/20 rounded-lg border border-white/5">
-                    ARCHIVED
-                  </span>
-                )}
-              </div>
-            </div>
-          ))
-        )}
+              {tab.icon}
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-    </div>
-
-    {/* Footer Metadata Signature */}
-    <div className="border-t border-white/5 pt-4 mt-6 text-[11px] text-white/30 flex items-center justify-between font-mono w-full">
-      <span className="flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Automated Router Engaged
-      </span>
-      <span>{bookings?.length || 0} Total Units</span>
-    </div>
-  </div>
-          
-
-          {/* =======================================================================
-             PORTFOLIO & STAFF TRACKING LISTS
-             ======================================================================= */}
-          <div className="lg:col-span-2 space-y-8">
+      {/* =======================================================================
+         CORE VIEW CONTROL SWITCH DECK
+         ======================================================================= */}
+      <div className="space-y-6">
+        
+        {/* VIEW 1: OVERVIEW COMPACT DASHBOARD */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             
-            {/* Agency Roster Monitoring */}
-            {/* Agency Roster Monitoring */}
-<div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl transition-all duration-300">
-  <div className="flex items-center justify-between mb-6">
-    <div>
-      <h3 className="text-xl font-display font-bold text-white">Staff Registry</h3>
-      <p className="text-xs text-white/40 mt-0.5">Live credential and operational tracking for your verified brokers.</p>
-    </div>
-    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono tracking-wider uppercase text-white/60">
-      Roster Scope: Global
-    </span>
-  </div>
+            {/* Left Frame column: Invite Card */}
+            <div className={`border rounded-[2rem] p-6 backdrop-blur-xl flex flex-col justify-between h-full ${
+              isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <div>
+                <h3 className="text-xl font-display font-bold mb-1.5 flex items-center gap-2">
+                  Invite Secure Agent
+                </h3>
+                <p className={`text-xs leading-relaxed mb-6 font-medium ${isDarkMode ? 'text-white/40' : 'text-slate-500'}`}>
+                  Issue a single-use, cryptographically verified magic token enabling a broker to register directly under your firm.
+                </p>
 
-  <div className="overflow-x-auto selection:bg-white/10">
-    <table className="w-full text-left text-sm text-white/60 min-w-[600px]">
-      <thead className="text-xs text-white/40 uppercase font-mono border-b border-white/10">
-        <tr>
-          <th className="py-4 px-3 font-bold tracking-wider">Broker Name</th>
-          <th className="py-4 px-3 font-bold tracking-wider">Email Handle</th>
-          <th className="py-4 px-3 font-bold tracking-wider">Clearance Status</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-white/5">
-        {/* 1. LOADING STATE LAYER */}
-        {isLoadingAgents ? (
-          Array.from({ length: 3 }).map((_, idx) => (
-            <tr key={`skeleton-${idx}`} className="animate-pulse">
-              <td className="py-4 px-3 flex items-center gap-3">
-                <div className="w-9 h-9 bg-white/10 rounded-full" />
-                <div className="space-y-2">
-                  <div className="h-4 w-28 bg-white/10 rounded" />
-                  <div className="h-3 w-16 bg-white/5 rounded" />
-                </div>
-              </td>
-              <td className="py-4 px-3">
-                <div className="h-4 w-40 bg-white/5 rounded" />
-              </td>
-              <td className="py-4 px-3">
-                <div className="h-6 w-20 bg-white/10 rounded-md" />
-              </td>
-            </tr>
-          ))
-        ) : /* 2. EMPTY STATE LAYER */
-        agents.length === 0 ? (
-          <tr>
-            <td colSpan="3" className="py-16 text-center text-white/30 font-medium">
-              <div className="flex flex-col items-center justify-center gap-2">
-                <svg className="w-8 h-8 text-white/10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <p className="text-sm text-white/40">No active agents synced to your administrative shell yet.</p>
-              </div>
-            </td>
-          </tr>
-        ) : (
-          /* 3. DYNAMIC LIVE DATA MAP */
-          agents.map((agent) => {
-            const isProfileActive = agent.status?.toUpperCase() === 'ACTIVE';
-            const isProfilePending = agent.status?.toUpperCase() === 'PENDING';
-            
-            return (
-              <tr 
-                key={agent._id} 
-                className="hover:bg-white/[0.02] transition-colors group duration-150"
-              >
-                {/* Broker Identity Profile */}
-                <td className="py-4 px-3 font-medium text-white flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#0F172A] border border-white/10 flex items-center justify-center text-xs font-bold text-brand-gold shrink-0 overflow-hidden group-hover:border-white/20 transition-colors">
-                    {agent.avatar ? (
-                      <img src={agent.avatar} alt="Broker Signature Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      `${agent.firstName?.[0] || ''}${agent.lastName?.[0] || ''}`.toUpperCase()
-                    )}
+                {inviteSuccess && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 p-4 rounded-xl text-xs font-bold mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {inviteSuccess}
                   </div>
-                  <div>
-                    <p className="font-display font-bold text-white tracking-wide group-hover:text-brand-gold transition-colors">
-                      {agent.firstName} {agent.lastName}
-                    </p>
-                    <p className="text-[10px] font-mono text-white/30 uppercase tracking-widest mt-0.5">
-                      Joined {new Date(agent.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                    </p>
+                )}
+
+                {inviteError && (
+                  <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-4 rounded-xl text-xs font-bold mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {inviteError}
                   </div>
-                </td>
+                )}
 
-                {/* Email Address */}
-                <td className="py-4 px-3 font-mono text-xs text-white/50 group-hover:text-white/80 transition-colors">
-                  {agent.email}
-                </td>
+                <form onSubmit={handleSendInvite} className="space-y-4">
+                  <input 
+                    type="email"
+                    required
+                    placeholder="agent@company.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className={`w-full border rounded-xl px-4 py-3.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-cobalt/40 transition-all ${
+                      isDarkMode 
+                        ? 'bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-brand-cobalt' 
+                        : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-brand-cobalt'
+                    }`}
+                  />
+                  
+                  <button 
+                    type="submit"
+                    disabled={inviteLoading}
+                    className="w-full bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3.5 rounded-xl text-xs tracking-wider uppercase transition-all transform active:scale-[0.98] disabled:opacity-40 shadow-sm"
+                  >
+                    {inviteLoading ? 'Generating Link...' : 'Generate Invite Link'}
+                  </button>
+                </form>
 
-                {/* Clearance Execution Status Badges */}
-                <td className="py-4 px-3">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border ${
-                    isProfileActive 
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                      : isProfilePending
-                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
-                        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                {generatedLink && (
+                  <div className={`mt-5 border rounded-2xl p-4 space-y-2.5 animate-in zoom-in-95 duration-300 ${
+                    isDarkMode ? 'bg-black/30 border-white/5' : 'bg-slate-50 border-slate-100'
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                      isProfileActive ? 'bg-emerald-400' : isProfilePending ? 'bg-amber-400' : 'bg-emerald-400'
-                    }`} />
-                    {agent.status || 'UNVERIFIED'}
-                  </span>
-                </td>
-              </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
-  </div>
-</div>
-
-            {/* =======================================================================
-               2. ENTERPRISE PROPERTY LEDGER (NEW CRUD & AVAILABILITY SECTION)
-               ======================================================================= */}
-            <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-display font-bold">Enterprise Property Ledger</h3>
-                <span className="bg-white/5 text-white/60 text-xs px-3 py-1 rounded-full font-medium">
-                  Asset Control
-                </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-brand-cobalt">Onboarding Link</span>
+                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-bold">Active (24h)</span>
+                    </div>
+                    
+                    <div className={`flex items-center gap-2 border rounded-xl p-2 pl-3 overflow-hidden group/box ${
+                      isDarkMode ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200'
+                    }`}>
+                      <p className={`text-xs font-mono truncate flex-1 select-all ${isDarkMode ? 'text-white/40' : 'text-slate-500'}`}>
+                        {generatedLink}
+                      </p>
+                      
+                      <button
+                        type="button"
+                        onClick={handleCopyLink}
+                        className={`shrink-0 flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold text-xs transition-all duration-300 transform active:scale-95 ${
+                          copied 
+                            ? 'bg-emerald-500 text-white' 
+                            : isDarkMode
+                              ? 'bg-white/5 hover:bg-brand-cobalt text-white/80 hover:text-white'
+                              : 'bg-slate-100 hover:bg-brand-cobalt text-slate-700 hover:text-white'
+                        }`}
+                      >
+                        {copied ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-white/60">
-                  <thead className="text-xs text-white/40 uppercase font-mono border-b border-white/5">
+              <div className={`border-t pt-4 mt-6 text-[11px] flex items-center gap-2 font-mono ${
+                isDarkMode ? 'border-white/5 text-white/30' : 'border-slate-100 text-slate-400'
+              }`}>
+                <ShieldCheck size={14} className="text-brand-cobalt" />
+                Encrypted Security Vault Active
+              </div>
+            </div>
+
+            {/* Right Frame Column: Compact Activity Aggregates */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Quick Component Render Previews for Overview Workspace */}
+              <div className={`p-6 border rounded-[2rem] ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-display font-bold text-lg">Realtime Pipelines</h4>
+                  <button onClick={() => setActiveTab('tours')} className="text-xs font-bold text-brand-cobalt hover:underline">View All Pipeline ({prioritizedBookings.length})</button>
+                </div>
+                <p className={`text-xs mb-4 ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Displaying high-priority operations pending review.</p>
+                <div className="max-h-[260px] overflow-y-auto space-y-2.5 standard-scrollbar pr-1">
+                  {prioritizedBookings.slice(0, 2).map(booking => (
+                    <div key={booking._id} className={`p-4 border rounded-xl flex items-center justify-between text-xs ${isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                      <div>
+                        <p className="font-bold">{booking.explorer?.fullName}</p>
+                        <p className={isDarkMode ? 'text-white/40' : 'text-slate-400'}>{booking.schedule?.date} • {booking.schedule?.timeSlot}</p>
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 uppercase font-bold">{booking.status}</span>
+                    </div>
+                  ))}
+                  {prioritizedBookings.length === 0 && <p className="text-xs text-center py-6 text-slate-400">No tours logged.</p>}
+                </div>
+              </div>
+
+              <div className={`p-6 border rounded-[2rem] ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-display font-bold text-lg">Asset Matrix Preview</h4>
+                  <button onClick={() => setActiveTab('properties')} className="text-xs font-bold text-brand-cobalt hover:underline">Manage Portfolio</button>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-white/[0.01] border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                    <span className="text-xs text-slate-400 font-bold block">Available Units</span>
+                    <span className="text-2xl font-black mt-1 block">{properties.filter(p => p.isAvailable).length}</span>
+                  </div>
+                  <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-white/[0.01] border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                    <span className="text-xs text-slate-400 font-bold block">Private Off-market</span>
+                    <span className="text-2xl font-black mt-1 block">{properties.filter(p => !p.isAvailable).length}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 2: ENTERPRISE PROPERTY LEDGER ROUTER */}
+        {activeTab === 'properties' && (
+          <div className={`border rounded-[2rem] p-4 md:p-6 backdrop-blur-xl ${
+            isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-display font-bold">Enterprise Property Ledger</h3>
+                <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Real-time corporate portfolio evaluation and availability controls.</p>
+              </div>
+              <span className={`text-xs px-3 py-1 rounded-full font-bold self-start sm:self-auto ${
+                isDarkMode ? 'bg-white/5 text-white/60' : 'bg-slate-100 text-slate-600'
+              }`}>
+                Asset Control Matrix
+              </span>
+            </div>
+            
+            {/* Table Scroll Engine */}
+            <div className="w-full overflow-x-auto max-h-[500px] overflow-y-auto pr-1 custom-premium-scrollbar border rounded-xl">
+              <table className="w-full text-left text-sm relative border-collapse">
+                <thead className={`text-xs uppercase font-mono sticky top-0 z-10 backdrop-blur-md border-b ${
+                  isDarkMode ? 'text-white/40 border-white/5 bg-[#1E293B]' : 'text-slate-500 border-slate-100 bg-slate-50'
+                }`}>
+                  <tr>
+                    <th className="py-4 px-4 bg-transparent">Property Asset</th>
+                    <th className="py-4 px-4 bg-transparent">Valuation (NGN)</th>
+                    <th className="py-4 px-4 bg-transparent text-center">Market Status</th>
+                    <th className="py-4 px-4 bg-transparent text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${isDarkMode ? 'divide-white/5' : 'divide-slate-100'}`}>
+                  {isLoadingProps ? (
                     <tr>
-                      <th className="py-3 px-2">Property Asset</th>
-                      <th className="py-3 px-2">Valuation (NGN)</th>
-                      <th className="py-3 px-2 text-center">Market Status</th>
-                      <th className="py-3 px-2 text-right">Actions</th>
+                      <td colSpan="4" className="py-16 text-center font-bold">
+                        <div className="flex items-center justify-center gap-2 text-xs font-mono">
+                          <Loader2 size={16} className="animate-spin text-brand-cobalt" />
+                          Syncing Ledger...
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    
-                    {/* 👇 Replace this mock <tr> block with your actual properties.map(...) 👇 */}
-                    
-                   {isLoadingProps ? (
-                      <tr>
-                        <td colSpan="4" className="py-12 text-center text-white/30 font-medium">
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 border-2 border-brand-cobalt border-t-transparent rounded-full animate-spin"></div>
-                            Syncing Ledger...
+                  ) : properties.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="py-16 text-center text-slate-400 font-medium text-xs">
+                        No real estate assets logged in the corporate portfolio yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    properties.map((property) => (
+                      <tr key={property._id} className={`transition-colors group ${
+                        isDarkMode ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50/60'
+                      }`}>
+                        <td className="py-4 px-4">
+                          <p className="font-bold text-sm truncate max-w-[240px]">{property.title}</p>
+                          <p className="text-xs text-brand-cobalt mt-0.5 font-medium">{property.location?.locality || property.locality}, {property.location?.state || property.state}</p>
+                        </td>
+                        <td className="py-4 px-4 font-mono font-bold">
+                          ₦ {property.pricePerAnnum?.toLocaleString()}<span className="text-slate-400 text-xs font-sans font-normal">/yr</span>
+                        </td>
+                        
+                        <td className="py-4 px-4 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAvailability(property._id, property.isAvailable)}
+                              className={`
+                                relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                                transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-cobalt/40
+                                ${property.isAvailable ? 'bg-emerald-500' : 'bg-slate-300'}
+                              `}
+                            >
+                              <span
+                                className={`
+                                  pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 
+                                  transition duration-300 ease-in-out
+                                  ${property.isAvailable ? 'translate-x-4' : 'translate-x-0'}
+                                `}
+                              />
+                            </button>
+                            <span className={`text-[9px] uppercase font-black tracking-wider ${property.isAvailable ? 'text-emerald-500' : 'text-slate-400'}`}>
+                              {property.isAvailable ? 'Active' : 'Private'}
+                            </span>
+                          </div>
+                        </td>
+                        
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button 
+                              onClick={() => setEditingProperty(property)}
+                              className={`flex items-center justify-center w-9 h-9 border rounded-lg transition-all group/edit cursor-pointer ${
+                                isDarkMode ? 'bg-white/5 border-white/5 hover:bg-brand-cobalt/20 text-white/60 hover:text-brand-cobalt' : 'bg-white border-slate-200 hover:bg-brand-cobalt/10 text-slate-600 hover:text-brand-cobalt'
+                              }`}
+                              title="Edit Listing"
+                            >
+                              <svg className="w-4 h-4 transition-transform group-hover/edit:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                              </svg>
+                            </button>
+                            
+                            <button 
+                              onClick={() => handleDeleteProperty(property._id)}
+                              className={`flex items-center justify-center w-9 h-9 border rounded-lg transition-all group/delete cursor-pointer ${
+                                isDarkMode ? 'bg-white/5 border-white/5 hover:bg-rose-500/20 text-white/60 hover:text-rose-500' : 'bg-white border-slate-200 hover:bg-rose-500/10 text-slate-600 hover:text-rose-500'
+                              }`}
+                              title="Purge Listing"
+                            >
+                              <svg className="w-4 h-4 transition-transform group-hover/delete:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                              </svg>
+                            </button>
                           </div>
                         </td>
                       </tr>
-                    ) : properties.length === 0 ? (
-                      <tr>
-                        <td colSpan="4" className="py-12 text-center text-white/30 font-medium">
-                          No real estate assets logged in the corporate portfolio yet.
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 3: STAFF REGISTRY CONTROL ENGINE */}
+        {activeTab === 'staff' && (
+          <div className={`border rounded-[2rem] p-4 md:p-6 backdrop-blur-xl ${
+            isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h3 className="text-xl font-display font-bold">Staff Registry</h3>
+                <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Live credential status and security scope clearings for your corporate field agents.</p>
+              </div>
+              <span className={`text-[10px] font-mono tracking-wider uppercase px-3 py-1 rounded-full border ${
+                isDarkMode ? 'bg-white/5 border-white/10 text-white/60' : 'bg-slate-50 border-slate-200 text-slate-600 shadow-sm'
+              }`}>
+                Roster Scope: Global
+              </span>
+            </div>
+
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto pr-1 custom-premium-scrollbar border rounded-xl">
+              <table className="w-full text-left text-sm relative border-collapse">
+                <thead className={`text-xs uppercase font-mono sticky top-0 z-10 backdrop-blur-md border-b ${
+                  isDarkMode ? 'text-white/40 border-white/5 bg-[#1E293B]' : 'text-slate-500 border-slate-100 bg-slate-50'
+                }`}>
+                  <tr>
+                    <th className="py-4 px-4 bg-transparent">Broker Name</th>
+                    <th className="py-4 px-4 bg-transparent">Email Handle</th>
+                    <th className="py-4 px-4 bg-transparent">Clearance Status</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${isDarkMode ? 'divide-white/5' : 'divide-slate-100'}`}>
+                  {isLoadingAgents ? (
+                    Array.from({ length: 3 }).map((_, idx) => (
+                      <tr key={`skeleton-${idx}`} className="animate-pulse">
+                        <td className="py-4 px-4 flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-full ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
+                          <div className="space-y-2">
+                            <div className={`h-4 w-28 rounded ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
+                            <div className={`h-3 w-16 rounded ${isDarkMode ? 'bg-white/5' : 'bg-slate-100'}`} />
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className={`h-4 w-40 rounded ${isDarkMode ? 'bg-white/5' : 'bg-slate-200'}`} />
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className={`h-6 w-20 rounded-md ${isDarkMode ? 'bg-white/10' : 'bg-slate-200'}`} />
                         </td>
                       </tr>
-                    ) : (
-                      properties.map((property) => (
-                        <tr key={property._id} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="py-4 px-2">
-                            <p className="text-white font-bold text-sm truncate max-w-[200px]">{property.title}</p>
-                            <p className="text-xs text-brand-cobalt mt-0.5">{property.location?.locality || property.locality}, {property.location?.state || property.state}</p>
-                          </td>
-                          <td className="py-4 px-2 font-mono text-white">
-                            ₦ {property.pricePerAnnum?.toLocaleString()}<span className="text-white/30 text-xs">/yr</span>
-                          </td>
-                          
-                          {/* Interactive Availability Toggle Cell */}
-                          <td className="py-4 px-2 text-center">
-                            <div className="flex flex-col items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleAvailability(property._id, property.isAvailable)}
-                                className={`
-                                  relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent 
-                                  transition-colors duration-300 ease-in-out focus:outline-none focus:ring-1 focus:ring-brand-cobalt/50
-                                  ${property.isAvailable ? 'bg-emerald-500' : 'bg-white/10'}
-                                `}
-                              >
-                                <span
-                                  className={`
-                                    pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 
-                                    transition duration-300 ease-in-out
-                                    ${property.isAvailable ? 'translate-x-4' : 'translate-x-0'}
-                                  `}
-                                />
-                              </button>
-                              <span className={`text-[9px] uppercase font-bold tracking-wider ${property.isAvailable ? 'text-emerald-400' : 'text-white/40'}`}>
-                                {property.isAvailable ? 'Active' : 'Private'}
-                              </span>
+                    ))
+                  ) : agents.length === 0 ? (
+                    <tr>
+                      <td colSpan="3" className="py-16 text-center text-slate-400 font-medium text-xs">
+                        No active agents synced to your administrative shell yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    agents.map((agent) => {
+                      const isProfileActive = agent.status?.toUpperCase() === 'ACTIVE';
+                      const isProfilePending = agent.status?.toUpperCase() === 'PENDING';
+                      
+                      return (
+                        <tr key={agent._id} className={`transition-colors group ${isDarkMode ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50/60'}`}>
+                          <td className="py-4 px-4 font-medium flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden group-hover:border-white/20 transition-colors ${
+                              isDarkMode ? 'bg-[#0F172A] border-white/10 text-brand-gold' : 'bg-slate-100 border-slate-200 text-brand-cobalt'
+                            }`}>
+                              {agent.avatar ? (
+                                <img src={agent.avatar} alt="Broker Signature Profile" className="w-full h-full object-cover" />
+                              ) : (
+                                `${agent.firstName?.[0] || ''}${agent.lastName?.[0] || ''}`.toUpperCase()
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-display font-bold tracking-wide group-hover:text-brand-gold transition-colors">
+                                {agent.firstName} {agent.lastName}
+                              </p>
+                              <p className={`text-[10px] font-mono uppercase tracking-widest mt-0.5 ${isDarkMode ? 'text-white/30' : 'text-slate-400'}`}>
+                                Joined {new Date(agent.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                              </p>
                             </div>
                           </td>
-                          
-                          {/* CRUD Administrative Actions */}
-                          <td className="py-4 px-2 text-right">
-                            <div className="flex items-center justify-end gap-2 sm:gap-3">
-                              <button 
-                                onClick={() => setEditingProperty(property)}
-                                className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-white/5 hover:bg-brand-cobalt/20 text-white/60 hover:text-brand-cobalt rounded-lg transition-all duration-300 group/edit"
-                                title="Edit Listing"
-                              >
-                                <svg className="w-4 h-4 transition-transform group-hover/edit:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                              </button>
-                              
-                              <button 
-                                onClick={() => handleDeleteProperty(property._id)}
-                                className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 bg-white/5 hover:bg-rose-500/20 text-white/60 hover:text-rose-400 rounded-lg transition-all duration-300 group/delete"
-                                title="Purge Listing"
-                              >
-                                <svg className="w-4 h-4 transition-transform group-hover/delete:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                              </button>
-                            </div>
+
+                          <td className={`py-4 px-4 font-mono text-xs ${isDarkMode ? 'text-white/50 group-hover:text-white/80' : 'text-slate-500 group-hover:text-slate-900'}`}>
+                            {agent.email}
+                          </td>
+
+                          <td className="py-4 px-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border ${
+                              isProfileActive 
+                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
+                                : isProfilePending
+                                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                                  : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${isProfileActive ? 'bg-emerald-500 animate-pulse' : isProfilePending ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+                              {agent.status || 'UNVERIFIED'}
+                            </span>
                           </td>
                         </tr>
-                      ))
-                    )}
-                
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
-                  </tbody>
-                </table>
+        {/* VIEW 4: UPCOMING TOUR PIPELINE EXECUTOR */}
+        {activeTab === 'tours' && (
+          <div className={`border rounded-[2rem] p-4 md:p-6 backdrop-blur-xl flex flex-col min-h-[500px] ${
+            isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
+            <div className="flex items-center justify-between border-b pb-4 mb-4 shrink-0 border-slate-100 dark:border-white/5">
+              <div>
+                <h3 className="text-xl font-display font-bold">Upcoming Tour Booking Pipeline</h3>
+                <p className={`text-xs font-medium mt-0.5 ${isDarkMode ? 'text-white/40' : 'text-slate-400'}`}>Real-time evaluations managed by client explorers.</p>
+              </div>
+              <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-[10px] font-bold text-amber-500 tracking-wide uppercase">Live Stream</span>
               </div>
             </div>
 
-              {editingProperty && (
-          <EditPropertyModal 
-            property={editingProperty}
-            onClose={() => setEditingProperty(null)}
-            onSave={handleSaveEdit}
-          />
+            {/* Bookings Scroll deck */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-premium-scrollbar max-h-[440px]">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-48 text-slate-400 gap-2 text-xs font-mono">
+                  <Loader2 size={16} className="animate-spin text-brand-cobalt" /> Syncing data registries...
+                </div>
+              ) : prioritizedBookings.length === 0 ? (
+                <div className="flex items-center justify-center h-48 text-center text-slate-400 text-xs font-medium">
+                  No active property tours currently scheduled.
+                </div>
+              ) : (
+                prioritizedBookings.map((booking) => (
+                  <div 
+                    key={booking._id} 
+                    className={`border hover:border-brand-cobalt/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
+                      booking.status === 'PENDING' 
+                        ? isDarkMode ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-200/60'
+                        : 'opacity-70 border-transparent bg-transparent'
+                    }`}
+                  >
+                    <div className="space-y-1.5 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold truncate">{booking.explorer?.fullName}</span>
+                        <span className={`text-[9px] font-extrabold tracking-widest px-2 py-0.5 rounded uppercase ${
+                          booking.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                          booking.status === 'CONFIRMED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          {booking.status}
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                        <span className="flex items-center gap-1 shrink-0 font-medium">
+                          <CalendarDays size={12} className="text-brand-cobalt" /> 
+                          {formatBookingDate(booking.schedule?.date)}
+                        </span>
+                        <span className="flex items-center gap-1 capitalize shrink-0 font-medium">
+                          <Clock size={12} /> 
+                          {booking.schedule?.timeSlot}
+                        </span>
+                        <a href={`tel:${booking.explorer?.phone}`} className="flex items-center gap-1 text-emerald-500 hover:underline font-mono text-[11px] shrink-0 font-bold">
+                          <Phone size={10} /> {booking.explorer?.phone}
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                      {actioningId === booking._id ? (
+                        <div className="px-6 py-2 flex items-center justify-center">
+                          <Loader2 size={16} className="animate-spin text-brand-cobalt" />
+                        </div>
+                      ) : booking.status === 'PENDING' ? (
+                        <>
+                          <button 
+                            onClick={() => handleUpdateStatus(booking._id, 'CANCELLED')}
+                            className={`px-3 py-2 border rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isDarkMode ? 'bg-white/5 hover:bg-rose-500/10 text-white/60 hover:text-rose-400 border-white/5' : 'bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-500 border-slate-200'
+                            }`}
+                          >
+                            Decline
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateStatus(booking._id, 'CONFIRMED')}
+                            className="px-4 py-2 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+                          >
+                            Accept Tour
+                          </button>
+                        </>
+                      ) : booking.status === 'CONFIRMED' ? (
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                          <span className="text-[11px] font-bold text-emerald-500 px-3 py-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20 flex items-center gap-1.5">
+                            <CheckCircle2 size={14} /> Confirmed
+                          </span>
+                          <button 
+                            onClick={() => handleUpdateStatus(booking._id, 'COMPLETED')}
+                            className={`text-[10px] uppercase tracking-wider font-black px-3 py-1.5 border rounded-lg transition-all cursor-pointer ${
+                              isDarkMode ? 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-400 hover:text-white' : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-600'
+                            }`}
+                          >
+                            Conclude Tour
+                          </button>
+                        </div>
+                      ) : (
+                        <span className={`text-[11px] font-mono px-3 py-1 rounded-lg border ${
+                          isDarkMode ? 'bg-black/20 border-white/5 text-white/20' : 'bg-slate-100 border-slate-200 text-slate-400'
+                        }`}>
+                          ARCHIVED
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer Metadata */}
+            <div className={`border-t pt-4 mt-6 text-[11px] flex items-center justify-between font-mono w-full ${
+              isDarkMode ? 'border-white/5 text-white/30' : 'border-slate-100 text-slate-400'
+            }`}>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Automated Router Engaged
+              </span>
+              <span className="font-bold">{bookings?.length || 0} Total Units</span>
+            </div>
+          </div>
         )}
 
-          </div>
-
-        </div>
       </div>
+
     </div>
-  );
+
+    {/* PERSISTENT CRITICAL MODALS (Stays contextual outside grid locks) */}
+    {editingProperty && (
+      <EditPropertyModal 
+        property={editingProperty}
+        onClose={() => setEditingProperty(null)}
+        onSave={handleSaveEdit}
+      />
+    )}
+  </div>
+);
 };

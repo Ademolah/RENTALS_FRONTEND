@@ -3,7 +3,7 @@ import axios from 'axios';
 // Create a customized Axios instance
 export const apiClient = axios.create({
   // Vite uses import.meta.env instead of process.env
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
