@@ -10,7 +10,6 @@ import {
   LogOut, 
   User, 
   ChevronDown, 
-  HelpCircle 
 } from 'lucide-react';
 
 export const Navbar = () => {
@@ -87,9 +86,9 @@ export const Navbar = () => {
 
           {/* RIGHT CLUSTER: Contextual Auth Utilities & Desktop Action Elements */}
           <div className="hidden md:flex items-center gap-6">
-            <Link to="/support" className="text-slate-500 hover:text-slate-300 transition-colors p-2">
+            {/* <Link to="/support" className="text-slate-500 hover:text-slate-300 transition-colors p-2">
               <HelpCircle size={18} />
-            </Link>
+            </Link> */}
 
             {isAuthenticated ? (
               <div className="relative">
