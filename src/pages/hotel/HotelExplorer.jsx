@@ -1,5 +1,5 @@
 
-import { Star, MapPin, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Star, MapPin, Shield, ArrowRight, ArrowLeft, Building } from 'lucide-react';
 import { ReservationModal } from './HotelReservation';
 import {useState} from 'react';
 import { HotelCardCarousel } from './HotelCardCarousel';
@@ -39,88 +39,123 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
           </p>
         </div>
 
-       {/* Structured Row Pipeline (Inspired by Booking.com Layout) */}
-<div className="space-y-4">
-  {hotels?.map((hotel) => {
-    // Compute minimum base rate straight from the room variants map array matrix
-    const baseRate = hotel.roomTypes && hotel.roomTypes.length > 0 
-      ? Math.min(...hotel.roomTypes.map(r => Number(r.pricePerNight || 0))) 
-      : 0;
+        {/* =======================================================================
+            CONDITIONAL REPOSITORY LIFECYCLE (EMPTY VS LOADED STATE)
+            ======================================================================= */}
+        {!hotels || hotels.length === 0 ? (
+          /* PREMIUM BOUTIQUE EMPTY STATE */
+          <div className={`border rounded-3xl p-12 md:p-20 text-center space-y-4 max-w-3xl mx-auto transition-all duration-300 ${
+            darkMode 
+              ? "bg-white/[0.02] border-white/5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.5)]" 
+              : "bg-white border-slate-200/60 shadow-xl shadow-slate-100/50"
+          }`}>
+            <div className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center border transition-all duration-300 ${
+              darkMode ? "bg-white/5 border-white/10 text-brand-gold" : "bg-slate-50 border-slate-200 text-brand-cobalt"
+            }`}>
+              <Building size={20} className="animate-pulse" />
+            </div>
+            
+            <div className="space-y-1.5 max-w-md mx-auto">
+              <h2 className="text-lg md:text-xl font-black tracking-tight uppercase">
+                Curating Elite Spaces
+              </h2>
+              <p className={`text-xs leading-relaxed ${darkMode ? "text-white/60" : "text-slate-600"}`}>
+                Premium hotel features and corporate hospitality portfolios are coming shortly. We are currently verifying exclusive architectural parameters for this zone.
+              </p>
+            </div>
 
-    return (
-      <div 
-        key={hotel._id}
-        className={`border rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-0 transition-all duration-300 group ${
-          darkMode ? "bg-white/[0.02] border-white/5 hover:border-white/10" : "bg-white border-slate-200/60 hover:shadow-xl shadow-slate-100"
-        }`}
-      >
-        {/* Column 1: Multi-Media Frame (md:span-4) */}
-        <div className="md:col-span-4 h-56 md:h-full min-h-[220px] relative overflow-hidden bg-zinc-900">
-          
-          {/* 🟢 Surgical Swap: Replaced old <img> with your modular Carousel Component */}
-          <HotelCardCarousel mediaUrls={hotel.mediaUrls} title={hotel.title} />
-          
-          {/* Premium Verification Badge with explicit z-index to stack correctly above the slides */}
-          <div className="absolute top-4 left-4 bg-brand-midnight/80 backdrop-blur-md border border-white/10 text-brand-gold px-2 py-0.5 rounded-md flex items-center gap-1 text-[10px] font-bold font-mono z-10">
-            <Shield size={10} /> Tier Verified
+            <div className="pt-2">
+              <button
+                onClick={onBack}
+                className="text-[10px] font-black uppercase tracking-widest text-brand-cobalt bg-brand-cobalt/10 hover:bg-brand-cobalt/20 border border-brand-cobalt/20 px-5 py-3 rounded-xl transition-all duration-300 cursor-pointer"
+              >
+                Explore Alternate Coordinates
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          /* Structured Row Pipeline (Inspired by Booking.com Layout) */
+          <div className="space-y-4">
+            {hotels.map((hotel) => {
+              // Compute minimum base rate straight from the room variants map array matrix
+              const baseRate = hotel.roomTypes && hotel.roomTypes.length > 0 
+                ? Math.min(...hotel.roomTypes.map(r => Number(r.pricePerNight || 0))) 
+                : 0;
 
-                {/* Column 2: Structural Meta Layer Details (md:span-5) */}
-                <div className={`md:col-span-5 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r ${
-                  darkMode ? "border-white/5" : "border-slate-100"
-                }`}>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <h2 className="text-xl font-extrabold tracking-tight leading-snug">{hotel.title}</h2>
-                      <div className="flex items-center text-brand-gold gap-0.5">
-                        {Array.from({ length: hotel.starRating || 5 }).map((_, sIdx) => (
-                          <Star key={sIdx} size={12} fill="currentColor" />
-                        ))}
+              return (
+                <div 
+                  key={hotel._id}
+                  className={`border rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-0 transition-all duration-300 group ${
+                    darkMode ? "bg-white/[0.02] border-white/5 hover:border-white/10" : "bg-white border-slate-200/60 hover:shadow-xl shadow-slate-100"
+                  }`}
+                >
+                  {/* Column 1: Multi-Media Frame (md:span-4) */}
+                  <div className="md:col-span-4 h-56 md:h-full min-h-[220px] relative overflow-hidden bg-zinc-900">
+                    
+                    {/* 🟢 Surgical Swap: Replaced old <img> with your modular Carousel Component */}
+                    <HotelCardCarousel mediaUrls={hotel.mediaUrls} title={hotel.title} />
+                    
+                    {/* Premium Verification Badge with explicit z-index to stack correctly above the slides */}
+                    <div className="absolute top-4 left-4 bg-brand-midnight/80 backdrop-blur-md border border-white/10 text-brand-gold px-2 py-0.5 rounded-md flex items-center gap-1 text-[10px] font-bold font-mono z-10">
+                      <Shield size={10} /> Tier Verified
+                    </div>
+                  </div>
+
+                  {/* Column 2: Structural Meta Layer Details (md:span-5) */}
+                  <div className={`md:col-span-5 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r ${
+                    darkMode ? "border-white/5" : "border-slate-100"
+                  }`}>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h2 className="text-xl font-extrabold tracking-tight leading-snug">{hotel.title}</h2>
+                        <div className="flex items-center text-brand-gold gap-0.5">
+                          {Array.from({ length: hotel.starRating || 5 }).map((_, sIdx) => (
+                            <Star key={sIdx} size={12} fill="currentColor" />
+                          ))}
+                        </div>
                       </div>
+
+                      <p className={`text-[11px] font-bold tracking-tight flex items-center gap-1 ${
+                        darkMode ? "text-brand-cobalt" : "text-brand-cobalt font-semibold"
+                      }`}>
+                        <MapPin size={12} className="shrink-0" /> 
+                        {hotel.streetAddress}, {hotel.locality}, {hotel.state}
+                      </p>
+
+                      <p className={`text-xs line-clamp-3 leading-relaxed ${
+                        darkMode ? "text-white/60" : "text-slate-600"
+                      }`}>
+                        {hotel.description}
+                      </p>
                     </div>
 
-                    <p className={`text-[11px] font-bold tracking-tight flex items-center gap-1 ${
-                      darkMode ? "text-brand-cobalt" : "text-brand-cobalt font-semibold"
-                    }`}>
-                      <MapPin size={12} className="shrink-0" /> 
-                      {hotel.streetAddress}, {hotel.locality}, {hotel.state}
-                    </p>
-
-                    <p className={`text-xs line-clamp-3 leading-relaxed ${
-                      darkMode ? "text-white/60" : "text-slate-600"
-                    }`}>
-                      {hotel.description}
-                    </p>
+                    {/* Amenities horizontal chip cloud */}
+                    <div className="flex flex-wrap gap-1 mt-4">
+                      {hotel.amenities?.slice(0, 4).map((amenity, aIdx) => (
+                        <span 
+                          key={aIdx} 
+                          className={`text-[10px] font-bold border px-2 py-0.5 rounded-md uppercase tracking-wide transition-colors ${
+                            darkMode ? "bg-white/5 border-white/5 text-white/50" : "bg-slate-100 border-slate-200 text-slate-600"
+                          }`}
+                        >
+                          {amenity}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Amenities horizontal chip cloud */}
-                  <div className="flex flex-wrap gap-1 mt-4">
-                    {hotel.amenities?.slice(0, 4).map((amenity, aIdx) => (
-                      <span 
-                        key={aIdx} 
-                        className={`text-[10px] font-bold border px-2 py-0.5 rounded-md uppercase tracking-wide transition-colors ${
-                          darkMode ? "bg-white/5 border-white/5 text-white/50" : "bg-slate-100 border-slate-200 text-slate-600"
-                        }`}
-                      >
-                        {amenity}
+                  {/* Column 3: Booking Outlay Financial Card Block (md:span-3) */}
+                  <div className={`md:col-span-3 p-6 flex flex-col justify-between items-stretch text-right md:text-right bg-opacity-10 bg-brand-cobalt/5 ${
+                    darkMode ? "bg-white/[0.005]" : "bg-slate-50/50"
+                  }`}>
+                    <div className="space-y-1 hidden md:block">
+                      <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-block">
+                        Available Direct
                       </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Column 3: Booking Outlay Financial Card Block (md:span-3) */}
-                <div className={`md:col-span-3 p-6 flex flex-col justify-between items-stretch text-right md:text-right bg-opacity-10 bg-brand-cobalt/5 ${
-                  darkMode ? "bg-white/[0.005]" : "bg-slate-50/50"
-                }`}>
-                  <div className="space-y-1 hidden md:block">
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-block">
-                      Available Direct
-                    </span>
-                    <p className={`text-[11px] font-medium block mt-1 ${darkMode ? "text-white/40" : "text-slate-400"}`}>
-                      Includes service provisions
-                    </p>
-                  </div>
+                      <p className={`text-[11px] font-medium block mt-1 ${darkMode ? "text-white/40" : "text-slate-400"}`}>
+                        Includes service provisions
+                      </p>
+                    </div>
 
                   <div className="mt-4 md:mt-0">
                     <span className={`text-[10px] uppercase tracking-wider block font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>
@@ -134,18 +169,19 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
                     </p>
                   </div>
 
-                  <button 
-                  onClick={() => setActiveHotel(hotel)} // 🟢 Sets the current hotel into state to trigger the pop-up
-                  className="w-full mt-4 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3 px-4 rounded-xl text-xs tracking-wider uppercase transition-all shadow-lg shadow-brand-cobalt/10 flex items-center justify-center gap-1.5 group/btn cursor-pointer"
-                >
-                  Make Reservation <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                </button>
-                </div>
+                    <button 
+                      onClick={() => setActiveHotel(hotel)} // 🟢 Sets the current hotel into state to trigger the pop-up
+                      className="w-full mt-4 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white font-bold py-3 px-4 rounded-xl text-xs tracking-wider uppercase transition-all shadow-lg shadow-brand-cobalt/10 flex items-center justify-center gap-1.5 group/btn cursor-pointer"
+                    >
+                      Make Reservation <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
 
-              </div>
-            );
-          })}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
       </div>
 
