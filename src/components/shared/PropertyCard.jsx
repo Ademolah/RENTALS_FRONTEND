@@ -215,7 +215,7 @@ return (
               {/* 🎯 SURGICAL DATA ADJUSTMENT: Suppress layout pricing denominator suffix for outright sales entries */}
               {!['land', 'house_sale'].includes(property.propertyType) && (
                 <span className="text-[10px] sm:text-xs text-white/50 font-medium uppercase tracking-widest">
-                   {['shortlet', 'apartment'].includes(property.propertyType) ? 'Month' : 'Year'}
+                   {['shortlet', 'apartment'].includes(property.propertyType) ? 'Day' : 'Year'}
                 </span>
               )}
             </p>
@@ -321,7 +321,7 @@ return (
                   {/* 🎯 SURGICAL DATA ADJUSTMENT: Suppress details short-hand denominator label for outright sales assets */}
                   {!['land', 'house_sale'].includes(property.propertyType) && (
                     <span className="text-sm md:text-lg text-white/40 font-medium uppercase tracking-widest">
-                       {['shortlet', 'apartment'].includes(property.propertyType) ? 'Mo' : 'Yr'}
+                       {['shortlet', 'apartment'].includes(property.propertyType) ? 'Dy' : 'Yr'}
                     </span>
                   )}
                 </p>

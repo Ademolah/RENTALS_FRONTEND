@@ -249,7 +249,7 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
                     {['land', 'house_sale'].includes(formData.propertyType)
                       ? 'Valuation (Total Cost / Outright Sale)' 
                       : ['shortlet', 'apartment'].includes(formData.propertyType) 
-                      ? 'Valuation (NGN / Month)' 
+                      ? 'Valuation (NGN / Day)' 
                       : 'Valuation (NGN / Year)'}
                   </label>
                   
@@ -272,7 +272,7 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
                             ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
                             : 'bg-brand-cobalt/10 text-brand-cobalt border-brand-cobalt/20'
                         }`}>
-                          {['shortlet', 'apartment'].includes(formData.propertyType) ? 'Per Month' : 'Per Annum'}
+                          {['shortlet', 'apartment'].includes(formData.propertyType) ? 'Per Day' : 'Per Annum'}
                         </span>
                       </div>
                     )}
