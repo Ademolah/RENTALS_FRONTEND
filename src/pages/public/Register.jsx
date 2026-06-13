@@ -124,7 +124,7 @@ export const Register = () => {
   try {
     const response = await authService.register(submissionPayload);
     loginAction(response.data.user, response.token);
-    navigate('/');
+    navigate('/profile');
   } catch (err) {
     setError(err.response?.data?.message || 'Registration failed. Try again.');
   } finally {
