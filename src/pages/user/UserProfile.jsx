@@ -69,7 +69,7 @@ if (isAgencyPending !== prevPending.agency || isHotelPending !== prevPending.hot
               {user?.firstName?.charAt(0) || 'U'}
             </div>
             <div>
-              <h1 className="text-3xl font-display font-black tracking-tight text-white">
+              <h1 className="text-3xl font-display font-black tracking-tight text-brand-cobalt">
                 {user?.firstName} {user?.lastName}
               </h1>
               <p className="text-brand-slate/60 text-sm mt-1 font-medium flex items-center gap-2">
@@ -301,7 +301,7 @@ if (isAgencyPending !== prevPending.agency || isHotelPending !== prevPending.hot
         Your private collection is currently empty. Explore our exclusive portfolio of premium real estate and luxury hotel suites to begin curating your stays.
       </p>
       <Link 
-        to="/profile" 
+        to="/" 
         className="bg-white text-brand-midnight hover:bg-brand-slate hover:text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all transform active:scale-95 shadow-lg"
       >
         Explore Luxury Portfolio

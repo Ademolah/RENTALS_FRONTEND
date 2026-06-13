@@ -179,13 +179,27 @@ return (
 
         {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex flex-col justify-end">
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 w-fit transition-colors ${
-            property.isAvailable 
-              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
-              : "bg-white/10 text-white/50 border border-white/5"
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full mr-2 ${property.isAvailable ? 'bg-emerald-400' : 'bg-white/30'}`} />
-            {property.isAvailable ? "Market Active" : "Off-Market"}
+          
+          {/* Badge Container */}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {/* Availability Badge */}
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest w-fit transition-colors ${
+              property.isAvailable 
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
+                : "bg-white/10 text-white/50 border border-white/5"
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full mr-2 ${property.isAvailable ? 'bg-emerald-400' : 'bg-white/30'}`} />
+              {property.isAvailable ? "Market Active" : "Off-Market"}
+            </div>
+
+            {/* 🎯 SURGICAL ADDITION: Premium Property Classification Badge */}
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest w-fit bg-white/10 text-brand-gold border border-brand-gold/20 backdrop-blur-md">
+              {property.propertyType === 'house_sale' 
+                ? 'House For Sale' 
+                : property.propertyType === 'shortlet'
+                ? 'Shortlet Stay'
+                : property.propertyType || 'Asset'}
+            </div>
           </div>
 
           <h2 className="text-2xl md:text-3xl font-display font-extrabold text-white mb-3 leading-tight tracking-tight">
