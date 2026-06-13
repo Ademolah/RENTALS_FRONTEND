@@ -23,6 +23,11 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const checkIsVideo = (url) => {
+  if (!url) return false;
+  return url.includes('/video/upload/') || url.match(/\.(mp4|webm|mov|quicktime)$/i);
+};
+
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
@@ -108,30 +113,42 @@ export const TourBookingModal = ({ isOpen, onClose, property }) => {
         )}
 
         {/* ================= HEADER ================= */}
-        <div className="sticky top-0 z-10 bg-brand-midnight/90 backdrop-blur-xl border-b border-white/5 p-6 flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/10">
+      <div className="sticky top-0 z-10 bg-brand-midnight/90 backdrop-blur-xl border-b border-white/5 p-6 flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/10 relative bg-black/20">
+            {/* 🎯 SURGICAL FIX: Handle video thumbnails seamlessly inside booking workflows */}
+            {checkIsVideo(property.image) ? (
+              <video
+                src={property.image}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover pointer-events-none select-none"
+              />
+            ) : (
               <img 
                 src={property.image} 
                 alt={property.title} 
                 className="w-full h-full object-cover"
               />
-            </div>
-            <div>
-              <h3 className="text-white font-bold text-lg md:text-xl leading-tight line-clamp-1">
-                {property.title}
-              </h3>
-              <p className="text-brand-coral font-bold mt-1">{property.price}</p>
-            </div>
+            )}
           </div>
-          
-          <button 
-            onClick={onClose}
-            className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors"
-          >
-            <X size={20} />
-          </button>
+          <div>
+            <h3 className="text-white font-bold text-lg md:text-xl leading-tight line-clamp-1">
+              {property.title}
+            </h3>
+            <p className="text-brand-coral font-bold mt-1">{property.price}</p>
+          </div>
         </div>
+        
+        <button 
+          onClick={onClose}
+          className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
         {/* ================= BODY ================= */}
         <div className="p-6 md:p-8 space-y-8">
