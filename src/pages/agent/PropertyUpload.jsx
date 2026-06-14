@@ -192,6 +192,7 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
                       <option value="shortlet" className="text-white normal-case font-medium">Luxury Shortlet / Vacation Rental</option>
                       <option value="commercial" className="text-white normal-case font-medium">Commercial Office Space</option>
                       <option value="terraced" className="text-white normal-case font-medium">Terraced Townhouse (Rent)</option>
+                      <option value="bungalow" className="text-white normal-case font-medium">Bungalow (Rent)</option>
                     </optgroup>
 
                     <optgroup label="Properties For Outright Sale" className="bg-[#1E293B] text-emerald-400 font-bold text-xs uppercase tracking-wider">
