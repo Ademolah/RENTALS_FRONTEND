@@ -1,13 +1,22 @@
 import  { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Upload, Plus, Trash2, ShieldCheck, Sparkles, Building, Layers, Tags , ChevronLeft, Sun, Moon} from 'lucide-react';
 import { apiClient} from '../../services/apiClient.js'
 import { toast } from 'react-hot-toast';
+
+
 
 export const HotelUpload = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+
+  const location = useLocation();
+  
+  // Extract the title passed from the dashboard link state structure
+  const prefilledTitle = location.state?.prefilledTitle || '';
+
+  
 
   const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
@@ -60,13 +69,17 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
   
   // 1. Core Structural State Matrix
   const [formData, setFormData] = useState({
-    title: '',
+    title: prefilledTitle,
     description: '',
     starRating: '4',
     state: 'Lagos',
     locality: '',
     streetAddress: '',
   });
+
+  
+
+  
 
   // 2. Specialized Array Ingestion Engines
   const [amenities, setAmenities] = useState([]);
@@ -248,10 +261,21 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
             <div className="space-y-1">
               <label className={`text-xs uppercase transition-colors ${tokenLabel}`}>Hotel / Resort Title</label>
               <input 
-                type="text" name="title" required placeholder="The George Hotel"
-                value={formData.title} onChange={handleInputChange}
-                className={`w-full rounded-xl px-4 py-3 outline-none border transition-all text-sm font-medium ${tokenInput}`}
+                type="text" 
+                name="title" 
+                required 
+                readOnly // 🔒 Blocks manual text alterations safely
+                placeholder="The George Hotel"
+                value={formData.title} 
+                onChange={handleInputChange}
+                className={`w-full rounded-xl px-4 py-3 outline-none border transition-all text-sm font-medium
+                  bg-slate-100/70 dark:bg-white/[0.02] 
+                  text-slate-400 dark:text-white/30 
+                  border-slate-200/60 dark:border-white/10 border-dashed 
+                  cursor-not-allowed select-none !shadow-none
+                  ${tokenInput}`} 
               />
+      
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -56,90 +56,92 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
   // LIVE DATA INGESTION ENGINE
   // =========================================================================
   useEffect(() => {
-    const fetchDashboardMatrix = async () => {
-      try {
-        // 1. Fetch the core Hotel Asset
-        const res = await apiClient.get('/hotels'); 
-        const fetchedHotel = res.data?.data?.hotels?.[0] || res.data?.data?.hotel || res.data?.[0];
+  const fetchDashboardMatrix = async () => {
+    try {
+      // 1. Fetch exclusively the hotel asset owned by this logged-in session profile
+      const res = await apiClient.get('/hotels/owned-asset'); 
+      const fetchedHotel = res.data?.data?.hotel;
 
-        if (!fetchedHotel) {
-          throw new Error("No hotel assets linked to this admin profile.");
+      if (!fetchedHotel) {
+        throw new Error("No hotel assets linked to this admin profile.");
+      }
+
+      // 2. Handle reservation queries dynamically based on whether the hotel asset is live
+      let liveBookings = [];
+      if (fetchedHotel._id) {
+        const resvResponse = await apiClient.get(`/hotels/${fetchedHotel._id}/reservations`);
+        liveBookings = resvResponse.data?.data?.reservations || [];
+      }
+
+      // --- 🟢 KPI CALCULATION ENGINE ---
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
+
+      let activeGuestsCount = 0;
+      let weeklyRevenueSum = 0;
+      let pendingCount = 0;
+
+      liveBookings.forEach(booking => {
+        const createdAt = new Date(booking.createdAt);
+        const currentStatus = booking.status?.toLowerCase() || '';
+
+        if (currentStatus === 'pending') {
+          pendingCount++;
         }
 
-        // 2. Fetch the actual Reservations linked to this specific Hotel ID
-        const resvResponse = await apiClient.get(`/hotels/${fetchedHotel._id}/reservations`);
-        const liveBookings = resvResponse.data?.data?.reservations || [];
+        if (currentStatus === 'confirmed') {
+          activeGuestsCount++;
+        }
 
-        // --- 🟢 KPI CALCULATION ENGINE ---
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        if (currentStatus !== 'cancelled' && currentStatus !== 'rejected' && createdAt >= sevenDaysAgo) {
+          weeklyRevenueSum += (Number(booking.totalAmount) || 0);
+        }
+      });
 
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(today.getDate() - 7);
-        sevenDaysAgo.setHours(0, 0, 0, 0);
+      // Premium Currency Formatter
+      const formatRevenue = (amount) => {
+        if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
+        if (amount >= 1000) return `₦${(amount / 1000).toFixed(1)}k`;
+        return `₦${amount.toLocaleString()}`;
+      };
 
-        let activeGuestsCount = 0;
-        let weeklyRevenueSum = 0;
-        let pendingCount = 0;
+      // 4. Occupancy Rate Calculation 
+      const totalCapacity = fetchedHotel.totalRooms || 50; 
+      const occupancyRate = activeGuestsCount > 0 
+        ? Math.min(Math.round((activeGuestsCount / totalCapacity) * 100), 100)
+        : 0;
 
-        liveBookings.forEach(booking => {
-          const createdAt = new Date(booking.createdAt);
-          
-          // Defensive Programming: Force lowercase to avoid casing discrepancies
-          const currentStatus = booking.status?.toLowerCase() || '';
+      // --- 🟢 INJECT LIVE DATA INTO STATE ---
+      setHotelData({
+        name: fetchedHotel.title,
+        location: fetchedHotel.isPlaceholder 
+          ? `${fetchedHotel.state} (Setup Pending)`
+          : `${fetchedHotel.locality}, ${fetchedHotel.state}`,
+        stats: {
+          occupancy: `${occupancyRate}%`, 
+          revenue: formatRevenue(weeklyRevenueSum),
+          activeGuests: activeGuestsCount,  
+          pendingRequests: pendingCount,
+          totalCapacity: totalCapacity
+        }
+      });
 
-          // 1. Pending Requests Matrix
-          if (currentStatus === 'pending') {
-            pendingCount++;
-          }
+      setBookings(liveBookings);
+      
+    } catch (error) {
+      console.warn("🚨 [Dashboard Feed Error]:", error);
+      toast.error(error.response?.data?.message || "Failed to sync real-time dashboard feeds.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-          // 2. Active Guests Matrix (Counts all confirmed reservations)
-          if (currentStatus === 'confirmed') {
-            activeGuestsCount++;
-          }
-
-          // 3. Weekly Revenue Matrix
-          if (currentStatus !== 'cancelled' && currentStatus !== 'rejected' && createdAt >= sevenDaysAgo) {
-            weeklyRevenueSum += (Number(booking.totalAmount) || 0);
-          }
-        });
-
-        // Smart Currency Formatter
-        const formatRevenue = (amount) => {
-          if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
-          if (amount >= 1000) return `₦${(amount / 1000).toFixed(1)}k`;
-          return `₦${amount.toLocaleString()}`;
-        };
-
-        // 4. Occupancy Rate Calculation 
-        const totalCapacity = fetchedHotel.totalRooms || 50; 
-        const occupancyRate = Math.min(Math.round((activeGuestsCount / totalCapacity) * 100), 100);
-
-        // --- 🟢 INJECT LIVE DATA INTO STATE ---
-        setHotelData({
-          name: fetchedHotel.title,
-          location: `${fetchedHotel.locality}, ${fetchedHotel.state}`,
-          stats: {
-            occupancy: `${occupancyRate}%`, 
-            revenue: formatRevenue(weeklyRevenueSum),
-            activeGuests: activeGuestsCount,  
-            pendingRequests: pendingCount,
-            totalCapacity: totalCapacity // Stored to assist click re-calculations
-          }
-        });
-
-        setBookings(liveBookings);
-        
-      } catch (error) {
-        console.warn("🚨 [Dashboard Feed Error]:", error);
-        toast.error(error.response?.data?.message || "Failed to sync real-time dashboard feeds.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardMatrix();
-  }, []);
+  fetchDashboardMatrix();
+}, []);
 
   // =========================================================================
   // ACTION HANDLERS
@@ -150,8 +152,10 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
   };
 
   const handleUploadNav = () => {
-    navigate('/hotel-admin/upload');
-  };
+  navigate('/hotel-admin/upload', {
+    state: { prefilledTitle: hotelData?.name }
+  });
+};
 
  const handleConfirmReservation = async (reservationId) => {
     setProcessingId(reservationId);
