@@ -56,7 +56,97 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
   "Ajingi", "Albasu", "Badawa", "Bagwai", "Bebeji", "Bichi", "Bompai", "Bunkure", "Challawa", "Dala", "Danbatta", "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko", "Garun Mallam", "Gaya", "Gezawa", "Gwale", "Gwarzo", "Gyadi-Gyadi", "Hotoro", "Jaba", "Kabuga", "Kabo", "Kano Municipal", "Karaye", "Kazaure Road", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura", "Madobi", "Makoda", "Mariri", "Minjibir", "Nassarawa", "Naibawa", "Nassarawa GRA", "Rano", "Rimin Gado", "Rogo", "Sabo Gari", "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil", "Yankaba", "Zoo Road"
 ]
 ,
-  // Add other states and their LGAs/Localities here...
+  "Abia": [
+    "Aba North", "Aba South", "Arochukwu", "Bende", "Ikwuano", "Isiala Ngwa North", "Isiala Ngwa South", "Isuikwuato", "Obingwa", "Ohafia", "Osisioma", "Ugwunagbo", "Ukwa East", "Ukwa West", "Umuahia North", "Umuahia South", "Umunneochi", "Abayi", "Ariaria", "Ogbor Hill", "Umuahia", "Ohafia Town", "Item", "Abiriba", "Isuochi"
+  ],
+  "Adamawa": [
+    "Demsa", "Fufure", "Ganye", "Gayuk", "Gombi", "Grei", "Hong", "Jada", "Lamurde", "Madagali", "Maiha", "Mayo-Belwa", "Michika", "Mubi North", "Mubi South", "Numan", "Shelleng", "Song", "Toungo", "Yola North", "Yola South", "Jimeta", "Mubi Town", "Numan Town", "Sukur"
+  ],
+  "Akwa Ibom": [
+    "Abak", "Eastern Obolo", "Eket", "Esit Eket", "Essien Udim", "Etim Ekpo", "Etinan", "Ibeno", "Ibesikpo Asutan", "Ibiono-Ibom", "Ika", "Ikono", "Ikot Abasi", "Ikot Ekpene", "Ini", "Itu", "Mbo", "Mkpat-Enin", "Nsit-Atai", "Nsit-Ibom", "Nsit-Ubium", "Obot Akara", "Okobo", "Onna", "Oron", "Oruk Anam", "Udung-Uko", "Ukanafun", "Uruan", "Urue-Offong/Oruko", "Uyo", "Shelter Afrique", "Ewet Housing Estate", "Itam", "Ikot Ekpene Town"
+  ],
+  "Anambra": [
+    "Aguata", "Anambra East", "Anambra West", "Anaocha", "Awka North", "Awka South", "Ayamelum", "Dunukofia", "Ekwusigo", "Idemili North", "Idemili South", "Ihiala", "Nnewi North", "Nnewi South", "Ogbaru", "Onitsha North", "Onitsha South", "Orumba North", "Orumba South", "Oyi", "Awka", "Onitsha", "Nnewi", "Obosi", "Okpoko", "Ekwulobia", "Igbariam", "Umuoba Anam"
+  ],
+  "Bauchi": [
+    "Alkaleri", "Bauchi", "Bogoro", "Dambam", "Darazo", "Dass", "Gamawa", "Ganjuwa", "Giade", "Itas/Gadau", "Jama'are", "Katagum", "Kirfi", "Misau", "Ningi", "Shira", "Tafawa Balewa", "Toro", "Warji", "Zaki", "Azare", "Misau Town", "Ningi Town", "Yelwa", "Gwallameji"
+  ],
+  "Bayelsa": [
+    "Brass", "Ekeremor", "Kolokuma/Opokuma", "Nembe", "Ogbia", "Sagbama", "Southern Ijaw", "Yenagoa", "Amarata", "Onopa", "Ekeki", "Biogbolo", "Kpansia", "Opolo", "Tombia", "Amassoma", "Otuoke", "Imiringi", "Swali"
+  ],
+  "Benue": [
+    "Ado", "Agatu", "Apa", "Buruku", "Gboko", "Guma", "Gwer East", "Gwer West", "Katsina-Ala", "Konshisha", "Kwande", "Logo", "Makurdi", "Obi", "Ogbadibo", "Ohimini", "Oju", "Okpokwu", "Otukpo", "Tarka", "Ukum", "Ushongo", "Vandeikya", "High Level", "Wadata", "Ankpa Quarters", "Wurukum"
+  ],
+  "Borno": [
+    "Abadam", "Askira/Uba", "Bama", "Bayo", "Biu", "Chibok", "Damboa", "Dikwa", "Gubio", "Guzamala", "Gwoza", "Hawul", "Jere", "Kaga", "Kala/Balge", "Konduga", "Kukawa", "Kwaya Kusar", "Mafa", "Magumeri", "Maiduguri", "Marte", "Mobbar", "Monguno", "Ngala", "Nganzai", "Shani", "Bulunkutu", "Gwange", "Maisandari"
+  ],
+  "Cross River": [
+    "Akpabuyo", "Odukpani", "Bakassi", "Akamkpa", "Biase", "Abi", "Yakurr", "Obubra", "Ikom", "Etung", "Boki", "Yala", "Obudu", "Obanliku", "Bekwarra", "Ogoja", "Calabar Municipality", "Calabar South", "Eti-Osa", "Anantigha", "State Housing", "Federal Housing", "Calabar Road", "Obudu Ranch"
+  ],
+  "Delta": [
+    "Aniocha North", "Aniocha South", "Bomadi", "Burutu", "Ethiope East", "Ethiope West", "Ika North East", "Ika South", "Isoko North", "Isoko South", "Ndokwa East", "Ndokwa West", "Okpe", "Oshimili North", "Oshimili South", "Patani", "Sapele", "Udu", "Ughelli North", "Ughelli South", "Ukwuani", "Uvwie", "Warri North", "Warri South", "Warri South West", "Asaba", "Warri", "Effurun", "Sapele Town", "Agbor", "Ogwashi-Uku", "Abraka", "Okpanam", "Jeddo"
+  ],
+  "Ebonyi": [
+    "Abakaliki", "Afikpo North", "Afikpo South", "Ebonyi", "Ezza North", "Ezza South", "Ikwo", "Ishielu", "Ivo", "Izzi", "Ohaozara", "Ohaukwu", "Onicha", "Kpirikpiri", "Azuiyiokwu", "Nkalagu", "Uburu", "Onueke", "Afikpo Town"
+  ],
+  "Ekiti": [
+    "Ado Ekiti", "Efon", "Ekiti East", "Ekiti South-West", "Ekiti West", "Emure", "Gbonyin", "Ido-Osi", "Ijero", "Ikere", "Ikole", "Ilejemeje", "Irepodun/Ifelodun", "Ise/Orun", "Moba", "Oye", "Basiri", "Okesa", "Similoluwa", "Adebayo", "Ajilosun", "Aramoko", "Omuo"
+  ],
+  "Enugu": [
+    "Aninri", "Awgu", "Enugu East", "Enugu North", "Enugu South", "Ezeagu", "Igbo Etiti", "Igbo Eze North", "Igbo Eze South", "Isi Uzo", "Nkanu East", "Nkanu West", "Nsukka", "Oji River", "Udenu", "Udi", "Uzo-Uwani", "Independence Layout", "New Haven", "Achara Layout", "Trans Ekulu", "Coal Camp", "Ogui", "Gariki", "Abakpa Nike"
+  ],
+  "Gombe": [
+    "Akko", "Balanga", "Billiri", "Dukku", "Funakaye", "Gombe", "Kaltungo", "Kwami", "Nafada", "Shongom", "Yamaltu/Deba", "Tumfure", "Federal Low Cost", "Jekadafari", "Pantami", "Deba", "Bajoga", "Ashaka"
+  ],
+  "Imo": [
+    "Aboh Mbaise", "Ahiazu Mbaise", "Ehime Mbano", "Ezinihitte", "Ideato North", "Ideato South", "Ihitte/Uboma", "Ikeduru", "Isiala Mbano", "Isu", "Mbaitoli", "Ngor Okpala", "Njaba", "Nkwerre", "Nwangele", "Obowo", "Oguta", "Ohaji/Egbema", "Okigwe", "Orlu", "Orsu", "Oru East", "Oru West", "Owerri Municipal", "Owerri North", "Owerri South", "Ikeduru", "Aladinma", "Ikenegbu", "Prefab", "World Bank Estate", "Nekede", "Egbu", "Orji"
+  ],
+  "Jigawa": [
+    "Auyo", "Babura", "Biriniwa", "Birnin Kudu", "Buji", "Dutse", "Gagarawa", "Garki", "Gumel", "Guri", "Gwaram", "Gwiwa", "Hadejia", "Jahun", "Kafinin Hausa", "Kaugama", "Kazaure", "Kiri Kasama", "Kiyawa", "Maigatari", "Malam Madori", "Miga", "Ringim", "Roni", "Sule Tankarkar", "Taura", "Yankwashi", "Takur", "Danmasani"
+  ],
+  "Kaduna": [
+    "Birnin Gwari", "Chikun", "Giwa", "Igabia", "Ikara", "Jaba", "Jema'a", "Kachia", "Kaduna North", "Kaduna South", "Kagarko", "Kajuru", "Kaura", "Kauru", "Kubau", "Kudan", "Lere", "Makarfi", "Sabon Gari", "Sanga", "Soba", "Zangon Kataf", "Zaria", "Barnawa", "Narayi", "Kabala Doki", "Tudun Wada", "Kakuri", "Sabon Tasha", "Rigasa", "Shinkafi", "Unguwan Rimi", "Malali", "Kaduna GRA"
+  ],
+  "Katsina": [
+    "Bakori", "Batagarawa", "Batsari", "Baure", "Bindawa", "Charanchi", "Dandume", "Danja", "Dan Musa", "Daura", "Dutsi", "Dutsin Ma", "Faskari", "Funtua", "Ingawa", "Jibia", "Kafur", "Kaita", "Kankara", "Kankia", "Katsina", "Kurfi", "Kusada", "Mai'Adua", "Malumfashi", "Mani", "Mashi", "Matazu", "Musawa", "Rimi", "Sabuwa", "Safana", "Sandamu", "Zango", "Kofar Kaura", "Kofar Marusa"
+  ],
+  "Kebbi": [
+    "Aleiro", "Arewa Dandi", "Argungu", "Augie", "Bagudo", "Birnin Kebbi", "Bunza", "Dandi", "Fakai", "Gwandu", "Jega", "Kalgo", "Koko/Besse", "Maiyama", "Ngaski", "Sakaba", "Shanga", "Suru", "Wasagu/Danko", "Yauri", "Zuru", "Gwadangaji", "Adamim", "Bayoko"
+  ],
+  "Kogi": [
+    "Adavi", "Ajaokuta", "Ankpa", "Bassa", "Dekina", "Ibaji", "Idah", "Igalamela Odolu", "Ijumu", "Kabba/Bunu", "Kogi", "Lokoja", "Mopa Muro", "Ofu", "Ogori/Magongo", "Okehi", "Okene", "Olamaboro", "Omala", "Yagba East", "Yagba West", "Felele", "Adankolo", "Lokongoma", "Kabba Town", "Anyigba"
+  ],
+  "Kwara": [
+    "Asa", "Baruten", "Edu", "Ekiti Kwara", "Ifelodun", "Ilorin East", "Ilorin South", "Ilorin West", "Irepodun", "Isin", "Kaiama", "Moro", "Offa", "Oke Ero", "Oyun", "Pategi", "GRA Ilorin", "Tanke", "Gaa Akanbi", "Adewole", "Taiwo Road", "Oloje", "Ganmo", "Offa Town", "Omu-Aran"
+  ],
+  "Nasarawa": [
+    "Akwanga", "Awe", "Doma", "Karu", "Keana", "Keffi", "Kokona", "Lafia", "Nasarawa", "Nasarawa Egon", "Obi", "Toto", "Wamba", "Mararaba", "One Man Village", "Masaka", "New Karu", "Shabu", "Tudun Amba"
+  ],
+  "Niger": [
+    "Agaie", "Agwara", "Bida", "Borgu", "Bosso", "Chanchaga", "Edati", "Gbako", "Gurara", "Katcha", "Kontagora", "Lapai", "Lavun", "Magama", "Mariga", "Mashegu", "Mokwa", "Moya", "Paikoro", "Rafi", "Rijau", "Shiroro", "Suleja", "Tafa", "Wushishi", "Minna", "Tunga", "Bosso Town", "Madalla", "New Bussa"
+  ],
+  "Ondo": [
+    "Akoko North-East", "Akoko North-West", "Akoko South-West", "Akoko South-East", "Akure North", "Akure South", "Ese Odo", "Idanre", "Ifedore", "Ilaje", "Ile Oluji/Okeigbo", "Irele", "Odigbo", "Okitipupa", "Ondo East", "Ondo West", "Ose", "Owo", "Alagbaka", "Ijapo Estate", "Ondo Town", "Ore", "Igbokoda"
+  ],
+  "Osun": [
+    "Atakunmosa East", "Atakunmosa West", "Aiyedaade", "Aiyedire", "Boluwaduro", "Boripe", "Ede North", "Ede South", "Ife Central", "Ife East", "Ife North", "Ife South", "Egbedore", "Ejigbo", "Ifedayo", "Ifelodun", "Ila", "Ilesa East", "Ilesa West", "Irepodun", "Irewole", "Isokan", "Iwo", "Obokun", "Odo Otin", "Ola Oluwa", "Olorunda", "Oriade", "Orolu", "Osogbo", "Alekuwodo", "Oke-Fia", "Osogbo GRA", "Ile-Ife", "Ede", "Ilesa"
+  ],
+  "Plateau": [
+    "Barkin Ladi", "Bassa", "Bokkos", "Jos East", "Jos North", "Jos South", "Kanam", "Kanke", "Langtang North", "Langtang South", "Mangu", "Mikang", "Pankshin", "Qua'an Pan", "Riyom", "Shendam", "Wase", "Rayfield", "Anglo Jos", "Tudun Wada Jos", "Lamingo", "Bukuru", "Hwolshe", "Millionaires Quarters"
+  ],
+  "Sokoto": [
+    "Binji", "Bodinga", "Dange Shuni", "Gada", "Goronyo", "Gudu", "Gwadabawa", "Illela", "Isa", "Kebbe", "Kware", "Rabah", "Sabon Birni", "Shagari", "Silame", "Sokoto North", "Sokoto South", "Tambuwal", "Tangaza", "Tureta", "Wamako", "Wurno", "Yabo", "Gwiwa", "Runjin Sambo"
+  ],
+  "Taraba": [
+    "Ardo Kola", "Bali", "Donga", "Gashaka", "Gassol", "Ibi", "Jalingo", "Karim Lamido", "Kumi", "Lau", "Sardauna", "Takum", "Ussa", "Wukari", "Yorro", "Zing", "Gembu", "Mutum Biyu", "Nyamusala", "Mile Six"
+  ],
+  "Yobe": [
+    "Bade", "Bursari", "Damaturu", "Fika", "Fune", "Geidam", "Gujba", "Gulani", "Jakusko", "Karasuwa", "Machina", "Nangere", "Nguru", "Potiskum", "Tarmuwa", "Yunusari", "Yusufari", "Gashua", "Potiskum Town", "New GRA Damaturu"
+  ],
+  "Zamfara": [
+    "Anka", "Bakura", "Birnin Magaji/Kiyaw", "Bukkuyum", "Bungudu", "Gummi", "Gusau", "Kaura Namoda", "Maradun", "Maru", "Shinkafi", "Talata Mafara", "Chafe", "Zurmi", "Gusau GRA", "Tudun Wada Gusau", "Samaru"
+  ]
+
 };
 
 
