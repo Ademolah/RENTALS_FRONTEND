@@ -287,7 +287,7 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
 
                     <optgroup label="Properties For Outright Sale" className="bg-[#1E293B] text-emerald-400 font-bold text-xs uppercase tracking-wider">
                       <option value="house_sale" className="text-white normal-case font-medium">House Asset (Bungalow, Duplex, Triplex For Sale)</option>
-                      <option value="land" className="text-white normal-case font-medium">Premium Land Allocation (For Sale)</option>
+                      {/* <option value="land" className="text-white normal-case font-medium">Premium Land Allocation (For Sale)</option> */}
                     </optgroup>
                   </select>
                 </div>
