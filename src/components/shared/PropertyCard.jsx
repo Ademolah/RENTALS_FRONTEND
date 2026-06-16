@@ -193,12 +193,22 @@ return (
             </div>
 
             {/* 🎯 SURGICAL ADDITION: Premium Property Classification Badge */}
-            <div className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest w-fit bg-white/10 text-brand-gold border border-brand-gold/20 backdrop-blur-md">
-              {property.propertyType === 'house_sale' 
-                ? 'House For Sale' 
-                : property.propertyType === 'shortlet'
-                ? 'Shortlet Stay'
-                : property.propertyType || 'Asset'}
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest w-fit bg-white/10 text-brand-gold border border-brand-gold/20 backdrop-blur-md select-none transition-all">
+              {(() => {
+                const typeMapping = {
+                  house: 'Executive House',
+                  penthouse: 'Elite Penthouse',
+                  apartment: 'Serviced Apartment',
+                  shortlet: 'Shortlet Stay',
+                  land: 'Premium Land Allocation',
+                  commercial: 'Commercial Workspace',
+                  terraced: 'Terraced Duplex',
+                  bungalow: 'Premium Bungalow',
+                  house_sale: 'House For Sale'
+                };
+
+                return typeMapping[property.propertyType] || property.propertyType || 'Premium Asset';
+              })()}
             </div>
           </div>
 
