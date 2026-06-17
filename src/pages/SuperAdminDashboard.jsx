@@ -317,7 +317,7 @@ export const SuperAdminDashboard = () => {
                 <div>
                   <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-bold">Registered Headquarters</p>
                   <p className="text-white text-sm leading-relaxed">
-                    {selectedApp.registeredAddress || 'Address pending physical verification.'}
+                    {selectedApp.hqAddress || 'Address pending physical verification.'}
                   </p>
                 </div>
                 
