@@ -26,27 +26,36 @@ export const PropertyCard = ({ property , hideAction = false}) => {
     
   const cardBackgroundImage = property.image || images[0];
 
- 
-  const formatCompactPrice = (value) => {
-    if (!value) return null;
-    const numValue = Number(value);
-    if (isNaN(numValue)) return value;
+  // 🟢 SURGICAL UPDATE: Fallback parser for currency and numeric evaluations
+    const displayPrice = (() => {
+    // Grab whichever price field has data available
+    const targetValue = property.price || property.pricePerAnnum;
+    
+    if (!targetValue) return 'Price on Application';
+    
+    const numValue = Number(targetValue);
+    
+    // Safety check: if it's not a valid number string, return it raw
+    if (isNaN(numValue)) return targetValue;
 
-    // 1. Billionth Threshold Capture
+    // 1. 🏢 Billionth Threshold (e.g., 4200000000 -> ₦4.2B)
     if (numValue >= 1000000000) {
       return `₦${(numValue / 1000000000).toFixed(1).replace(/\.0$/, '')}B`;
     }
-    // 2. Millionth Threshold Capture
+    
+    // 2. 🏡 Millionth Threshold (e.g., 25000000 -> ₦25M)
     if (numValue >= 1000000) {
       return `₦${(numValue / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
     }
-    // 3. Standard Thousands Fallback Formatting
+    
+    // 3. 🪙 Thousands Threshold (e.g., 850000 -> ₦850k)
+    if (numValue >= 1000) {
+      return `₦${(numValue / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+    }
+    
+    // 4. 🎛️ Standard Baseline Fallback
     return `₦${numValue.toLocaleString()}`;
-  };
-
-  // Your updated definition safely evaluating both fallback targets:
-  const rawPriceTarget = property.price || property.pricePerAnnum;
-  const displayPrice = rawPriceTarget ? formatCompactPrice(rawPriceTarget) : 'Price on Application';
+  })();
 
   // 🟢 SURGICAL UPDATE: Evaluate if this specific property layout is currently saved
   const isSaved = user?.savedCollections?.some(item => 
