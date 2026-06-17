@@ -26,9 +26,27 @@ export const PropertyCard = ({ property , hideAction = false}) => {
     
   const cardBackgroundImage = property.image || images[0];
 
-  // 🟢 SURGICAL UPDATE: Fallback parser for currency and numeric evaluations
-  const displayPrice = property.price || 
-    (property.pricePerAnnum ? `₦${Number(property.pricePerAnnum).toLocaleString()}` : 'Price on Application');
+ 
+  const formatCompactPrice = (value) => {
+    if (!value) return null;
+    const numValue = Number(value);
+    if (isNaN(numValue)) return value;
+
+    // 1. Billionth Threshold Capture
+    if (numValue >= 1000000000) {
+      return `₦${(numValue / 1000000000).toFixed(1).replace(/\.0$/, '')}B`;
+    }
+    // 2. Millionth Threshold Capture
+    if (numValue >= 1000000) {
+      return `₦${(numValue / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+    }
+    // 3. Standard Thousands Fallback Formatting
+    return `₦${numValue.toLocaleString()}`;
+  };
+
+  // Your updated definition safely evaluating both fallback targets:
+  const rawPriceTarget = property.price || property.pricePerAnnum;
+  const displayPrice = rawPriceTarget ? formatCompactPrice(rawPriceTarget) : 'Price on Application';
 
   // 🟢 SURGICAL UPDATE: Evaluate if this specific property layout is currently saved
   const isSaved = user?.savedCollections?.some(item => 
@@ -196,7 +214,7 @@ return (
             <div className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest w-fit bg-white/10 text-brand-gold border border-brand-gold/20 backdrop-blur-md select-none transition-all">
               {(() => {
                 const typeMapping = {
-                  house: 'Executive House',
+                  house: 'Rent',
                   penthouse: 'Elite Penthouse',
                   apartment: 'Serviced Apartment',
                   shortlet: 'Shortlet Stay',
