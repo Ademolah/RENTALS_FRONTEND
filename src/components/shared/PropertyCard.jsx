@@ -28,36 +28,32 @@ export const PropertyCard = ({ property , hideAction = false}) => {
 
   // 🟢 SURGICAL UPDATE: Fallback parser for currency and numeric evaluations
     const displayPrice = (() => {
-  // Force clean extraction of whatever numeric values exist
-  const rawPrice = property.price !== undefined && property.price !== null ? Number(property.price) : null;
-  const rawAnnum = property.pricePerAnnum !== undefined && property.pricePerAnnum !== null ? Number(property.pricePerAnnum) : null;
-  
-  // Pick whichever valid number is greater than zero
-  const finalNumericValue = rawPrice || rawAnnum || 0;
-  
-  // If both fields are empty or zero, display fallback stance
-  if (finalNumericValue === 0) {
-    return 'Price on Application';
-  }
+    // Force clean extraction of whatever numeric values exist
+    const rawPrice = property.price !== undefined && property.price !== null ? Number(property.price) : null;
+    const rawAnnum = property.pricePerAnnum !== undefined && property.pricePerAnnum !== null ? Number(property.pricePerAnnum) : null;
+    
+    // Pick whichever valid number is greater than zero
+    const finalNumericValue = rawPrice || rawAnnum || 0;
+    
+    // If both fields are empty or zero, display fallback stance
+    if (finalNumericValue === 0) {
+      return 'Price on Application';
+    }
 
-  // 1. 🏢 Billionth Threshold (e.g., 4200000000 -> ₦4.2B)
-  if (finalNumericValue >= 1000000000) {
-    return `₦${(finalNumericValue / 1000000000).toFixed(1).replace(/\.0$/, '')} B`;
-  }
-  
-  // 2. 🏡 Millionth Threshold (e.g., 25000000 -> ₦25M)
-  if (finalNumericValue >= 1000000) {
-    return `₦${(finalNumericValue / 1000000).toFixed(1).replace(/\.0$/, '')} M`;
-  }
-  
-  // 3. 🪙 Thousands Threshold (e.g., 850000 -> ₦850k)
-  if (finalNumericValue >= 1000) {
-    return `₦${(finalNumericValue / 1000).toFixed(1).replace(/\.0$/, '')} k`;
-  }
-  
-  // 4. 🎛️ Standard Baseline Fallback for small numbers
-  return `₦${finalNumericValue.toLocaleString()}`;
-})();
+    if (finalNumericValue >= 1000000000) {
+      return `₦${(finalNumericValue / 1000000000).toFixed(1).replace(/\.0$/, '')} B`;
+    }
+    
+    if (finalNumericValue >= 1000000) {
+      return `₦${(finalNumericValue / 1000000).toFixed(1).replace(/\.0$/, '')} M`;
+    }
+    
+    if (finalNumericValue >= 1000) {
+      return `₦${(finalNumericValue / 1000).toFixed(1).replace(/\.0$/, '')} k`;
+    }
+    
+    return `₦${finalNumericValue.toLocaleString()}`;
+  })();
 
   // 🟢 SURGICAL UPDATE: Evaluate if this specific property layout is currently saved
   const isSaved = user?.savedCollections?.some(item => 
