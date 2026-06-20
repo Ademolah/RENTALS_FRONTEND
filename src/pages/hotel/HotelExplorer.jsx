@@ -179,7 +179,7 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
                   }`}>
                     <div className="space-y-1 flex justify-between items-start md:block">
                       <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-block">
-                        Available Direct
+                        Active
                       </span>
                       <p className={`text-[11px] font-medium hidden md:block mt-1 ${darkMode ? "text-white/40" : "text-slate-400"}`}>
                         Includes service provisions
@@ -189,7 +189,7 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
                     <div className="mt-4 md:mt-0 flex justify-between items-end md:block">
                       <div>
                         <span className={`text-[10px] uppercase tracking-wider block font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>
-                          1 night, 1 adult
+                          Per Night
                         </span>
                         <h3 className="text-2xl font-mono font-black tracking-tight text-brand-cobalt mt-0.5">
                           ₦{baseRate.toLocaleString()}

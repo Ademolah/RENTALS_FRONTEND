@@ -30,11 +30,11 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
 
   const tokenTextTitle = darkMode ? "text-white" : "text-slate-900";
   const tokenTextMuted = darkMode ? "text-white/40" : "text-slate-500";
-  const tokenBorder = darkMode ? "border-white/5" : "border-slate-200/80";
+  // const tokenBorder = darkMode ? "border-white/5" : "border-slate-200/80";
 
-  const tokenCard = darkMode 
-  ? "bg-white/[0.02] border-white/5 backdrop-blur-md" 
-  : "bg-white border-slate-200/80 shadow-xl shadow-slate-200/30";
+  // const tokenCard = darkMode 
+  // ? "bg-white/[0.02] border-white/5 backdrop-blur-md" 
+  // : "bg-white border-slate-200/80 shadow-xl shadow-slate-200/30";
 
   const tokenTableHead = darkMode 
   ? "bg-white/[0.02] text-white/40 border-white/5" 
@@ -51,6 +51,37 @@ const [processingAction, setProcessingAction] = useState(null); // Tracks 'confi
   const tokenBtnSecondary = darkMode
   ? "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
   : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm";
+
+  const [timeframeFilter, setTimeframeFilter] = useState('active');
+
+const filteredBookings = bookings.filter((booking) => {
+  const now = new Date();
+  const checkoutTimestamp = new Date(booking.checkOutDate).getTime();
+  const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+
+  // CASE A: DEFAULT OPERATIONAL DASHBOARD VIEW
+  if (timeframeFilter === 'active') {
+    // Keep active or pending reservations visible unconditionally
+    if (['pending', 'confirmed', 'checked-in'].includes(booking.status)) {
+      return true;
+    }
+    // Auto-clear archival states (checked-out, cancelled, etc.) exactly 24 hours post checkout date
+    return (now.getTime() - checkoutTimestamp) < twentyFourHoursInMs;
+  }
+
+  // CASE B: HISTORICAL LOOKBACK WINDOWS
+  if (timeframeFilter === 'day') {
+    return (now.getTime() - checkoutTimestamp) <= twentyFourHoursInMs;
+  }
+  if (timeframeFilter === 'week') {
+    return (now.getTime() - checkoutTimestamp) <= (7 * twentyFourHoursInMs);
+  }
+  if (timeframeFilter === 'month') {
+    return (now.getTime() - checkoutTimestamp) <= (30 * twentyFourHoursInMs);
+  }
+
+  return true;
+});
 
   // =========================================================================
   // LIVE DATA INGESTION ENGINE
@@ -362,161 +393,221 @@ return (
         {/* =======================================================================
             RESERVATIONS DATA ENVIRONMENT
             ======================================================================= */}
-        <div className={`border rounded-3xl overflow-hidden shadow-sm transition-all duration-300 ${tokenCard}`}>
-          {/* Section Header */}
-          <div className={`p-5 sm:p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${tokenBorder}`}>
-            <div className="space-y-1">
-              <h2 className={`text-base sm:text-lg font-black tracking-tight transition-colors ${tokenTextTitle}`}>
-                Recent Reservations
-              </h2>
-              <p className={`text-xs transition-colors ${tokenTextMuted}`}>
-                Live booking feeds routed directly from explorer client applications.
-              </p>
-            </div>
-            <button className="text-xs font-bold text-brand-cobalt bg-brand-cobalt/10 hover:bg-brand-cobalt/20 border border-brand-cobalt/20 px-4 py-2.5 rounded-xl transition-all duration-300 cursor-pointer text-center">
-              View All
-            </button>
-          </div>
+        <div className="space-y-4">
+  {/* PREMIUM TIMEFRAME CONTROLLER TABS */}
+  <div className="flex items-center justify-between border-b pb-1 border-slate-200/60 dark:border-white/5">
+    <div className="flex gap-1 p-1 bg-slate-100 dark:bg-white/[0.03] rounded-xl border border-slate-200/40 dark:border-white/[0.02]">
+      {[
+        { id: 'active', label: 'Active Live View' },
+        { id: 'day', label: 'Past 24h' },
+        { id: 'week', label: 'Past Week' },
+        { id: 'month', label: 'Past Month' }
+      ].map((tab) => {
+        const isActive = timeframeFilter === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setTimeframeFilter(tab.id)}
+            className={`px-4 py-1.5 rounded-lg text-[11px] font-mono tracking-wider uppercase font-bold transition-all duration-300 cursor-pointer ${
+              isActive
+                ? darkMode
+                  ? 'bg-white/[0.07] text-white border border-white/10 shadow-sm'
+                  : 'bg-white text-slate-900 border border-slate-200 shadow-sm'
+                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border border-transparent'
+            }`}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+    
+    {/* Micro Indicators */}
+    <div className="hidden sm:flex items-center space-x-1.5 text-[10px] font-mono tracking-widest uppercase opacity-40 mix-blend-plus-lighter">
+      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+      <span className={tokenTextMuted}>System Live Scope</span>
+    </div>
+  </div>
 
-          {/* TABLE DATA ARCHITECTURE */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="inline-block min-w-full align-middle p-4 sm:p-0">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className={`text-[10px] uppercase tracking-widest font-mono border-b transition-colors ${tokenTableHead}`}>
-                    <th className="px-6 py-4 font-bold">Guest Details</th>
-                    <th className="px-6 py-4 font-bold">Suite Config</th>
-                    <th className="px-6 py-4 font-bold">Check-In</th>
-                    <th className="px-6 py-4 font-bold">Pricing</th>
-                    <th className="px-6 py-4 font-bold">Status</th>
-                    <th className="px-6 py-4 text-right font-bold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className={`divide-y text-sm transition-colors ${tokenTableRowBorder}`}>
-                  {/* NULL REPOSITORY LIFECYCLE */}
-                  {bookings.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className={`text-center py-16 text-sm font-medium ${tokenTextMuted}`}>
-                        <div className="max-w-sm mx-auto space-y-1">
-                          <p className="font-bold text-base">No Bookings Found</p>
-                          <p className="text-xs opacity-70">No reservations found for this luxury asset property yet.</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    /* INTERACTIVE MAP COMPONENT ROWS */
-                    bookings.map((booking) => (
-                      <tr key={booking._id} className={`transition-colors duration-200 group ${tokenTableRowHover}`}>
-                        {/* Guest Profiling */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <p className={`font-bold text-sm transition-colors tracking-tight ${tokenRowTextMain}`}>
-                            {booking.guestName}
-                          </p>
-                          <p className={`text-[11px] mt-0.5 transition-colors font-medium tracking-wide ${tokenTextMuted}`}>
-                            {booking.guestPhone} <span className="opacity-30 mx-1">•</span> {booking.guestEmail}
-                          </p>
-                        </td>
+  {/* MAIN TABLE CONTAINER DATA MATRICES */}
+  <div className="overflow-x-auto -mx-4 sm:mx-0">
+    <div className="inline-block min-w-full align-middle p-4 sm:p-0">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className={`text-[10px] uppercase tracking-widest font-mono border-b transition-colors ${tokenTableHead}`}>
+            <th className="px-6 py-4 font-bold">Guest Details</th>
+            <th className="px-6 py-4 font-bold">Suite Config</th>
+            <th className="px-6 py-4 font-bold">Check-In / Check-Out</th>
+            <th className="px-6 py-4 font-bold">Pricing</th>
+            <th className="px-6 py-4 font-bold">Status</th>
+            <th className="px-6 py-4 text-right font-bold">Actions</th>
+          </tr>
+        </thead>
+        <tbody className={`divide-y text-sm transition-colors ${tokenTableRowBorder}`}>
+          {/* NULL REPOSITORY LIFECYCLE */}
+          {filteredBookings.length === 0 ? (
+            <tr>
+              <td colSpan="6" className={`text-center py-16 text-sm font-medium ${tokenTextMuted}`}>
+                <div className="max-w-sm mx-auto space-y-1">
+                  <p className="font-bold text-base">No Bookings Found</p>
+                  <p className="text-xs opacity-70">No reservations match the selected timeframe context or filters.</p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            /* INTERACTIVE MAP COMPONENT ROWS */
+            filteredBookings.map((booking) => (
+              <tr key={booking._id} className={`transition-colors duration-200 group ${tokenTableRowHover}`}>
+                {/* Guest Profiling */}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className={`font-bold text-sm transition-colors tracking-tight ${tokenRowTextMain}`}>
+                    {booking.guestName}
+                  </p>
+                  <p className={`text-[11px] mt-0.5 transition-colors font-medium tracking-wide ${tokenTextMuted}`}>
+                    {booking.guestPhone} <span className="opacity-30 mx-1">•</span> {booking.guestEmail}
+                  </p>
+                </td>
 
-                        {/* Room Specifications Tagging */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`border px-3 py-1 rounded-lg text-[10px] font-mono tracking-wider uppercase transition-all duration-300 ${tokenSuiteTag}`}>
-                            {booking.roomTypeName}
-                          </span>
-                        </td>
+                {/* Room Specifications Tagging */}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`border px-3 py-1 rounded-lg text-[10px] font-mono tracking-wider uppercase transition-all duration-300 ${tokenSuiteTag}`}>
+                    {booking.roomTypeName}
+                  </span>
+                </td>
 
-                        {/* Check-In Timestamps */}
-                        <td className={`px-6 py-4 whitespace-nowrap text-xs font-semibold tracking-wide transition-colors ${tokenDateText}`}>
-                          {new Date(booking.checkInDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </td>
+                {/* 🛠️ STAY DURATION TIMELINE MODULE */}
+                <td className="px-6 py-4 whitespace-nowrap text-xs tracking-wide">
+                  <div className="flex items-center space-x-3">
+                    {/* Check-In Column Block */}
+                    <div className="flex flex-col">
+                      <span className={`font-semibold transition-colors ${tokenDateText}`}>
+                        {new Date(booking.checkInDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 opacity-50 ${tokenTextMuted}`}>
+                        Check-In
+                      </span>
+                    </div>
+                    
+                    {/* Elegant Vector Directional Line */}
+                    <div className="flex items-center text-slate-500/50 px-0.5">
+                      <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </div>
+                    
+                    {/* Check-Out Column Block */}
+                    <div className="flex flex-col">
+                      <span className={`font-semibold transition-colors ${tokenDateText}`}>
+                        {new Date(booking.checkOutDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 opacity-50 ${tokenTextMuted}`}>
+                        Check-Out
+                      </span>
+                    </div>
 
-                        {/* Financial Audit Settlement */}
-                        <td className={`px-6 py-4 whitespace-nowrap font-mono text-sm font-bold transition-colors ${tokenAmountText}`}>
-                          ₦{booking.totalAmount?.toLocaleString()}
-                        </td>
+                    {/* Dynamic Nights Computational Badge */}
+                    {booking.checkInDate && booking.checkOutDate && (
+                      <div className="ml-3 hidden sm:inline-block">
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                          darkMode 
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20" 
+                            : "bg-amber-50 text-amber-700 border-amber-200"
+                        }`}>
+                          {Math.ceil((new Date(booking.checkOutDate) - new Date(booking.checkInDate)) / (1000 * 60 * 60 * 24))} Nights
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </td>
 
-                        {/* Workflow System State Badges */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <StatusBadge status={booking.status} isDark={darkMode} />
-                        </td>
+                {/* Financial Audit Settlement */}
+                <td className={`px-6 py-4 whitespace-nowrap font-mono text-sm font-bold transition-colors ${tokenAmountText}`}>
+                  ₦{booking.totalAmount?.toLocaleString()}
+                </td>
 
-                        {/* Transaction Operations Controller Deck */}
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            
-                            {/* ─── CASE A: PENDING LIFECYCLE (DUAL ACTION CONTROLLERS) ─── */}
-                            {booking.status === 'pending' && (
-                              <>
-                                {/* Approve Registration Hook */}
-                                <button
-                                  onClick={() => handleConfirmReservation(booking._id)}
-                                  disabled={processingId !== null}
-                                  className={`transition-all duration-300 px-3.5 py-1.5 rounded-lg text-[10px] uppercase tracking-widest font-black flex items-center gap-1 cursor-pointer shadow-sm ${
-                                    darkMode
-                                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30"
-                                      : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/10"
-                                  } ${processingId === booking._id && processingAction === 'confirm' ? 'animate-pulse' : ''} ${
-                                    processingId !== null ? 'opacity-40 cursor-not-allowed' : ''
-                                  }`}
-                                >
-                                  {processingId === booking._id && processingAction === 'confirm' ? '...' : 'Accept'}
-                                </button>
+                {/* Workflow System State Badges */}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <StatusBadge status={booking.status} isDark={darkMode} />
+                </td>
 
-                                {/* Reject Request Linkage */}
-                                <button
-                                  onClick={() => handleCancelReservation(booking._id)}
-                                  disabled={processingId !== null}
-                                  title="Reject Request"
-                                  className={`transition-all duration-300 p-2 rounded-lg border flex items-center justify-center cursor-pointer ${
-                                    darkMode
-                                      ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
-                                      : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
-                                  } ${processingId !== null ? 'opacity-40 cursor-not-allowed' : ''}`}
-                                >
-                                  {processingId === booking._id && processingAction === 'reject' ? (
-                                    <span className="text-[10px] px-1 font-bold">...</span>
-                                  ) : (
-                                    <XCircle size={14} />
-                                  )}
-                                </button>
-                              </>
-                            )}
+                {/* Transaction Operations Controller Deck */}
+                <td className="px-6 py-4 whitespace-nowrap text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    
+                    {/* ─── CASE A: PENDING LIFECYCLE (DUAL ACTION CONTROLLERS) ─── */}
+                    {booking.status === 'pending' && (
+                      <>
+                        {/* Approve Registration Hook */}
+                        <button
+                          onClick={() => handleConfirmReservation(booking._id)}
+                          disabled={processingId !== null}
+                          className={`transition-all duration-300 px-3.5 py-1.5 rounded-lg text-[10px] uppercase tracking-widest font-black flex items-center gap-1 cursor-pointer shadow-sm ${
+                            darkMode
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30"
+                              : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/10"
+                          } ${processingId === booking._id && processingAction === 'confirm' ? 'animate-pulse' : ''} ${
+                            processingId !== null ? 'opacity-40 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {processingId === booking._id && processingAction === 'confirm' ? '...' : 'Accept'}
+                        </button>
 
-                            {/* ─── CASE B: UNFULFILLED REJECTION MATRIX (DATABASE RECORD SCRUBBER) ─── */}
-                            {(booking.status === 'cancelled' || booking.status === 'rejected' || booking.status === 'failed') && (
-                              <button
-                                onClick={() => handleDeleteReservation(booking._id)}
-                                disabled={processingId !== null}
-                                title="Purge Record Permanently"
-                                className={`transition-all duration-300 px-3 py-1.5 rounded-lg border text-[10px] uppercase tracking-widest font-black flex items-center gap-1 cursor-pointer ${
-                                  darkMode
-                                    ? "bg-white/[0.02] border-white/5 text-white/40 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20"
-                                    : "bg-white border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
-                                } ${processingId !== null ? 'opacity-40 cursor-not-allowed' : ''}`}
-                              >
-                                {processingId === booking._id && processingAction === 'delete' ? 'Purging' : 'Purge'}
-                              </button>
-                            )}
+                        {/* Reject Request Linkage */}
+                        <button
+                          onClick={() => handleCancelReservation(booking._id)}
+                          disabled={processingId !== null}
+                          title="Reject Request"
+                          className={`transition-all duration-300 p-2 rounded-lg border flex items-center justify-center cursor-pointer ${
+                            darkMode
+                              ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
+                              : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                          } ${processingId !== null ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        >
+                          {processingId === booking._id && processingAction === 'reject' ? (
+                            <span className="text-[10px] px-1 font-bold">...</span>
+                          ) : (
+                            <XCircle size={14} />
+                          )}
+                        </button>
+                      </>
+                    )}
 
-                            {/* ─── CASE C: ESTABLISHED SECURE RESERVATIONS STATE (OVERFLOW BACKUP) ─── */}
-                            {booking.status === 'confirmed' && (
-                              <button 
-                                className={`transition-all duration-300 p-2 rounded-lg border flex items-center justify-center cursor-pointer ${tokenBtnSecondary}`}
-                                title="Manage Confirmed Reservation"
-                              >
-                                <MoreHorizontal size={14} />
-                              </button>
-                            )}
+                    {/* ─── CASE B: UNFULFILLED REJECTION MATRIX (DATABASE RECORD SCRUBBER) ─── */}
+                    {(booking.status === 'cancelled' || booking.status === 'rejected' || booking.status === 'failed') && (
+                      <button
+                        onClick={() => handleDeleteReservation(booking._id)}
+                        disabled={processingId !== null}
+                        title="Purge Record Permanently"
+                        className={`transition-all duration-300 px-3 py-1.5 rounded-lg border text-[10px] uppercase tracking-widest font-black flex items-center gap-1 cursor-pointer ${
+                          darkMode
+                            ? "bg-white/[0.02] border-white/5 text-white/40 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20"
+                            : "bg-white border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
+                        } ${processingId !== null ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      >
+                        {processingId === booking._id && processingAction === 'delete' ? 'Purging' : 'Purge'}
+                      </button>
+                    )}
 
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+                    {/* ─── CASE C: ESTABLISHED SECURE RESERVATIONS STATE (OVERFLOW BACKUP) ─── */}
+                    {booking.status === 'confirmed' && (
+                      <button 
+                        className={`transition-all duration-300 p-2 rounded-lg border flex items-center justify-center cursor-pointer ${tokenBtnSecondary}`}
+                        title="Manage Confirmed Reservation"
+                      >
+                        <MoreHorizontal size={14} />
+                      </button>
+                    )}
+
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
       </main>
     </div>
   );
