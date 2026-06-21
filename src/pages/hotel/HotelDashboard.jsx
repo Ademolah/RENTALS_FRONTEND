@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Building, LogOut, Plus, CalendarDays, TrendingUp, 
-  Users, Clock, CheckCircle2, MoreHorizontal, MapPin, Moon, Sun, XCircle
+  Users, Clock, CheckCircle2, MoreHorizontal, MapPin, Moon, Sun, XCircle, Sliders, 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiClient } from '../../services/apiClient';
@@ -15,6 +15,11 @@ export const HotelAdminDashboard = () => {
 const [bookings, setBookings] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
   const { logout } = useAuthStore();
+  const [isConfigDrawerOpen, setIsConfigDrawerOpen] = useState(false);
+const [isProcessingAsset, setIsProcessingAsset] = useState(false);
+const [assetAction, setAssetAction] = useState(null); 
+
+
 
   // Near your other useState hooks:
 const [processingId, setProcessingId] = useState(null); // Tracks which row is running an API call
@@ -58,6 +63,11 @@ const filteredBookings = bookings.filter((booking) => {
   const now = new Date();
   const checkoutTimestamp = new Date(booking.checkOutDate).getTime();
   const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+
+  // Additional state vectors required for property mutation life cycles
+// 'update' | 'delete'
+
+
 
   // CASE A: DEFAULT OPERATIONAL DASHBOARD VIEW
   if (timeframeFilter === 'active') {
@@ -148,9 +158,10 @@ const filteredBookings = bookings.filter((booking) => {
 
       // --- 🟢 INJECT LIVE DATA INTO STATE ---
       setHotelData({
+        ...fetchedHotel, // <-- CRITICAL: Injects _id, roomTypes, amenities, etc.
         name: fetchedHotel.title,
         location: fetchedHotel.isPlaceholder 
-          ? `${fetchedHotel.state} (Setup Pending)`
+          ? `${fetchedHotel.state}`
           : `${fetchedHotel.locality}, ${fetchedHotel.state}`,
         stats: {
           occupancy: `${occupancyRate}%`, 
@@ -186,6 +197,80 @@ const filteredBookings = bookings.filter((booking) => {
   navigate('/hotel-admin/upload', {
     state: { prefilledTitle: hotelData?.name }
   });
+};
+
+/**
+ * Handles multi-part structural changes to the master hotel asset configuration
+ * @param {string} hotelId - The targeted resource identifier
+ * @param {FormData|Object} updatedPayload - Fully prepared mutation fields (can include files)
+ */
+const handleUpdateHotel = async (hotelId, updatedPayload) => {
+  setIsProcessingAsset(true);
+  setAssetAction('update');
+  
+  try {
+    // 1. Convert object to FormData
+    const formData = new FormData();
+    
+    for (const key in updatedPayload) {
+      if (key === 'roomTypes' || key === 'amenities') {
+        // Stringify complex structures to match backend expectation
+        formData.append(key, JSON.stringify(updatedPayload[key]));
+      } else if (key === 'images') {
+        // Handle image files
+        updatedPayload.images.forEach((file) => formData.append('images', file));
+      } else {
+        formData.append(key, updatedPayload[key]);
+      }
+    }
+
+    // 2. Request with FormData
+    const response = await apiClient.patch(`/hotels/${hotelId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    toast.success("Property specifications modified successfully!");
+    
+    setHotelData(prev => ({
+      ...prev,
+      ...response.data.data.hotel
+    }));
+
+    setIsConfigDrawerOpen(false);
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Failed to adjust hotel configurations.");
+  } finally {
+    setIsProcessingAsset(false);
+    setAssetAction(null);
+  }
+};
+
+/**
+ * Destructively purges the property configuration and all attached image layers
+ * @param {string} hotelId - The targeted resource identifier
+ */
+const handleDeleteHotel = async (hotelId) => {
+  // Defensive check to avoid accidental single-click clearings
+  const confirmPurge = window.confirm("Are you certain you want to permanently delete this luxury property configuration? This action is catastrophic and clears all underlying data models.");
+  if (!confirmPurge) return;
+
+  setIsProcessingAsset(true);
+  setAssetAction('delete');
+  
+  try {
+    // Hits your newly compiled DELETE route (yielding a 204 No Content state)
+    await apiClient.delete(`/hotels/${hotelId}`);
+    
+    toast.success("Property and linked binary storage successfully erased.");
+    
+    // Reroute user out of the deleted context or clear parent dashboard framework
+    window.location.href = '/agency/dashboard'; 
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Failed to purge asset configuration.");
+  } finally {
+    setIsProcessingAsset(false);
+    setAssetAction(null);
+  }
 };
 
  const handleConfirmReservation = async (reservationId) => {
@@ -343,6 +428,21 @@ return (
               {darkMode ? <Sun size={14} className="animate-spin-slow" /> : <Moon size={14} />}
             </button>
 
+            {/* Premium Property Configuration Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsConfigDrawerOpen(true)}
+              className={`flex items-center gap-2 border px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                darkMode 
+                  ? "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white" 
+                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
+              }`}
+              title="Configure Property Master Settings"
+            >
+              <Sliders size={14} />
+              <span className="hidden lg:inline">Property Config</span>
+            </button>
+
             {/* Desktop Collection Upload Trigger */}
             <button 
               onClick={handleUploadNav}
@@ -372,13 +472,25 @@ return (
           ======================================================================= */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-6 sm:mt-8 space-y-6 sm:space-y-8">
         
-        {/* Mobile Asset Upload Switcher */}
-        <button 
-          onClick={handleUploadNav} 
-          className="w-full md:hidden flex items-center justify-center gap-2 bg-brand-cobalt text-white px-4 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-cobalt/10 transform active:scale-[0.99] transition-transform"
-        >
-          <Plus size={16} strokeWidth={2.5} /> Upload New Property
-        </button>
+        {/* Mobile Responsive Action Hub Grid */}
+        <div className="grid grid-cols-2 gap-3 md:hidden">
+          <button 
+            onClick={handleUploadNav} 
+            className="flex items-center justify-center gap-2 bg-brand-cobalt text-white px-4 py-3.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 transform active:scale-[0.99] transition-all"
+          >
+            <Plus size={14} strokeWidth={2.5} /> Upload New
+          </button>
+          <button 
+            onClick={() => setIsConfigDrawerOpen(true)} 
+            className={`flex items-center justify-center gap-2 border px-4 py-3.5 rounded-xl text-xs font-bold transform active:scale-[0.99] transition-all ${
+              darkMode 
+                ? "bg-white/5 border-white/10 text-white/80" 
+                : "bg-white border-slate-200 text-slate-700 shadow-sm"
+            }`}
+          >
+            <Sliders size={14} /> Config Setup
+          </button>
+        </div>
 
         {/* =======================================================================
             ANALYTICAL STATISTICS MATRIX
@@ -436,7 +548,7 @@ return (
         <thead>
           <tr className={`text-[10px] uppercase tracking-widest font-mono border-b transition-colors ${tokenTableHead}`}>
             <th className="px-6 py-4 font-bold">Guest Details</th>
-            <th className="px-6 py-4 font-bold">Suite Config</th>
+            <th className="px-6 py-4 font-bold">Suite</th>
             <th className="px-6 py-4 font-bold">Check-In / Check-Out</th>
             <th className="px-6 py-4 font-bold">Pricing</th>
             <th className="px-6 py-4 font-bold">Status</th>
@@ -609,6 +721,383 @@ return (
   </div>
 </div>
       </main>
+
+      {isConfigDrawerOpen && (
+  <div className="fixed inset-0 z-50 overflow-hidden font-sans animate-fade-in">
+    {/* Backdrop Blur Overlay */}
+    <div 
+      className="absolute inset-0 bg-brand-midnight/45 backdrop-blur-md transition-opacity duration-300"
+      onClick={() => !isProcessingAsset && setIsConfigDrawerOpen(false)}
+    />
+    
+    <div className="absolute inset-y-0 right-0 max-w-full flex pl-10 sm:pl-16">
+      <div className={`w-screen max-w-md transform transition-all duration-300 shadow-2xl border-l border-slate-200/60 dark:border-white/10 ${
+        darkMode ? "bg-slate-950 text-white" : "bg-white text-slate-900"
+      }`}>
+        <div className="h-full flex flex-col py-6 overflow-y-auto space-y-6 px-4 sm:px-6">
+          
+          {/* Header Context Bar */}
+          <div className="flex items-center justify-between border-b pb-4 border-slate-200/60 dark:border-white/5">
+            <div className="space-y-1">
+              <h2 className="text-sm font-black uppercase tracking-wider">Property Management Deck</h2>
+              <p className={`text-[10px] font-medium tracking-tight ${tokenTextMuted}`}>
+                Surgically mutate database layers, room rates, and assets
+              </p>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setIsConfigDrawerOpen(false)}
+              disabled={isProcessingAsset}
+              className={`p-2 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                darkMode ? "bg-white/5 border-white/5 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+              }`}
+            >
+              <XCircle size={14} className={isProcessingAsset ? "opacity-30" : ""} />
+            </button>
+          </div>
+
+          {/* Live Form Configuration Controller */}
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              
+              // 1. Resolve identifier matrix with prioritized fallback checks
+              const targetHotelId = hotelData?._id || hotelData?.id;
+              
+              if (!targetHotelId) {
+                alert("Identity Error: Cannot identify the specific asset to update. Please close and re-open the drawer.");
+                return;
+              }
+
+              const formData = new FormData(e.currentTarget);
+              
+              // 2. Dynamically extract Room Types (works for both existing array and fallback block)
+              const roomTypes = [];
+              let i = 0;
+              while (formData.has(`roomTypes[${i}][name]`)) {
+                roomTypes.push({
+                  name: formData.get(`roomTypes[${i}][name]`),
+                  pricePerNight: Number(formData.get(`roomTypes[${i}][pricePerNight]`)),
+                  capacity: Number(formData.get(`roomTypes[${i}][capacity]`)),
+                });
+                i++;
+              }
+
+              // 3. Construct unified final payload for the handler
+              const finalPayload = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                starRating: Number(formData.get('starRating')),
+                isAvailable: formData.get('isAvailable') === 'true', // Validates against your value="true" HTML attribute
+                streetAddress: formData.get('streetAddress'),
+                locality: formData.get('locality'),
+                state: formData.get('state'),
+                appendMedia: formData.get('appendMedia'),
+                roomTypes: roomTypes,
+                images: Array.from(formData.getAll('files'))
+              };
+
+              handleUpdateHotel(targetHotelId, finalPayload);
+            }} 
+            className="flex-1 flex flex-col justify-between space-y-6"
+          >
+            <div className="space-y-6 pb-4">
+              
+              {/* SECTION 1: CORE REPOSITORY IDENTITY */}
+              <div className="space-y-4">
+                <h3 className="text-[10px] uppercase font-mono tracking-widest font-black text-brand-cobalt dark:text-brand-cobalt/80">
+                  01 // Core Specification
+                </h3>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Listing Title Name</label>
+                  <input 
+                    type="text" 
+                    name="title"
+                    required
+                    defaultValue={hotelData?.title} 
+                    disabled={isProcessingAsset}
+                    className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none transition-all ${
+                      darkMode 
+                        ? "bg-white/[0.03] border-white/5 focus:border-brand-cobalt text-white focus:bg-white/[0.06]" 
+                        : "bg-slate-50 border-slate-200 focus:border-brand-cobalt text-slate-900 focus:bg-white shadow-sm"
+                    }`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Star Rating</label>
+                    <select
+                      name="starRating"
+                      defaultValue={hotelData?.starRating || 4}
+                      disabled={isProcessingAsset}
+                      className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none transition-all cursor-pointer ${
+                        darkMode 
+                          ? "bg-slate-900 border-white/5 focus:border-brand-cobalt text-white" 
+                          : "bg-slate-50 border-slate-200 focus:border-brand-cobalt text-slate-900 shadow-sm"
+                      }`}
+                    >
+                      {[1, 2, 3, 4, 5].map((stars) => (
+                        <option key={stars} value={stars}>{stars} Star Luxury</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Listing Visibility</label>
+                    <div className="flex items-center h-[46px]">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          name="isAvailable" 
+                          defaultChecked={hotelData?.isAvailable ?? true}
+                          value="true"
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-300 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-cobalt"></div>
+                        <span className="ml-3 text-xs font-semibold opacity-80">Live & Bookable</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Property Narrative Overview</label>
+                  <textarea 
+                    name="description"
+                    rows={3}
+                    disabled={isProcessingAsset}
+                    defaultValue={hotelData?.description}
+                    className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none transition-all resize-none ${
+                      darkMode 
+                        ? "bg-white/[0.03] border-white/5 focus:border-brand-cobalt text-white focus:bg-white/[0.06]" 
+                        : "bg-slate-50 border-slate-200 focus:border-brand-cobalt text-slate-900 focus:bg-white shadow-sm"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* SECTION 2: GEOGRAPHIC GEOLOCATION LAYERS */}
+              <div className="space-y-4 pt-2 border-t border-slate-200/40 dark:border-white/5">
+                <h3 className="text-[10px] uppercase font-mono tracking-widest font-black text-brand-cobalt dark:text-brand-cobalt/80">
+                  02 // Location Coordinates
+                </h3>
+
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Street Address</label>
+                    <input 
+                      type="text" 
+                      name="streetAddress"
+                      defaultValue={hotelData?.streetAddress}
+                      className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none transition-all ${
+                        darkMode ? "bg-white/[0.03] border-white/5 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Locality / City</label>
+                      <input 
+                        type="text" 
+                        name="locality"
+                        defaultValue={hotelData?.locality}
+                        className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none transition-all ${
+                          darkMode ? "bg-white/[0.03] border-white/5 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
+                        }`}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">State</label>
+                      <input 
+                        type="text" 
+                        name="state"
+                        defaultValue={hotelData?.state}
+                        className={`w-full px-4 py-3 rounded-xl border text-xs font-semibold outline-none transition-all ${
+                          darkMode ? "bg-white/[0.03] border-white/5 text-white" : "bg-slate-50 border-slate-200 text-slate-900"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: DYNAMIC SUITE RATE CONFIGURATOR (PRICING MATRIX) */}
+              <div className="space-y-4 pt-2 border-t border-slate-200/40 dark:border-white/5">
+                <h3 className="text-[10px] uppercase font-mono tracking-widest font-black text-brand-cobalt dark:text-brand-cobalt/80">
+                  03 // Suite Configurations & Rates
+                </h3>
+
+                <div className="space-y-4">
+                  {hotelData?.roomTypes && hotelData.roomTypes.length > 0 ? (
+                    hotelData.roomTypes.map((room, idx) => (
+                      <div 
+                        key={room._id || idx} 
+                        className={`p-3.5 rounded-xl border space-y-3 ${
+                          darkMode ? "bg-white/[0.02] border-white/5" : "bg-slate-50/50 border-slate-200"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-mono font-bold opacity-50 flex items-center gap-1.5">
+                            SUITE TIER #{idx + 1}
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <input 
+                            type="text" 
+                            name={`roomTypes[${idx}][name]`}
+                            defaultValue={room.name}
+                            placeholder="Suite Class Title"
+                            required
+                            className={`w-full px-3 py-2 rounded-lg border text-xs font-semibold outline-none ${
+                              darkMode ? "bg-slate-900 border-white/5" : "bg-white border-slate-200"
+                            }`}
+                          />
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            {/* Price Nightly Rate Input Field */}
+                            <div className="relative">
+                              <span className="absolute left-2.5 top-2 text-xs font-mono font-bold opacity-40">₦</span>
+                              <input 
+                                type="number" 
+                                name={`roomTypes[${idx}][pricePerNight]`}
+                                defaultValue={room.pricePerNight || room.price}
+                                placeholder="Rate / Night"
+                                required
+                                className={`w-full pl-6 pr-2 py-2 rounded-lg border text-xs font-mono font-bold outline-none ${
+                                  darkMode ? "bg-slate-900 border-white/5 text-amber-400" : "bg-white border-slate-200 text-slate-900"
+                                }`}
+                              />
+                            </div>
+
+                            {/* Guest Capacity Input Field */}
+                            <input 
+                              type="number" 
+                              name={`roomTypes[${idx}][capacity]`}
+                              defaultValue={room.capacity || 2}
+                              placeholder="Max Guests"
+                              required
+                              min={1}
+                              className={`w-full px-3 py-2 rounded-lg border text-xs font-mono font-bold outline-none ${
+                                darkMode ? "bg-slate-900 border-white/5" : "bg-white border-slate-200"
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    /* Dynamic safety fallback template block if roomTypes schema array starts out unpopulated */
+                    <div className={`p-3.5 rounded-xl border space-y-3 ${darkMode ? "bg-white/[0.02] border-white/5" : "bg-slate-50/50 border-slate-200"}`}>
+                      <span className="text-[10px] font-mono font-bold opacity-50">INITIAL BASE RATE SUITE BLOCK</span>
+                      <div className="space-y-2">
+                        <input type="text" name="roomTypes[0][name]" defaultValue="Standard Luxury Suite" required className={`w-full px-3 py-2 rounded-lg border text-xs font-semibold outline-none ${darkMode ? "bg-slate-900 border-white/5" : "bg-white border-slate-200"}`} />
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="relative">
+                            <span className="absolute left-2.5 top-2 text-xs font-bold opacity-40">₦</span>
+                            <input type="number" name="roomTypes[0][pricePerNight]" placeholder="75000" required className={`w-full pl-6 pr-2 py-2 rounded-lg border text-xs font-mono font-bold outline-none ${darkMode ? "bg-slate-900 border-white/5 text-amber-400" : "bg-white border-slate-200"}`} />
+                          </div>
+                          <input type="number" name="roomTypes[0][capacity]" defaultValue={2} required className={`w-full px-3 py-2 rounded-lg border text-xs font-mono font-bold outline-none ${darkMode ? "bg-slate-900 border-white/5" : "bg-white border-slate-200"}`} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION 4: CLOUDINARY MEDIA MANAGER & FRESH ASSET UPLOAD */}
+              <div className="space-y-4 pt-2 border-t border-slate-200/40 dark:border-white/5">
+                <h3 className="text-[10px] uppercase font-mono tracking-widest font-black text-brand-cobalt dark:text-brand-cobalt/80">
+                  04 // Cloudinary Media Pipeline
+                </h3>
+                
+                {/* File Input Controller Dropzone */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Upload Fresh Images</label>
+                  <input 
+                    type="file" 
+                    name="files" // Maps directly to your backend's req.files array inspector
+                    multiple 
+                    accept="image/*"
+                    disabled={isProcessingAsset}
+                    className={`w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold ${
+                      darkMode 
+                        ? "text-slate-400 file:bg-white/5 file:text-white hover:file:bg-white/10" 
+                        : "text-slate-600 file:bg-slate-100 file:text-slate-900 hover:file:bg-slate-200"
+                    }`}
+                  />
+                </div>
+
+                {/* Upload Integration Strategy Strategy Selector */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-60">Media Injection Strategy</label>
+                  <select
+                    name="appendMedia" // Read directly by your updateHotel backend controller rule!
+                    defaultValue="true"
+                    className={`w-full px-4 py-2.5 rounded-xl border text-xs font-semibold outline-none cursor-pointer ${
+                      darkMode ? "bg-slate-900 border-white/5" : "bg-slate-50 border-slate-200 shadow-sm"
+                    }`}
+                  >
+                    <option value="true">Append (Keep existing pictures and add new uploads)</option>
+                    <option value="false">Overwrite (Completely replace image array with new files)</option>
+                  </select>
+                </div>
+
+                {/* Existing Storage Gallery Previews */}
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] uppercase font-mono font-bold tracking-widest opacity-40">Current Active Artifacts ({hotelData?.mediaUrls?.length || 0})</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {hotelData?.mediaUrls?.map((url, index) => (
+                      <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-slate-200/40 dark:border-white/5 bg-slate-100 dark:bg-white/[0.02]">
+                        <img src={url} alt="Artifact View" className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Operations Deck Controls */}
+            <div className="border-t pt-5 border-slate-200/60 dark:border-white/5 space-y-3 shrink-0">
+              <button
+                type="submit"
+                disabled={isProcessingAsset}
+                className={`w-full flex items-center justify-center gap-2 bg-brand-cobalt text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 transition-all duration-300 transform active:scale-[0.99] cursor-pointer ${
+                  isProcessingAsset && assetAction === 'update' ? 'animate-pulse opacity-80' : 'hover:bg-brand-cobalt/90'
+                }`}
+              >
+                {isProcessingAsset && assetAction === 'update' ? 'Re-balancing Infrastructure...' : 'Save Dynamic Changes'}
+              </button>
+
+              <button
+                type="button"
+                disabled={isProcessingAsset}
+                onClick={() => {
+                  const targetHotelId = hotelData?._id || hotelData?.id;
+                  if (targetHotelId) handleDeleteHotel(targetHotelId);
+                }}
+                className={`w-full flex items-center justify-center gap-2 border py-3 rounded-xl text-xs font-bold transition-all duration-300 transform active:scale-[0.99] cursor-pointer ${
+                  isProcessingAsset && assetAction === 'delete'
+                    ? 'bg-rose-500/20 border-rose-500/30 text-rose-400 animate-pulse'
+                    : darkMode
+                      ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-600 hover:text-white'
+                      : 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white'
+                }`}
+              >
+                {isProcessingAsset && assetAction === 'delete' ? 'Purging Asset Channels...' : 'Danger: Purge Property Configuration'}
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
