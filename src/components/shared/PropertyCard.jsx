@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from 'react';
 import { MapPin, BedDouble, Bath, X, ChevronLeft, ChevronRight, Send, Heart, ShieldCheck, CalendarDays, Star, ArrowRight } from 'lucide-react';
 import { TourBookingModal } from '../TourBookingModal';
@@ -8,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
 
+
+
 export const PropertyCard = ({ property , hideAction = false}) => {
 
   // Surgical State Additions for Full Screen Engine
@@ -15,6 +16,9 @@ export const PropertyCard = ({ property , hideAction = false}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const navigate = useNavigate();
+ 
+ const { isAuthenticated, setUser, user } = useAuthStore();
+ 
 
   const [portfolioProperties, setPortfolioProperties] = useState([]);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
@@ -66,6 +70,28 @@ useEffect(() => {
 // 2. Transmit New Verified Feedback Review Payload
 const handleSubmitReview = async (e) => {
   e.preventDefault();
+
+  
+if (!isAuthenticated) {
+  toast('Welcome! Please sign in to share your verified experience with this portfolio.', {
+    icon: '❤️',
+    duration: 4000,
+    style: {
+      background: '#0F172A', // Premium deep slate background
+      color: '#FFFFFF',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '12px',
+      fontSize: '13px',
+      fontWeight: '500',
+      letterSpacing: '0.025em',
+    },
+  });
+  
+  navigate('/login');
+  return;
+}
+
+  // Fallback check for authenticated users typing empty feedback strings
   if (!userComment.trim()) return;
 
   setIsSubmittingReview(true);
@@ -77,7 +103,6 @@ const handleSubmitReview = async (e) => {
     });
 
     if (response.data?.status === 'success') {
-      // Clear tracking form variables seamlessly
       setUserComment('');
       setUserRating(5);
       
@@ -85,11 +110,10 @@ const handleSubmitReview = async (e) => {
       const freshReviewsResponse = await apiClient.get(`/properties/reviews?propertyId=${propertyId}`);
       setReviews(freshReviewsResponse.data?.data?.reviews || []);
       
-      // Optional: Inform user via notification or alert framework if available
+      toast.success('Review transmitted securely.');
     }
   } catch (err) {
-    console.error('🚨 [Review Transmission Fault]: Check auth state parameters:', err?.response?.data?.message || err.message);
-    alert(err?.response?.data?.message || 'Authentication required to post active verified reviews.');
+    console.error('🚨 [Review Transmission Fault]:', err?.response?.data?.message || err.message);
   } finally {
     setIsSubmittingReview(false);
   }
@@ -134,7 +158,7 @@ useEffect(() => {
 }, [isOpen, property.agencyId, property._id, property.id]);
   
   // 🟢 SURGICAL UPDATE: Extract 'user' state to check active collection statuses
-  const { isAuthenticated, setUser, user } = useAuthStore();
+ 
 
   // 🟢 SURGICAL UPDATE: Live Database Fallbacks for Media Assets
   const images = property.mediaUrls && property.mediaUrls.length > 0 
@@ -681,7 +705,7 @@ return (
     {/* LEFT COLUMN: Active Review Stream Listing (7 Columns) */}
     <div className="lg:col-span-7 space-y-4">
       <h4 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-2">
-        Verified Inhabitant Feedback
+        Users Feedback
       </h4>
 
       {isLoadingReviews ? (
@@ -730,7 +754,7 @@ return (
     {/* RIGHT COLUMN: Premium Review Form Ingestion Interface (5 Columns) */}
     <div className="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-white/5 pt-6 lg:pt-0 lg:pl-6">
       <h4 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4">
-        Leave a Verification Score
+        Leave a Review
       </h4>
       
       <form onSubmit={handleSubmitReview} className="space-y-4">
@@ -775,20 +799,20 @@ return (
 
         {/* Submission Execution Button */}
         <button
-          type="submit"
-          disabled={isSubmittingReview || !userComment.trim()}
-          className="w-full py-2.5 bg-brand-cobalt hover:bg-brand-cobalt/80 disabled:opacity-40 disabled:hover:bg-brand-cobalt text-white font-bold text-xs tracking-wider uppercase rounded-xl transition-all flex items-center justify-center gap-2"
-        >
+        type="submit"
+        disabled={isAuthenticated ? (isSubmittingReview || !userComment.trim()) : false}
+        className="w-full py-2.5 bg-brand-cobalt hover:bg-brand-cobalt/80 disabled:opacity-40 disabled:hover:bg-brand-cobalt text-white font-bold text-xs tracking-wider uppercase rounded-xl transition-all flex items-center justify-center gap-2"
+      >
           {isSubmittingReview ? (
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <>Submit Review <Send size={12} /></>
           )}
         </button>
-      </form>
+        </form>
+      </div>
     </div>
-  </div>
-</div>
+    </div>
             {/* =======================================================================
                 END TRUST & TRANSPARENCY MODULE
                 ======================================================================= */}
