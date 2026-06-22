@@ -111,7 +111,7 @@ const [phraseIdx, setPhraseIdx] = useState(0);
       const fetchedItems = response.data?.data?.properties || response.data?.properties || [];
       
       if (fetchedItems && fetchedItems.length > 0) {
-        // 🚨 THE TRANSLATION ENGINE (Feeds perfect props to your PropertyCard grid)
+        // 🚨 THE TRANSLATION ENGINE (Feeds clean variables directly to your PropertyCard grid)
         const calibratedProperties = fetchedItems.map((item, index) => ({
           ...item,
           id: item._id || item.id,
@@ -121,6 +121,10 @@ const [phraseIdx, setPhraseIdx] = useState(0);
             : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop',
             
           price: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}`,
+          
+          // 🟢 SURGICAL CAPTURE: Forwarding live database metrics directly to your cards
+          corporateName: item.corporateName || 'Premium Agency Partner',
+          agencyCreatedAt: item.agencyCreatedAt || item.createdAt,
           
           span: index === 0 ? 'md:col-span-2 md:row-span-2' : 
                 index === 2 ? 'md:col-span-3 md:row-span-2' : 

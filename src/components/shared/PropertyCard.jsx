@@ -1,7 +1,7 @@
 
 
-import { useState } from 'react';
-import { MapPin, BedDouble, Bath, X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MapPin, BedDouble, Bath, X, ChevronLeft, ChevronRight, Send, Heart, ShieldCheck, CalendarDays, Star, ArrowRight } from 'lucide-react';
 import { TourBookingModal } from '../TourBookingModal';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +15,123 @@ export const PropertyCard = ({ property , hideAction = false}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  const [portfolioProperties, setPortfolioProperties] = useState([]);
+  const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
+
+// Inside PropertyCard.jsx:
+const liveRating = property.averageRating && property.averageRating > 0 ? property.averageRating : 'New';
+const reviewCount = property.numberOfReviews || 0;
+
+// =======================================================================
+// REVIEWS STATE ENGINE & BACKGROUND STORAGE
+// =======================================================================
+const [reviews, setReviews] = useState([]);
+const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+// Form Ingestion Parameters
+const [userRating, setUserRating] = useState(5);
+const [userComment, setUserComment] = useState('');
+const [hoverRating, setHoverRating] = useState(0);
+
+const propertyId = property?._id || property?.id || property?.propertyId;
+
+useEffect(() => {
+  const fetchPropertyReviews = async () => {
+    // Prevent execution if structural tracking parameters are missing
+    if (!isOpen || !propertyId) {
+      console.warn('⚠️ [Reviews Fetch Skipped]: Card not open or propertyId missing layout profile.');
+      return;
+    }
+    
+    setIsLoadingReviews(true);
+    try {
+      // Diagnostic tracking log
+      console.log(`📡 Fetching logs from stream pipeline for asset target ID: ${propertyId}`);
+      
+      const response = await apiClient.get(`/properties/reviews?propertyId=${propertyId}`);
+      
+      setReviews(response.data?.data?.reviews || []);
+    } catch (err) {
+      console.warn('🚨 [Reviews Fetch Error]:', err?.response?.data || err.message);
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
+
+  fetchPropertyReviews();
+}, [isOpen, propertyId]);
+
+// 2. Transmit New Verified Feedback Review Payload
+const handleSubmitReview = async (e) => {
+  e.preventDefault();
+  if (!userComment.trim()) return;
+
+  setIsSubmittingReview(true);
+  try {
+    const response = await apiClient.post('/properties/reviews', {
+      propertyId,
+      rating: userRating,
+      review: userComment
+    });
+
+    if (response.data?.status === 'success') {
+      // Clear tracking form variables seamlessly
+      setUserComment('');
+      setUserRating(5);
+      
+      // Refresh local review state stack natively
+      const freshReviewsResponse = await apiClient.get(`/properties/reviews?propertyId=${propertyId}`);
+      setReviews(freshReviewsResponse.data?.data?.reviews || []);
+      
+      // Optional: Inform user via notification or alert framework if available
+    }
+  } catch (err) {
+    console.error('🚨 [Review Transmission Fault]: Check auth state parameters:', err?.response?.data?.message || err.message);
+    alert(err?.response?.data?.message || 'Authentication required to post active verified reviews.');
+  } finally {
+    setIsSubmittingReview(false);
+  }
+};
+
+useEffect(() => {
+  const fetchAgencyPortfolio = async () => {
+    // Only fetch if the modal overlay is active and an agencyId exists
+    if (!isOpen || !property.agencyId) return;
+    
+    setIsLoadingPortfolio(true);
+    try {
+      // Fetch matching properties from your high-performance engine
+      // Requesting 6 to ensure we get 5 options even after filtering out the current listing
+      const response = await apiClient.get(`/properties/search?agencyId=${property.agencyId}&limit=6`);
+      const fetchedItems = response.data?.data?.properties || response.data?.properties || [];
+      
+      const currentId = property._id || property.id;
+      
+      // 🚨 EXCLUSION ENGINE: Remove the current property being viewed from its own portfolio block
+      const calibratedPortfolio = fetchedItems
+        .filter((item) => (item._id || item.id) !== currentId)
+        .slice(0, 5) // Lock explicitly to a max of 5 items
+        .map((item) => ({
+          ...item,
+          id: item._id || item.id,
+          image: (item.mediaUrls && item.mediaUrls.length > 0) 
+            ? item.mediaUrls[0] 
+            : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2000&auto=format&fit=crop',
+          formattedPrice: `₦${Number(item.pricePerAnnum || 0).toLocaleString()}`
+        }));
+
+      setPortfolioProperties(calibratedPortfolio);
+    } catch (err) {
+      console.warn('🚨 [Portfolio Fetch Error]: Unreachable agency network:', err);
+    } finally {
+      setIsLoadingPortfolio(false);
+    }
+  };
+
+  fetchAgencyPortfolio();
+}, [isOpen, property.agencyId, property._id, property.id]);
   
   // 🟢 SURGICAL UPDATE: Extract 'user' state to check active collection statuses
   const { isAuthenticated, setUser, user } = useAuthStore();
@@ -23,6 +140,33 @@ export const PropertyCard = ({ property , hideAction = false}) => {
   const images = property.mediaUrls && property.mediaUrls.length > 0 
     ? property.mediaUrls 
     : [property.image || ''];
+
+    // Dynamic Tenure Calculator
+const calculateTenure = (joinDate) => {
+  if (!joinDate) return 'Recently';
+  
+  const start = new Date(joinDate);
+  const now = new Date();
+  
+  const diffTime = Math.abs(now - start);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+  
+  if (diffDays < 30) {
+    return `${diffDays} ${diffDays === 1 ? 'day' : 'days'}`;
+  }
+  
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) {
+    return `${diffMonths} ${diffMonths === 1 ? 'month' : 'months'}`;
+  }
+  
+  const diffYears = Math.floor(diffDays / 365);
+  return `${diffYears} ${diffYears === 1 ? 'year' : 'years'}`;
+};
+
+// Compute runtime branding variables safely from the calibrated property object
+const agencyTenure = calculateTenure(property.agencyCreatedAt);
+
     
   const cardBackgroundImage = property.image || images[0];
 
@@ -415,6 +559,240 @@ return (
                 </p>
               </div>
             )}
+
+            {/* =======================================================================
+                🟢 TRUST & TRANSPARENCY: CORPORATE PROFILE ENGINE
+                ======================================================================= */}
+            {/* =======================================================================
+    🟢 TRUST & TRANSPARENCY: CORPORATE PROFILE ENGINE & INTEGRATED REVIEWS
+    ======================================================================= */}
+<div className="mt-16 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl p-6 md:p-8 relative overflow-hidden">
+  {/* Decorative background glow */}
+  <div className="absolute top-0 right-0 w-64 h-64 bg-brand-cobalt/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+  
+  {/* Profile Header Matrix */}
+  <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between mb-8 relative z-10">
+    <div className="flex items-center gap-4 md:gap-6">
+      {/* Agency Avatar */}
+      <div className="w-16 h-16 md:w-20 md:h-20 bg-brand-slate/10 border border-white/20 rounded-full flex items-center justify-center text-2xl font-black text-brand-cobalt shrink-0">
+        {property.corporateName ? property.corporateName.charAt(0).toUpperCase() : 'A'}
+      </div>
+      
+      {/* Agency Meta */}
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-xl md:text-2xl font-bold tracking-tight text-white">
+            {property.corporateName || 'Premium Agency Partner'}
+          </h3>
+          <ShieldCheck size={20} className="text-blue-400" />
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-white/60">
+          <span className="flex items-center gap-1.5">
+            <CalendarDays size={14} className="text-white/40" />
+            On Rentals for {agencyTenure}
+          </span>
+          <span className="w-1 h-1 bg-white/20 rounded-full" />
+          
+          {/* Dynamic Database Rating Counter Badge */}
+          <div className="flex items-center gap-1.5 text-amber-400 bg-white/5 px-3 py-1 rounded-full border border-white/5 backdrop-blur-md">
+            <Star size={14} fill={liveRating !== 'New' ? 'currentColor' : 'none'} />
+            <span className="text-white font-bold text-sm">
+              {liveRating}
+            </span> 
+            {reviewCount > 0 ? (
+              <span className="text-white/40 font-normal text-xs">
+                ({reviewCount} {reviewCount === 1 ? 'Review' : 'Reviews'})
+              </span>
+            ) : (
+              <span className="text-white/40 font-normal text-xs">(No reviews yet)</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Call to Action Matrix */}
+    <button className="w-full md:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 transition-all rounded-xl text-sm font-bold tracking-wide text-white flex items-center justify-center gap-2">
+      View Full Profile <ArrowRight size={16} />
+    </button>
+  </div>
+
+  {/* Similar Properties Carousel Matrix */}
+  <div className="relative z-10 pt-6 border-t border-white/5 mb-8">
+    <h4 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4">
+      More from this Portfolio
+    </h4>
+    
+    {/* Horizontal Scroll Track */}
+    <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar">
+      
+      {/* A. LOADING STATE: High-End Shimmer Skeleton Tracks */}
+      {isLoadingPortfolio && (
+        Array.from({ length: 3 }).map((_, idx) => (
+          <div key={idx} className="min-w-[240px] md:min-w-[280px] bg-white/5 border border-white/5 rounded-2xl overflow-hidden animate-pulse">
+            <div className="h-32 bg-white/5" />
+            <div className="p-4 flex flex-col gap-2">
+              <div className="h-4 bg-white/10 rounded w-3/4" />
+              <div className="h-3 bg-white/5 rounded w-1/2" />
+            </div>
+          </div>
+        ))
+      )}
+
+      {/* B. LIVE STATE: Mapped Real Database Assets */}
+      {!isLoadingPortfolio && portfolioProperties.length > 0 && (
+        portfolioProperties.map((item) => (
+          <div key={item.id} className="min-w-[240px] md:min-w-[280px] bg-black/40 border border-white/5 rounded-2xl overflow-hidden snap-start group cursor-pointer hover:border-brand-cobalt/50 transition-all">
+            <div className="h-32 bg-white/5 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
+              <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+              <div className="absolute bottom-3 left-3 z-20">
+                <p className="text-sm font-bold text-white">
+                  {item.formattedPrice}
+                  <span className="text-[10px] text-white/60 font-normal uppercase tracking-wider ml-1">
+                    /{['shortlet', 'apartment'].includes(item.propertyType) ? 'Dy' : 'Yr'}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="p-4">
+              <h5 className="text-sm font-bold text-white/90 truncate mb-1">{item.title}</h5>
+              <p className="text-xs text-white/50 flex items-center gap-1"><MapPin size={10} className="text-brand-cobalt" /> {item.locality || 'Lagos'}, {item.state || 'Nigeria'}</p>
+            </div>
+          </div>
+        ))
+      )}
+
+      {/* C. EMPTY STATE: Graceful fallback layout if the agency has no other properties */}
+      {!isLoadingPortfolio && portfolioProperties.length === 0 && (
+        <div className="w-full py-4 text-left">
+          <p className="text-sm font-medium text-white/40 italic">This is currently the exclusive active listing in this portfolio.</p>
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/* =======================================================================
+      💎 REAL-TIME CLIENT VERIFIED REVIEWS PIPELINE (Surgically Clean & Balanced)
+      ======================================================================= */}
+  <div className="relative z-10 pt-6 border-t border-white/5 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    {/* LEFT COLUMN: Active Review Stream Listing (7 Columns) */}
+    <div className="lg:col-span-7 space-y-4">
+      <h4 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-2">
+        Verified Inhabitant Feedback
+      </h4>
+
+      {isLoadingReviews ? (
+        <div className="space-y-3 animate-pulse">
+          <div className="h-16 bg-white/5 rounded-2xl w-full" />
+          <div className="h-16 bg-white/5 rounded-2xl w-5/6" />
+        </div>
+      ) : reviews.length > 0 ? (
+        <div className="space-y-4 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
+          {reviews.map((rev) => (
+            <div key={rev._id} className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl transition-all hover:bg-white/[0.04]">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-brand-cobalt/20 flex items-center justify-center text-[10px] font-bold text-white border border-white/10 uppercase">
+                    {rev.userId?.firstName ? rev.userId.firstName.charAt(0) : 'U'}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white/90">
+                      {rev.userId ? `${rev.userId.firstName} ${rev.userId.lastName}` : 'Anonymous User'}
+                    </p>
+                    <p className="text-[10px] text-white/40">
+                      {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}) : 'Recent'}
+                    </p>
+                  </div>
+                </div>
+                {/* Micro Star Layout */}
+                <div className="flex items-center gap-0.5 text-amber-400">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={10} fill={i < rev.rating ? 'currentColor' : 'none'} className={i < rev.rating ? 'text-amber-400' : 'text-white/10'} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-white/70 font-medium leading-relaxed pl-9">
+                "{rev.review}"
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="py-8 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-2xl">
+          <p className="text-xs text-white/40 italic">No Reviews Yet</p>
+        </div>
+      )}
+    </div>
+
+    {/* RIGHT COLUMN: Premium Review Form Ingestion Interface (5 Columns) */}
+    <div className="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-white/5 pt-6 lg:pt-0 lg:pl-6">
+      <h4 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4">
+        Leave a Verification Score
+      </h4>
+      
+      <form onSubmit={handleSubmitReview} className="space-y-4">
+        {/* Interactive Star Matrix Picker */}
+        <div>
+          <label className="text-[10px] uppercase font-bold tracking-wider text-white/40 block mb-1.5">Your Experience Rating</label>
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: 5 }).map((_, idx) => {
+              const currentStarValue = idx + 1;
+              return (
+                <button
+                  type="button"
+                  key={idx}
+                  onClick={() => setUserRating(currentStarValue)}
+                  onMouseEnter={() => setHoverRating(currentStarValue)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="text-2xl transition-all transform hover:scale-120 duration-150 focus:outline-none"
+                >
+                  <Star 
+                    size={22} 
+                    fill={currentStarValue <= (hoverRating || userRating) ? '#fbbf24' : 'none'} 
+                    className={currentStarValue <= (hoverRating || userRating) ? 'text-amber-400' : 'text-white/20'}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Text Area Review Input */}
+        <div>
+          <label className="text-[10px] uppercase font-bold tracking-wider text-white/40 block mb-1.5">Your Statement Feedback</label>
+          <textarea
+            value={userComment}
+            onChange={(e) => setUserComment(e.target.value)}
+            placeholder="Share details on management execution, structural accuracy, or premium local amities..."
+            maxLength={300}
+            rows={3}
+            className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white placeholder-white/20 focus:outline-none focus:border-brand-cobalt/50 resize-none transition-all"
+          />
+        </div>
+
+        {/* Submission Execution Button */}
+        <button
+          type="submit"
+          disabled={isSubmittingReview || !userComment.trim()}
+          className="w-full py-2.5 bg-brand-cobalt hover:bg-brand-cobalt/80 disabled:opacity-40 disabled:hover:bg-brand-cobalt text-white font-bold text-xs tracking-wider uppercase rounded-xl transition-all flex items-center justify-center gap-2"
+        >
+          {isSubmittingReview ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>Submit Review <Send size={12} /></>
+          )}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+            {/* =======================================================================
+                END TRUST & TRANSPARENCY MODULE
+                ======================================================================= */}
+
           </div>
         </div>
       )}
