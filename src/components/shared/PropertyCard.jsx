@@ -673,11 +673,14 @@ return (
               <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
               <div className="absolute bottom-3 left-3 z-20">
                 <p className="text-sm font-bold text-white">
-                  {item.formattedPrice}
+                {item.formattedPrice}
+                
+                {item.propertyType !== 'house_sale' && (
                   <span className="text-[10px] text-white/60 font-normal uppercase tracking-wider ml-1">
                     /{['shortlet', 'apartment'].includes(item.propertyType) ? 'Dy' : 'Yr'}
                   </span>
-                </p>
+                )}
+              </p>
               </div>
             </div>
             <div className="p-4">
