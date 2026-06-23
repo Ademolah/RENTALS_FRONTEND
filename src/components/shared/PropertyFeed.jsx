@@ -125,6 +125,8 @@ const [phraseIdx, setPhraseIdx] = useState(0);
           // 🟢 SURGICAL CAPTURE: Forwarding live database metrics directly to your cards
           corporateName: item.corporateName || 'Premium Agency Partner',
           agencyCreatedAt: item.agencyCreatedAt || item.createdAt,
+
+          
           
           span: index === 0 ? 'md:col-span-2 md:row-span-2' : 
                 index === 2 ? 'md:col-span-3 md:row-span-2' : 

@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
+import ProfileModal from '../ProfileModal';
 
 
 
@@ -40,6 +41,62 @@ const [userComment, setUserComment] = useState('');
 const [hoverRating, setHoverRating] = useState(0);
 
 const propertyId = property?._id || property?.id || property?.propertyId;
+
+const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // Ensures the profile modal only opens when the main card is active and the booking modal is not
+
+// 2. Prepare mock/extracted lister fallback data matching the structure provided
+  const targetListerData = (() => {
+    // 🎯 SURGICAL CAPTURE: The backend passes contact details inside property.agent
+    const agentObject = property?.agent;
+    const source = property?.lister || property?.userId || property?.user || agentObject;
+    
+    if (isProfileModalOpen) {
+      console.group('🔍 [PropertyCard -> Lister Data Debug Engine]');
+      console.log('1. Full Root Property Object:', property);
+      console.log('2. Extracted Agent Object:', agentObject);
+      console.log('3. Targeted Phone:', agentObject?.phone);
+    }
+
+    const flatFallbacks = {
+      _id: property?._id || 'unknown_lister',
+      // Grab the exact name from the agent object, just like the tour modal
+      firstName: agentObject?.name || property?.corporateName || property?.agencyName || 'Premium Partner',
+      lastName: '',
+      role: 'AGENCY_ADMIN',
+      // 🟢 DIRECT HIT: Extract the phone number exactly how the booking modal does
+      phoneNumber: agentObject?.phone || property?.phoneNumber || '',
+      agencyId: property?.agencyId || property?.corporateId || property?._id
+    };
+
+    if (typeof source === 'string') {
+      const stringResult = { ...flatFallbacks, _id: source };
+      if (isProfileModalOpen) console.groupEnd();
+      return stringResult;
+    }
+
+    if (source && typeof source === 'object' && !Array.isArray(source)) {
+      const objectResult = {
+        ...flatFallbacks,
+        ...source,
+        // Ensure we prioritize the extracted agent phone
+        phoneNumber: source.phone || source.phoneNumber || flatFallbacks.phoneNumber,
+        firstName: source.name || source.firstName || flatFallbacks.firstName,
+        agencyId: source.agencyId || flatFallbacks.agencyId
+      };
+      
+      if (isProfileModalOpen) {
+        console.log('4. Final Outbound Payload:', objectResult);
+        console.groupEnd();
+      }
+      return objectResult;
+    }
+    
+    if (isProfileModalOpen) {
+      console.log('4. Final Outbound Payload:', flatFallbacks);
+      console.groupEnd();
+    }
+    return flatFallbacks;
+  })();
 
 useEffect(() => {
   const fetchPropertyReviews = async () => {
@@ -637,9 +694,13 @@ return (
     </div>
 
     {/* Call to Action Matrix */}
-    <button className="w-full md:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 transition-all rounded-xl text-sm font-bold tracking-wide text-white flex items-center justify-center gap-2">
-      View Full Profile <ArrowRight size={16} />
-    </button>
+    <button 
+  type="button" 
+  onClick={() => setIsProfileModalOpen(true)} 
+  className="w-full md:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 transition-all rounded-xl text-sm font-bold tracking-wide text-white flex items-center justify-center gap-2"
+>
+  View Full Profile <ArrowRight size={16} />
+</button>
   </div>
 
   {/* Similar Properties Carousel Matrix */}
@@ -828,6 +889,14 @@ return (
         isOpen={isBookingModalOpen} 
         onClose={() => setIsBookingModalOpen(false)} 
         property={property} 
+      />
+
+      <ProfileModal 
+        isOpen={isProfileModalOpen} 
+        onClose={() => setIsProfileModalOpen(false)} 
+        lister={targetListerData} 
+        portfolioProperties={portfolioProperties}
+        isLoadingPortfolio={isLoadingPortfolio}
       />
     </>
   );
