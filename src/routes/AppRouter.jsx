@@ -49,6 +49,7 @@ export const AppRouter = () => {
             ========================================== */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<PropertyFeed />} />
+          <Route path="/properties/:id" element={<PropertyFeed />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/login" element={<Login />} />

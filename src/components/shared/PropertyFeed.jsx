@@ -10,13 +10,22 @@ import toast from 'react-hot-toast'
 import { HotelExplorerGrid } from '../../pages/hotel/HotelExplorer'
 import verifiedSpacesImg from '../../assets/facade2.jpg'
 import portfolioYieldImg from '../../assets/modern-facade.jpg'
+import { useParams} from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+
 
 
 export const PropertyFeed = () => {
 
+  const { id } = useParams(); 
+ 
+
+  
+
   // Controlled console inputs
   const [searchLocation, setSearchLocation] = useState('');
   const [searchBudget, setSearchBudget] = useState('any');
+
   
   
   // Central core application states
@@ -296,6 +305,8 @@ const [phraseIdx, setPhraseIdx] = useState(0);
   );
 }
 
+const activeSEOProperty = id ? properties.find(p => (p._id === id || p.id === id)) : null;
+
   return (
     <div className="bg-brand-midnight text-white min-h-screen font-sans pb-20">
       
@@ -420,6 +431,22 @@ const [phraseIdx, setPhraseIdx] = useState(0);
   </div>
 </div>
 </div>
+
+
+{/* 🟢 SEO SURGERY: Invisible Metadata Engine for Google & Social Previews */}
+      {activeSEOProperty && (
+        <Helmet>
+          <title>{`${activeSEOProperty.title || 'Premium Listing'} | Rentals Africa`}</title>
+          <meta name="description" content={activeSEOProperty.description?.substring(0, 155) || 'Explore exclusive luxury properties and premium shortlets across Africa.'} />
+          
+          {/* World-Class Social Media Card Formatting */}
+          <meta property="og:title" content={activeSEOProperty.title || 'Premium Listing'} />
+          <meta property="og:description" content={activeSEOProperty.description?.substring(0, 155)} />
+          <meta property="og:image" content={activeSEOProperty.image} />
+          <meta property="og:url" content={`https://rentalsafrica.com/properties/${id}`} />
+          <meta name="twitter:card" content="summary_large_image" />
+        </Helmet>
+      )}
 
       {/* =======================================================================
           2. THE SEARCH CONSOLE (GLASSMORPHISM)
@@ -625,7 +652,7 @@ const [phraseIdx, setPhraseIdx] = useState(0);
       */}
       <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-[450px] gap-6">
         {properties.slice(0, visibleCount).map((prop) => (
-          <PropertyCard key={prop._id || prop.id} property={prop} />
+          <PropertyCard key={prop._id || prop.id} property={prop}  />
         ))}
       </div>
       
