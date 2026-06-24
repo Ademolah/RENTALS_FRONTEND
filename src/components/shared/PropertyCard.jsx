@@ -1,9 +1,9 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect} from 'react';
 import { MapPin, BedDouble, Bath, X, ChevronLeft, ChevronRight, Send, Heart, ShieldCheck, CalendarDays, Star, ArrowRight } from 'lucide-react';
 import { TourBookingModal } from '../TourBookingModal';
 import { toast } from 'react-hot-toast';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
 import ProfileModal from '../ProfileModal';
@@ -22,46 +22,46 @@ export const PropertyCard = ({ property , hideAction = false}) => {
   const navigate = useNavigate();
 
 
-  const { id } = useParams();
+//   const { id } = useParams();
  
 
-  const prevIsOpen = useRef(isOpen);
-const prevId = useRef(null); // Initializing as null forces refresh hydration to trigger correctly
+//   const prevIsOpen = useRef(isOpen);
+// const prevId = useRef(null); // Initializing as null forces refresh hydration to trigger correctly
 
-useEffect(() => {
-  const currentCardId = property?._id || property?.id;
-  if (!currentCardId) return;
+// useEffect(() => {
+//   const currentCardId = property?._id || property?.id;
+//   if (!currentCardId) return;
 
-  const isUrlTargetingThisCard = id === currentCardId;
+//   const isUrlTargetingThisCard = id === currentCardId;
   
-  // Isolate change origins cleanly so the static analyzer doesn't see overlapping paths
-  const urlChanged = id !== prevId.current;
-  const uiChanged = isOpen !== prevIsOpen.current;
+//   // Isolate change origins cleanly so the static analyzer doesn't see overlapping paths
+//   const urlChanged = id !== prevId.current;
+//   const uiChanged = isOpen !== prevIsOpen.current;
 
-  // CHANNEL 1: The change originated from a URL alteration (Refresh, Deep Link, Back/Forward)
-  if (urlChanged) {
-    if (isUrlTargetingThisCard && !isOpen) {
-      // ⚡ Defer execution out of the synchronous render pass to prevent cascading renders
-      setTimeout(() => setIsOpen(true), 0);
-    } else if (!isUrlTargetingThisCard && isOpen) {
-      setTimeout(() => setIsOpen(false), 0);
-    }
-  } 
+//   // CHANNEL 1: The change originated from a URL alteration (Refresh, Deep Link, Back/Forward)
+//   if (urlChanged) {
+//     if (isUrlTargetingThisCard && !isOpen) {
+//       // ⚡ Defer execution out of the synchronous render pass to prevent cascading renders
+//       setTimeout(() => setIsOpen(true), 0);
+//     } else if (!isUrlTargetingThisCard && isOpen) {
+//       setTimeout(() => setIsOpen(false), 0);
+//     }
+//   } 
   
-  // CHANNEL 2: The change originated from a manual UI state toggle (User clicks close/open button)
-  else if (uiChanged) {
-    if (isOpen && !isUrlTargetingThisCard) {
-      navigate(`/properties/${currentCardId}`);
-    } else if (!isOpen && isUrlTargetingThisCard) {
-      navigate('/', { replace: true });
-    }
-  }
+//   // CHANNEL 2: The change originated from a manual UI state toggle (User clicks close/open button)
+//   else if (uiChanged) {
+//     if (isOpen && !isUrlTargetingThisCard) {
+//       navigate(`/properties/${currentCardId}`);
+//     } else if (!isOpen && isUrlTargetingThisCard) {
+//       navigate('/', { replace: true });
+//     }
+//   }
 
-  // Synchronize memory baselines for the next execution frame
-  prevIsOpen.current = isOpen;
-  prevId.current = id;
+//   // Synchronize memory baselines for the next execution frame
+//   prevIsOpen.current = isOpen;
+//   prevId.current = id;
   
-}, [id, isOpen, property, navigate]);
+// }, [id, isOpen, property, navigate]);
 
   
  
