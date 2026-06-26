@@ -501,8 +501,7 @@ const activeSEOProperty = id ? properties.find(p => (p._id === id || p.id === id
         </form>
       </div>
 
-     {/* =======================================================================
-
+    {/* =======================================================================
     3. HORIZONTAL LOCATION EXPLORER (PRISTINE, FUNCTIONAL & LIVE)
     ======================================================================= */}
 <div className="mb-20">
@@ -517,123 +516,125 @@ const activeSEOProperty = id ? properties.find(p => (p._id === id || p.id === id
         setSearchLocation('');
         executeSearch(null, '');
       }}
-      className="hidden md:flex items-center gap-1 text-sm font-bold text-brand-gold hover:text-white transition-colors"
+      className={`items-center gap-1 text-sm font-bold text-brand-gold hover:text-white transition-colors py-2 md:py-0 ${
+        searchLocation ? 'flex' : 'hidden md:flex'
+      }`}
     >
-      View All Districts <ChevronRight size={16} />
+      View All <ChevronRight size={16} />
     </button>
   </div>
 
   {/* The Snapping Horizontal Scroll Container */}
-<div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 md:px-10 pb-4">
-  
-  {/* =========================================================================
-      PREMIUM LEFTMOST PROPERTY TYPE ANCHOR: HOTELS
-     ========================================================================= */}
-  <div 
-    onClick={() => setCurrentView('hotels')}
-    className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-brand-cobalt/20 shadow-xl shadow-brand-cobalt/5 bg-black"
-  >
-    {/* High-End Editorial Contextual Background */}
-    <img 
-      src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80" 
-      alt="Luxury Hospitality Portal" 
-      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000 ease-out"
-      loading="lazy"
-    />
-    {/* Linear Matrix Overlay Layer */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20 group-hover:via-black/20 transition-all duration-500"></div>
+  <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-6 md:px-10 pb-4">
     
-    {/* Ultra-Bold Editorial Typography Stack */}
-    <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
-      <div className="flex justify-between items-start">
-        <div className="w-10 h-10 rounded-xl bg-brand-cobalt/20 backdrop-blur-md border border-brand-cobalt/30 flex items-center justify-center text-brand-cobalt">
-          <Building size={20} />
+    {/* =========================================================================
+        PREMIUM LEFTMOST PROPERTY TYPE ANCHOR: HOTELS
+        ========================================================================= */}
+    <div 
+      onClick={() => setCurrentView('hotels')}
+      className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-brand-cobalt/20 shadow-xl shadow-brand-cobalt/5 bg-black"
+    >
+      {/* High-End Editorial Contextual Background */}
+      <img 
+        src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80" 
+        alt="Luxury Hospitality Portal" 
+        className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000 ease-out"
+        loading="lazy"
+      />
+      {/* Linear Matrix Overlay Layer */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20 group-hover:via-black/20 transition-all duration-500"></div>
+      
+      {/* Ultra-Bold Editorial Typography Stack */}
+      <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
+        <div className="flex justify-between items-start">
+          <div className="w-10 h-10 rounded-xl bg-brand-cobalt/20 backdrop-blur-md border border-brand-cobalt/30 flex items-center justify-center text-brand-cobalt">
+            <Building size={20} />
+          </div>
+          <span className="text-[10px] uppercase font-black tracking-widest text-brand-cobalt bg-brand-cobalt/10 border border-brand-cobalt/20 px-2.5 py-1 rounded-md">
+            Premium Hotels
+          </span>
         </div>
-        <span className="text-[10px] uppercase font-black tracking-widest text-brand-cobalt bg-brand-cobalt/10 border border-brand-cobalt/20 px-2.5 py-1 rounded-md">
-          Premium Hotels
-        </span>
-      </div>
 
-      <div>
-        <p className="text-[10px] font-mono font-black text-brand-gold uppercase tracking-widest mb-1">
-          Browse Collection
-        </p>
-        <h2 className="text-4xl font-black tracking-tighter text-white uppercase leading-none mb-2">
-          Hotels
-        </h2>
-        <p className="text-xs text-white/60 font-medium leading-normal max-w-[200px]">
-          Explore elite five-star hotel portfolios and presidential suite configurations.
-        </p>
-      </div>
-    </div>
-  </div>
-
-  {/* =========================================================================
-      DYNAMIC NEIGHBORHOOD REGISTRIES LAYER
-     ========================================================================= */}
-  {isSearching ? (
-  /* World-Class Shimmer Loading Skeletons */
-  Array.from({ length: 4 }).map((_, i) => (
-    <div 
-      key={`skeleton-loc-${i}`}
-      className="relative w-[280px] h-[360px] shrink-0 bg-white/[0.03] border border-white/5 rounded-3xl animate-pulse flex flex-col justify-end p-6"
-    >
-      <div className="h-6 w-2/3 bg-white/10 rounded-md mb-2" />
-      <div className="h-4 w-1/3 bg-white/5 rounded-md" />
-    </div>
-  ))
-) : !liveNeighborhoods || liveNeighborhoods.length === 0 ? (
-  /* Minimalist Luxury Empty State */
-  <div className="w-full flex items-center justify-center py-12 text-white/20 text-xs uppercase tracking-widest font-mono">
-    No neighborhood registries cataloged yet
-  </div>
-) : (
-  liveNeighborhoods.map((loc) => (
-    <div 
-      key={loc.id} 
-      onClick={() => {
-        setSearchLocation(loc.name);
-        executeSearch(null, loc.name);
-      }}
-      className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-white/10 shadow-premium"
-    >
-      {/* 🎯 SURGICAL MEDIA ADJUSTMENT: Dynamically handle video backgrounds for premium neighborhood cards */}
-      {typeof checkIsVideo === 'function' && checkIsVideo(loc.image) ? (
-        <video
-          src={loc.image}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none transition-transform duration-1000 group-hover:scale-105"
-          style={{ contentVisibility: 'auto' }}
-        />
-      ) : (
-        <img 
-          src={loc.image} 
-          alt={`${loc.name} District View`} 
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-          loading="lazy"
-        />
-      )}
-      
-      <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/30 to-transparent"></div>
-      
-      <div className="absolute bottom-6 left-6 right-6 z-10">
-        <h3 className="text-xl font-display font-bold text-white mb-1 tracking-tight">{loc.name}</h3>
-        
-        {/* Live Counter Pill */}
-        <div className="inline-flex items-center gap-1.5 bg-brand-midnight/60 backdrop-blur-md border border-white/5 px-2.5 py-1 rounded-md mt-1">
-          <span className="w-1 h-1 rounded-full bg-brand-gold animate-pulse" />
-          <p className="text-brand-gold text-[10px] font-mono font-bold tracking-widest uppercase">
-            {loc.count}
+        <div>
+          <p className="text-[10px] font-mono font-black text-brand-gold uppercase tracking-widest mb-1">
+            Browse Collection
+          </p>
+          <h2 className="text-4xl font-black tracking-tighter text-white uppercase leading-none mb-2">
+            Hotels
+          </h2>
+          <p className="text-xs text-white/60 font-medium leading-normal max-w-[200px]">
+            Explore elite five-star hotel portfolios and presidential suite configurations.
           </p>
         </div>
       </div>
     </div>
-  ))
-)}
-</div>
+
+    {/* =========================================================================
+        DYNAMIC NEIGHBORHOOD REGISTRIES LAYER
+        ========================================================================= */}
+    {isSearching ? (
+      /* World-Class Shimmer Loading Skeletons */
+      Array.from({ length: 4 }).map((_, i) => (
+        <div 
+          key={`skeleton-loc-${i}`}
+          className="relative w-[280px] h-[360px] shrink-0 bg-white/[0.03] border border-white/5 rounded-3xl animate-pulse flex flex-col justify-end p-6"
+        >
+          <div className="h-6 w-2/3 bg-white/10 rounded-md mb-2" />
+          <div className="h-4 w-1/3 bg-white/5 rounded-md" />
+        </div>
+      ))
+    ) : !liveNeighborhoods || liveNeighborhoods.length === 0 ? (
+      /* Minimalist Luxury Empty State */
+      <div className="w-full flex items-center justify-center py-12 text-white/20 text-xs uppercase tracking-widest font-mono">
+        No neighborhood registries cataloged yet
+      </div>
+    ) : (
+      liveNeighborhoods.map((loc) => (
+        <div 
+          key={loc.id} 
+          onClick={() => {
+            setSearchLocation(loc.name);
+            executeSearch(null, loc.name);
+          }}
+          className="relative w-[280px] h-[360px] shrink-0 snap-start rounded-3xl overflow-hidden group cursor-pointer border border-white/10 shadow-premium"
+        >
+          {/* 🎯 SURGICAL MEDIA ADJUSTMENT: Dynamically handle video backgrounds for premium neighborhood cards */}
+          {typeof checkIsVideo === 'function' && checkIsVideo(loc.image) ? (
+            <video
+              src={loc.image}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none transition-transform duration-1000 group-hover:scale-105"
+              style={{ contentVisibility: 'auto' }}
+            />
+          ) : (
+            <img 
+              src={loc.image} 
+              alt={`${loc.name} District View`} 
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+              loading="lazy"
+            />
+          )}
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-midnight via-brand-midnight/30 to-transparent"></div>
+          
+          <div className="absolute bottom-6 left-6 right-6 z-10">
+            <h3 className="text-xl font-display font-bold text-white mb-1 tracking-tight">{loc.name}</h3>
+            
+            {/* Live Counter Pill */}
+            <div className="inline-flex items-center gap-1.5 bg-brand-midnight/60 backdrop-blur-md border border-white/5 px-2.5 py-1 rounded-md mt-1">
+              <span className="w-1 h-1 rounded-full bg-brand-gold animate-pulse" />
+              <p className="text-brand-gold text-[10px] font-mono font-bold tracking-widest uppercase">
+                {loc.count}
+              </p>
+            </div>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
 </div>
 
       {/* =======================================================================
