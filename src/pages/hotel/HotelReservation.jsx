@@ -149,15 +149,43 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
         ) : (
           <>
             {/* Header Content Block */}
-            <div className={`p-6 md:p-8 border-b shrink-0 ${darkMode ? "border-white/5 bg-white/[0.01]" : "border-slate-100 bg-slate-50/50"}`}>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded border border-brand-gold/20">
-                Secure Booking
-              </span>
-              <h2 className="text-xl font-black tracking-tight uppercase mt-2">{hotel.title}</h2>
-              <p className={`text-xs mt-0.5 ${darkMode ? "text-white/40" : "text-slate-500"}`}>
-                Allocating Architecture Suite: <span className="font-bold text-brand-cobalt">{selectedRoom.name}</span> — ₦{selectedRoom.pricePerNight?.toLocaleString()}/night
+            {/* Header Content Block */}
+<div className={`p-6 md:p-8 border-b shrink-0 ${darkMode ? "border-white/5 bg-white/[0.01]" : "border-slate-100 bg-slate-50/50"}`}>
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded border border-brand-gold/20">
+        Secure Booking
+      </span>
+      <h2 className="text-xl font-black tracking-tight uppercase mt-2 text-white">{hotel?.title}</h2>
+      <p className={`text-xs mt-0.5 ${darkMode ? "text-white/40" : "text-slate-500"}`}>
+        Allocating Architecture Suite: <span className="font-bold text-brand-cobalt">{selectedRoom.name}</span> — ₦{selectedRoom.pricePerNight?.toLocaleString()}/night
+      </p>
+    </div>
+
+    {/* 🎯 SURGICAL MATRIX INJECTION: Live Hotel Admin Contact Desk via partner payload */}
+    {hotel?.partner && (
+          <div className={`flex flex-col gap-1 p-3 rounded-xl border text-xs md:text-right md:items-end ${
+              darkMode ? "bg-black/20 border-white/5" : "bg-white border-slate-200 shadow-sm"
+            }`}>
+              <p className={`text-[9px] uppercase font-mono font-black tracking-widest ${darkMode ? "text-white/30" : "text-slate-400"}`}>
+                Hospitality Desk
               </p>
+              <a 
+                href={`tel:${hotel.partner.phoneNumber}`} 
+                className={`font-mono font-bold transition-colors ${darkMode ? "text-brand-gold hover:text-white" : "text-brand-cobalt hover:opacity-80"}`}
+              >
+                {hotel.partner.phoneNumber}
+              </a>
+              <a 
+                href={`mailto:${hotel.partner.email}`} 
+                className={`text-[11px] transition-colors ${darkMode ? "text-white/50 hover:text-brand-gold" : "text-slate-600 hover:text-brand-cobalt"}`}
+              >
+                {hotel.partner.email}
+              </a>
             </div>
+          )}
+        </div>
+      </div>
 
             {/* Main Form Area */}
             <form onSubmit={handleSubmitPipeline} className="p-6 md:p-8 overflow-y-auto space-y-6 flex-1">
