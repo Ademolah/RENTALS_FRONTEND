@@ -600,7 +600,7 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
         {/* 🟢 SURGICAL UPDATE: Dynamic Help Subtext with Bold Video Size Constraints */}
         {allowsVideo ? (
           <span>
-            Select up to 7 assets. Premium photos (PNG, JPG, WEBP) or high-end video walkthroughs (MP4, MOV).{" "}
+            Select up to 15 assets. Premium photos (PNG, JPG, WEBP) or high-end video walkthroughs (MP4, MOV).{" "}
             <strong className="block mt-1.5 font-bold text-brand-gold uppercase tracking-wider text-[10px]">
               Video size must be between 5MB and 35MB.
             </strong>
