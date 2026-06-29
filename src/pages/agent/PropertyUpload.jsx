@@ -573,8 +573,8 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
     <label className="text-xs text-white/40 font-bold uppercase tracking-wider block">
       Property Gallery
     </label>
-    <span className={`text-[11px] font-medium tracking-wide ${images.length > 7 ? 'text-red-400 font-bold' : 'text-white/30'}`}>
-      {images.length} / 7 Images
+    <span className={`text-[11px] font-medium tracking-wide ${images.length > 15 ? 'text-red-400 font-bold' : 'text-white/30'}`}>
+      {images.length} / 15 Images
     </span>
   </div>
   
