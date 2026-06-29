@@ -568,42 +568,49 @@ const allowsVideo = formData.propertyType === 'apartment' || formData.propertyTy
               </div>
             </div>
 
-            <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <label className="text-xs text-white/40 font-bold uppercase tracking-wider block">
-                Property Gallery
-              </label>
-              <span className={`text-[11px] font-medium tracking-wide ${images.length > 7 ? 'text-red-400 font-bold' : 'text-white/30'}`}>
-                {images.length} / 7 Images
-              </span>
-            </div>
-            
-                        
-                        {/* Dropzone Interactive Area */}
-            <div className="border-2 border-dashed border-white/10 hover:border-brand-cobalt/40 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 relative group bg-white/[0.01] hover:bg-white/[0.03]">
-              <input 
-                type="file" 
-                multiple 
-                // 🟢 SURGICAL UPDATE: Dynamically unlocks video MIME formats based on property type selection
-                accept={allowsVideo ? "image/png, image/jpeg, image/jpg, image/webp, video/mp4, video/webm, video/quicktime" : "image/png, image/jpeg, image/jpg, image/webp"} 
-                onChange={handleFileChange}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-              />
+           <div className="bg-brand-midnight border border-white/5 rounded-2xl p-6 space-y-4">
+  <div className="flex justify-between items-center">
+    <label className="text-xs text-white/40 font-bold uppercase tracking-wider block">
+      Property Gallery
+    </label>
+    <span className={`text-[11px] font-medium tracking-wide ${images.length > 7 ? 'text-red-400 font-bold' : 'text-white/30'}`}>
+      {images.length} / 7 Images
+    </span>
+  </div>
+  
               
-              <div className="space-y-2 pointer-events-none">
-                <Upload className="mx-auto text-white/20 group-hover:text-brand-cobalt group-hover:scale-110 transition-all duration-300" size={26} />
-                <p className="text-xs font-bold text-white/70 group-hover:text-white transition-colors">
-                  {/* 🟢 SURGICAL UPDATE: Dynamic Title */}
-                  {allowsVideo ? "Upload Property Media Gallery" : "Upload Property Images"}
-                </p>
-                <p className="text-[11px] text-white/30 max-w-[240px] mx-auto leading-normal">
-                  {/* 🟢 SURGICAL UPDATE: Dynamic Help Subtext */}
-                  {allowsVideo 
-                    ? "Select up to 7 assets. Premium photos (PNG, JPG, WEBP) or high-end video walkthroughs (MP4, MOV)."
-                    : "Select up to 7 high-resolution premium photos at once. PNG, JPG, or WEBP formats."}
-                </p>
-              </div>
-            </div>
+  {/* Dropzone Interactive Area */}
+  <div className="border-2 border-dashed border-white/10 hover:border-brand-cobalt/40 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 relative group bg-white/[0.01] hover:bg-white/[0.03]">
+    <input 
+      type="file" 
+      multiple 
+      // 🟢 SURGICAL UPDATE: Dynamically unlocks video MIME formats based on property type selection
+      accept={allowsVideo ? "image/png, image/jpeg, image/jpg, image/webp, video/mp4, video/webm, video/quicktime" : "image/png, image/jpeg, image/jpg, image/webp"} 
+      onChange={handleFileChange}
+      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+    />
+    
+    <div className="space-y-2 pointer-events-none">
+      <Upload className="mx-auto text-white/20 group-hover:text-brand-cobalt group-hover:scale-110 transition-all duration-300" size={26} />
+      <p className="text-xs font-bold text-white/70 group-hover:text-white transition-colors">
+        {/* 🟢 SURGICAL UPDATE: Dynamic Title */}
+        {allowsVideo ? "Upload Property Media Gallery" : "Upload Property Images"}
+      </p>
+      <p className="text-[11px] text-white/30 max-w-[260px] mx-auto leading-normal">
+        {/* 🟢 SURGICAL UPDATE: Dynamic Help Subtext with Bold Video Size Constraints */}
+        {allowsVideo ? (
+          <span>
+            Select up to 7 assets. Premium photos (PNG, JPG, WEBP) or high-end video walkthroughs (MP4, MOV).{" "}
+            <strong className="block mt-1.5 font-bold text-brand-gold uppercase tracking-wider text-[10px]">
+              Video size must be between 5MB and 35MB.
+            </strong>
+          </span>
+        ) : (
+          "Select up to 7 high-resolution premium photos at once. PNG, JPG, or WEBP formats."
+        )}
+      </p>
+    </div>
+  </div>
 
             {/* Upload Staging Line Previews */}
             {images.length > 0 && (

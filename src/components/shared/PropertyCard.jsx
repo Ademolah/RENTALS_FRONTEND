@@ -178,6 +178,7 @@ if (!isAuthenticated) {
   }
 };
 
+
 useEffect(() => {
   const fetchAgencyPortfolio = async () => {
     // Only fetch if the modal overlay is active and an agencyId exists
@@ -185,9 +186,8 @@ useEffect(() => {
     
     setIsLoadingPortfolio(true);
     try {
-      // Fetch matching properties from your high-performance engine
-      // Requesting 6 to ensure we get 5 options even after filtering out the current listing
-      const response = await apiClient.get(`/properties/search?agencyId=${property.agencyId}&limit=6`);
+      // 🎯 SURGICAL FIX: Swapped /properties/search to /properties to engage your getAllProperties filter engine
+      const response = await apiClient.get(`/properties?agencyId=${property.agencyId}&limit=6`);
       const fetchedItems = response.data?.data?.properties || response.data?.properties || [];
       
       const currentId = property._id || property.id;
@@ -217,7 +217,6 @@ useEffect(() => {
 }, [isOpen, property.agencyId, property._id, property.id]);
   
  
-
 
 
   // 🟢 SURGICAL UPDATE: Live Database Fallbacks for Media Assets
