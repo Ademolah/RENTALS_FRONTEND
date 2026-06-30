@@ -15,6 +15,7 @@ export const HotelUpload = () => {
   
   // Extract the title passed from the dashboard link state structure
   const prefilledTitle = location.state?.prefilledTitle || '';
+  
 
   
 
@@ -291,7 +292,7 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
                 </select>
               </div>
               <div className="space-y-1">
-              <label className={`text-xs uppercase transition-colors ${tokenLabel}`}>Regional State Mapping</label>
+              <label className={`text-xs uppercase transition-colors ${tokenLabel}`}>Regional State</label>
               <div className="relative flex items-center">
                 <select 
                   name="state" 

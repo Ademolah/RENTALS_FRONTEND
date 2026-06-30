@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Building, LogOut, Plus, CalendarDays, TrendingUp, 
-  Users, Clock, CheckCircle2, MoreHorizontal, MapPin, Moon, Sun, XCircle, Sliders, 
+  Users, Clock, CheckCircle2, MoreHorizontal, MapPin, Moon, Sun, XCircle, Sliders,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiClient } from '../../services/apiClient';
@@ -195,7 +195,7 @@ const filteredBookings = bookings.filter((booking) => {
 
   const handleUploadNav = () => {
   navigate('/hotel-admin/upload', {
-    state: { prefilledTitle: hotelData?.name }
+    state: { prefilledTitle: hotelData?.name}
   });
 };
 
@@ -414,56 +414,55 @@ return (
 
           {/* Action Interface Operations */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Immersive Theme Switcher Trigger */}
-            <button
-              type="button"
-              onClick={() => setDarkMode(!darkMode)}
-              className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 cursor-pointer ${
-                darkMode 
-                  ? "bg-white/5 border-white/10 text-amber-400 hover:bg-white/10 hover:border-white/20" 
-                  : "bg-slate-50 border-slate-200 text-brand-midnight hover:bg-slate-100 shadow-sm"
-              }`}
-              title={darkMode ? "Switch to Luxury Light" : "Switch to Onyx Dark"}
-            >
-              {darkMode ? <Sun size={14} className="animate-spin-slow" /> : <Moon size={14} />}
-            </button>
+  {/* 1. Immersive Theme Switcher Trigger */}
+  <button
+    type="button"
+    onClick={() => setDarkMode(!darkMode)}
+    className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-300 cursor-pointer ${
+      darkMode 
+        ? "bg-white/5 border-white/10 text-amber-400 hover:bg-white/10 hover:border-white/20" 
+        : "bg-slate-50 border-slate-200 text-brand-midnight hover:bg-slate-100 shadow-sm"
+    }`}
+    title={darkMode ? "Switch to Luxury Light" : "Switch to Onyx Dark"}
+  >
+    {darkMode ? <Sun size={14} className="animate-spin-slow" /> : <Moon size={14} />}
+  </button>
 
-            {/* Premium Property Configuration Trigger */}
-            <button
-              type="button"
-              onClick={() => setIsConfigDrawerOpen(true)}
-              className={`flex items-center gap-2 border px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
-                darkMode 
-                  ? "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white" 
-                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
-              }`}
-              title="Configure Property Master Settings"
-            >
-              <Sliders size={14} />
-              <span className="hidden lg:inline">Property Config</span>
-            </button>
+  {/* 2. Unified Desktop State Machine (Replaces both Upload & Config buttons) */}
+  {!hotelData?._id ? (
+    <button 
+      onClick={handleUploadNav}
+      className="hidden md:flex items-center gap-2 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white transition-all duration-300 px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 hover:shadow-brand-cobalt/20 transform active:scale-[0.98]"
+    >
+      <Plus size={14} strokeWidth={3} /> Upload Asset Collection
+    </button>
+  ) : (
+    <button 
+      onClick={() => setIsConfigDrawerOpen(true)}
+      className={`hidden md:flex items-center gap-2 transition-all duration-300 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transform active:scale-[0.98] ${
+        darkMode 
+          ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20" 
+          : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+      }`}
+    >
+      <Sliders size={14} strokeWidth={3} /> Configure Property
+    </button>
+  )}
+  
+  {/* 3. System Session Signout */}
+  <button 
+    onClick={handleLogout}
+    className={`flex items-center gap-2 border px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
+      darkMode 
+        ? "bg-white/5 border-white/10 text-white/70 hover:bg-rose-500/10 hover:border-rose-500/20 hover:text-rose-400" 
+        : "bg-white border-slate-200 text-slate-600 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 shadow-sm"
+    }`}
+  >
+    <LogOut size={14} /> 
+    <span className="hidden sm:inline">Logout</span>
+  </button>
+</div>
 
-            {/* Desktop Collection Upload Trigger */}
-            <button 
-              onClick={handleUploadNav}
-              className="hidden md:flex items-center gap-2 bg-brand-cobalt hover:bg-brand-cobalt/90 text-white transition-all duration-300 px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 hover:shadow-brand-cobalt/20 transform active:scale-[0.98]"
-            >
-              <Plus size={14} strokeWidth={3} /> Upload Asset Collection
-            </button>
-            
-            {/* System Session Signout */}
-            <button 
-              onClick={handleLogout}
-              className={`flex items-center gap-2 border px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
-                darkMode 
-                  ? "bg-white/5 border-white/10 text-white/70 hover:bg-rose-500/10 hover:border-rose-500/20 hover:text-rose-400" 
-                  : "bg-white border-slate-200 text-slate-600 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 shadow-sm"
-              }`}
-            >
-              <LogOut size={14} /> 
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
         </div>
       </nav>
 
@@ -472,25 +471,28 @@ return (
           ======================================================================= */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-6 sm:mt-8 space-y-6 sm:space-y-8">
         
-        {/* Mobile Responsive Action Hub Grid */}
-        <div className="grid grid-cols-2 gap-3 md:hidden">
+        {/* Mobile Responsive Action Hub (Unified Full-Width Slot) */}
+      <div className="flex flex-col gap-3 md:hidden w-full">
+        {!hotelData?._id ? (
           <button 
             onClick={handleUploadNav} 
-            className="flex items-center justify-center gap-2 bg-brand-cobalt text-white px-4 py-3.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 transform active:scale-[0.99] transition-all"
+            className="flex items-center justify-center gap-2 bg-brand-cobalt text-white px-4 py-3.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 transform active:scale-[0.99] transition-all w-full"
           >
-            <Plus size={14} strokeWidth={2.5} /> Upload New
+            <Plus size={14} strokeWidth={2.5} /> Initialize Property
           </button>
+        ) : (
           <button 
-            onClick={() => setIsConfigDrawerOpen(true)} 
-            className={`flex items-center justify-center gap-2 border px-4 py-3.5 rounded-xl text-xs font-bold transform active:scale-[0.99] transition-all ${
+            onClick={() => setIsConfigDrawerOpen(true)}
+            className={`flex items-center justify-center gap-2 transition-all px-4 py-3.5 rounded-xl text-xs font-bold shadow-sm transform active:scale-[0.98] w-full ${
               darkMode 
-                ? "bg-white/5 border-white/10 text-white/80" 
-                : "bg-white border-slate-200 text-slate-700 shadow-sm"
+                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20" 
+                : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
             }`}
           >
-            <Sliders size={14} /> Config Setup
+            <Sliders size={14} strokeWidth={2.5} /> Configure Property & Suites
           </button>
-        </div>
+        )}
+      </div>
 
         {/* =======================================================================
             ANALYTICAL STATISTICS MATRIX
@@ -741,7 +743,7 @@ return (
             <div className="space-y-1">
               <h2 className="text-sm font-black uppercase tracking-wider">Property Management Deck</h2>
               <p className={`text-[10px] font-medium tracking-tight ${tokenTextMuted}`}>
-                Surgically mutate database layers, room rates, and assets
+                Seamlessly manage suite details, daily rates, and property assets.
               </p>
             </div>
             <button 
