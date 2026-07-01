@@ -478,7 +478,7 @@ return (
             onClick={handleUploadNav} 
             className="flex items-center justify-center gap-2 bg-brand-cobalt text-white px-4 py-3.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-cobalt/10 transform active:scale-[0.99] transition-all w-full"
           >
-            <Plus size={14} strokeWidth={2.5} /> Initialize Property
+            <Plus size={14} strokeWidth={2.5} /> Upload New
           </button>
         ) : (
           <button 
