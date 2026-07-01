@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Building, LogOut, Plus, CalendarDays, TrendingUp, 
+   LogOut, Plus, CalendarDays, TrendingUp, 
   Users, Clock, CheckCircle2, MoreHorizontal, MapPin, Moon, Sun, XCircle, Sliders,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -395,22 +395,65 @@ return (
       <nav className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-all duration-300 ${tokenNav}`}>
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 md:px-8 py-4">
           
-          {/* Identity Block */}
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-brand-cobalt/10 dark:bg-brand-cobalt/20 border border-brand-cobalt/20 rounded-xl flex items-center justify-center text-brand-cobalt shrink-0 shadow-sm shadow-brand-cobalt/5">
-              <Building size={18} className="transition-transform duration-300 hover:scale-105" />
-            </div>
-            <div className="space-y-0.5">
-              <h1 className={`text-base sm:text-lg font-black tracking-tight leading-none transition-colors ${tokenTextTitle}`}>
-                {hotelData?.name}
-              </h1>
-              <p className={`text-[10px] uppercase font-black tracking-widest flex items-center gap-1 transition-colors ${tokenTextMuted}`}>
-                <MapPin size={10} className="text-brand-cobalt shrink-0" /> 
-                <span className="truncate max-w-[140px] sm:max-w-none">{hotelData?.location}</span>
-                <span className="opacity-40">•</span> Admin Console
-              </p>
-            </div>
-          </div>
+          {/* Premium Identity Block */}
+<div className="flex items-center gap-3.5 sm:gap-4 relative group cursor-default">
+  {/* Bespoke Dynamic Avatar Container */}
+  <div className="relative flex-shrink-0">
+    {/* Ambient Glow */}
+    <div className="absolute inset-0 bg-gradient-to-tr from-brand-cobalt to-indigo-400 blur-md opacity-40 group-hover:opacity-60 transition-opacity duration-500 rounded-2xl"></div>
+    
+    {/* Main Avatar Card */}
+    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center relative overflow-hidden shadow-xl border ${darkMode ? "border-white/10 bg-[#0B0F19]" : "border-white bg-white"} transition-transform duration-300 group-hover:scale-[1.02]`}>
+      
+      {/* Colorful Subtle Mesh Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-cobalt/10 via-transparent to-purple-500/10"></div>
+      
+      {/* Dynamic First Letter */}
+      <span className="text-xl sm:text-2xl font-black bg-gradient-to-tr from-brand-cobalt to-indigo-500 bg-clip-text text-transparent drop-shadow-sm">
+        {hotelData?.name ? hotelData.name.charAt(0).toUpperCase() : "P"}
+      </span>
+      
+      {/* Inner Glass Highlight */}
+      <div className="absolute inset-0 rounded-2xl border border-white/20 pointer-events-none"></div>
+    </div>
+  </div>
+
+  {/* Typography & Meta Badges */}
+  {/* Typography & Meta Badges */}
+  <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0">
+    <h1 
+      title={hotelData?.name}
+      className={`text-base sm:text-xl font-black tracking-tight leading-tight transition-colors drop-shadow-sm truncate w-full ${tokenTextTitle}`}
+    >
+      {hotelData?.name || "Property Name"}
+    </h1>
+    
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* Location Pill */}
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest border max-w-full ${
+        darkMode 
+          ? "bg-white/5 border-white/5 text-white/70" 
+          : "bg-slate-50 border-slate-200 text-slate-600 shadow-sm"
+      }`}>
+        <MapPin size={10} className="text-brand-cobalt shrink-0" />
+        <span className="truncate">
+          {hotelData?.location || "Location Pending"}
+        </span>
+      </span>
+
+      {/* Live Admin Status Indicator */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+        </span>
+        <span className={`text-[9px] font-black uppercase tracking-widest ${tokenTextMuted}`}>
+          Live Console
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
 
           {/* Action Interface Operations */}
           <div className="flex items-center gap-2 sm:gap-3">
