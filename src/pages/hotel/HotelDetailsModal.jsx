@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Star, MapPin, CheckCircle, MessageSquare, Send, User as UserIcon } from 'lucide-react';
+import { X, Star, MapPin, Users, CheckCircle, MessageSquare, Send, User as UserIcon } from 'lucide-react';
 import { HotelCardCarousel } from './HotelCardCarousel';
 import toast from 'react-hot-toast';
 import { apiClient } from '../../services/apiClient'; // Adjust path
@@ -197,6 +197,52 @@ export const HotelDetailsModal = ({ isOpen, onClose, hotel, darkMode = true }) =
                     </div>
                   </div>
                 </div>
+
+                {hotel.roomTypes?.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-white/5">
+                    <h3 className="text-xs font-black uppercase tracking-widest mb-4 opacity-60">Available Suites</h3>
+                    <div className="space-y-3">
+                      {hotel.roomTypes.map((room) => (
+                        <div 
+                          key={room._id} 
+                          className={`group p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-lg cursor-pointer ${
+                            darkMode ? "bg-white/[0.02] border-white/10 hover:border-brand-cobalt/50" : "bg-white border-slate-200 hover:border-brand-cobalt/40"
+                          }`}
+                        >
+                          <div>
+                            <h4 className="text-base font-bold group-hover:text-brand-cobalt transition-colors">{room.name}</h4>
+                            <div className={`text-xs mt-1.5 flex items-center gap-3 ${darkMode ? "text-white/60" : "text-slate-500"}`}>
+                              <span className="flex items-center gap-1 font-medium">
+                                {/* Make sure to import { Users } from 'lucide-react' */}
+                                <Users size={12} /> Up to {room.capacity} {room.capacity === 1 ? 'Guest' : 'Guests'}
+                              </span>
+                              {room.isAvailable ? (
+                                <span className="text-emerald-500 flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[9px]">
+                                  Available
+                                </span>
+                              ) : (
+                                <span className="text-rose-500 flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[9px]">
+                                  Sold Out
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className={`text-left sm:text-right border-t sm:border-t-0 sm:border-l pt-3 sm:pt-0 sm:pl-5 mt-2 sm:mt-0 ${
+                            darkMode ? "border-white/10" : "border-slate-200"
+                          }`}>
+                            <span className={`text-[10px] uppercase tracking-wider block font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>
+                              Per Night
+                            </span>
+                            <h5 className="text-xl font-mono font-black text-brand-cobalt">
+                              ₦{room.pricePerNight.toLocaleString()}
+                            </h5>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             )}
 

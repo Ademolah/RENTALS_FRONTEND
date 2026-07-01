@@ -418,7 +418,7 @@ return (
     </div>
   </div>
 
-  {/* Typography & Meta Badges */}
+ 
   {/* Typography & Meta Badges */}
   <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0">
     <h1 

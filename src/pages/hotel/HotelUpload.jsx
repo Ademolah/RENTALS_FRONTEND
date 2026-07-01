@@ -1,6 +1,6 @@
 import  { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Upload, Plus, Trash2, ShieldCheck, Sparkles, Building, Layers, Tags , ChevronLeft, Sun, Moon} from 'lucide-react';
+import { Upload, Plus, Trash2, ShieldCheck, Sparkles, Building, Layers, Tags, AlertTriangle , ChevronLeft, Sun, Moon} from 'lucide-react';
 import { apiClient} from '../../services/apiClient.js'
 import { toast } from 'react-hot-toast';
 
@@ -78,7 +78,44 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
     streetAddress: '',
   });
 
+  const [errorModal, setErrorModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+  });
+
+  const interpretUploadError = (err) => {
+  const status = err.response?.status;
   
+  // Intercept specific HTTP codes and translate them to business logic
+  if (status === 413) {
+    return {
+      title: "Asset Size Exceeded",
+      message: "The property assets you uploaded are too heavy. Please ensure your images or documents are compressed before trying again."
+    };
+  }
+  if (status === 400) {
+    return {
+      title: "Invalid Configuration",
+      message: "Some of the property details provided don't match our required formats. Please review the highlighted fields."
+    };
+  }
+  if (!err.response) {
+    return {
+      title: "Connection Lost",
+      message: "We lost connection to the primary server. Please verify your internet connection and try publishing again."
+    };
+  }
+  
+  // Fallback for 500s or unknown errors (hiding the pipeline jargon)
+  return {
+    title: "Publishing Interrupted",
+    message: err.response?.data?.message?.includes('pipeline') 
+      ? "We encountered an unexpected issue while securing your property data. Our systems team has logged the event."
+      : (err.response?.data?.message || "An unexpected issue prevented this collection from publishing.")
+  };
+};
+
 
   
 
@@ -121,7 +158,11 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
       const cleaned = amenityInput.trim();
       if (!cleaned) return;
       if (amenities.includes(cleaned)) {
-        toast.error('Amenity asset classification already mapped.');
+        setErrorModal({
+          isOpen: true,
+          title: "Amenity Already Added",
+          message: "This feature is already listed in your property amenities. Please select a different amenity to add."
+        });
         return;
       }
       setAmenities((prev) => [...prev, cleaned]);
@@ -137,7 +178,11 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
   const handleFileChange = (e) => {
     const chosenFiles = Array.from(e.target.files);
     if (images.length + chosenFiles.length > 7) {
-      toast.error('Premium hospitality streams are strictly optimized for up to 7 gallery cards.');
+      setErrorModal({
+        isOpen: true,
+        title: "Image Limit Exceeded",
+        message: "Premium hospitality streams are strictly optimized for up to 7 gallery cards."
+      });
       return;
     }
     setImages((prev) => [...prev, ...chosenFiles]);
@@ -151,7 +196,11 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (images.length === 0) {
-      toast.error('A world-class hospitality showcase requires at least 1 image.');
+      setErrorModal({
+      isOpen: true,
+      title: "Visual Assets Required",
+      message: "A world-class hospitality showcase requires at least one featured image. Please upload your property media before publishing."
+    });
       return;
     }
 
@@ -189,7 +238,12 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
       navigate(-1);
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Data ingestion pipeline rejection.');
+      const errorDetails = interpretUploadError(err);
+      setErrorModal({
+        isOpen: true,
+        title: errorDetails.title,
+        message: errorDetails.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -559,6 +613,76 @@ const tokenTextRowLabel = darkMode ? "text-white/40 font-bold" : "text-slate-500
 
         </div>
       </form>
+
+
+      {/* Bespoke Error Modal */}
+{errorModal.isOpen && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    {/* Cinematic Backdrop Blur */}
+    <div 
+      className="absolute inset-0 bg-brand-midnight/60 backdrop-blur-md transition-opacity"
+      onClick={() => setErrorModal({ ...errorModal, isOpen: false })}
+    ></div>
+
+    {/* Modal Card */}
+    <div className={`relative w-full max-w-sm sm:max-w-md rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 scale-100 ${
+      darkMode ? "bg-[#0B0F19] border border-white/10" : "bg-white border border-slate-100"
+    }`}>
+      
+      {/* Top Warning Accent */}
+      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-500 to-orange-400"></div>
+
+      <div className="p-6 sm:p-8">
+        <div className="flex items-start gap-4 sm:gap-5">
+          
+          {/* Glowing Warning Icon */}
+          <div className="relative shrink-0">
+            <div className="absolute inset-0 bg-rose-500/20 blur-xl rounded-full"></div>
+            <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center border ${
+              darkMode ? "bg-rose-500/10 border-rose-500/20 text-rose-400" : "bg-rose-50 border-rose-200 text-rose-600"
+            }`}>
+              <AlertTriangle size={24} strokeWidth={2.5} />
+            </div>
+          </div>
+
+          {/* Typography */}
+          <div className="flex-1 min-w-0 pt-1">
+            <h3 className={`text-lg font-black tracking-tight leading-none mb-2 ${
+              darkMode ? "text-white" : "text-brand-midnight"
+            }`}>
+              {errorModal.title}
+            </h3>
+            <p className={`text-sm leading-relaxed ${
+              darkMode ? "text-white/60" : "text-slate-500"
+            }`}>
+              {errorModal.message}
+            </p>
+          </div>
+        </div>
+
+        {/* Action Area */}
+        <div className="mt-8 flex items-center justify-end gap-3">
+          <button
+            onClick={() => setErrorModal({ ...errorModal, isOpen: false })}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.98] ${
+              darkMode 
+                ? "bg-white/5 hover:bg-white/10 text-white border border-white/10" 
+                : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
+            }`}
+          >
+            Review Details
+          </button>
+          <button
+            onClick={() => setErrorModal({ ...errorModal, isOpen: false })}
+            className="px-5 py-2.5 rounded-xl text-sm font-bold bg-brand-cobalt hover:bg-brand-cobalt/90 text-white shadow-lg shadow-brand-cobalt/20 transition-all active:scale-[0.98]"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );

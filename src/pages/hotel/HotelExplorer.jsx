@@ -131,74 +131,88 @@ export const HotelExplorerGrid = ({ hotels, onBack, darkMode = true }) => {
                         </div>
 
                         {/* 🎯 ELITE REVIEW BADGE (Booking.com Style) */}
-                        <div className="flex items-center gap-2 text-right">
-                          <div className="flex flex-col">
-                            <span className="text-[11px] font-black uppercase tracking-wider">{getReviewLabel(hotel.ratingsAverage)}</span>
-                            <span className={`text-[10px] flex items-center justify-end gap-1 ${darkMode ? 'text-white/50' : 'text-slate-500'}`}>
-                              <MessageSquare size={10} /> {hotel.ratingsQuantity || 0} reviews
-                            </span>
-                          </div>
-                          <div className="bg-brand-cobalt text-white font-black text-sm px-2 py-1.5 rounded-lg rounded-tr-none shadow-md">
-                            {hotel.ratingsAverage ? hotel.ratingsAverage.toFixed(1) : '—'}
-                          </div>
-                        </div>
-                      </div>
+  <div className="flex items-center gap-2 text-right">
+    <div className="flex flex-col">
+      <span className="text-[11px] font-black uppercase tracking-wider">{getReviewLabel(hotel.ratingsAverage)}</span>
+      <span className={`text-[10px] flex items-center justify-end gap-1 ${darkMode ? 'text-white/50' : 'text-slate-500'}`}>
+        <MessageSquare size={10} /> {hotel.ratingsQuantity || 0} reviews
+      </span>
+    </div>
+    <div className="bg-brand-cobalt text-white font-black text-sm px-2 py-1.5 rounded-lg rounded-tr-none shadow-md">
+      {hotel.ratingsAverage ? hotel.ratingsAverage.toFixed(1) : '—'}
+    </div>
+  </div>
+</div>
 
-                      <p className={`text-xs line-clamp-2 md:line-clamp-3 leading-relaxed ${
-                        darkMode ? "text-white/60" : "text-slate-600"
-                      }`}>
-                        {hotel.description}
-                      </p>
-                    </div>
+<p className={`text-xs line-clamp-2 md:line-clamp-3 leading-relaxed ${
+  darkMode ? "text-white/60" : "text-slate-600"
+}`}>
+  {hotel.description}
+</p>
+</div>
 
-                    {/* Amenities horizontal chip cloud */}
-                    <div className="flex flex-wrap gap-1 mt-4">
-                      {hotel.amenities?.slice(0, 4).map((amenity, aIdx) => (
-                        <span 
-                          key={aIdx} 
-                          className={`text-[10px] font-bold border px-2 py-0.5 rounded-md uppercase tracking-wide transition-colors ${
-                            darkMode ? "bg-white/5 border-white/5 text-white/50 group-hover:border-white/20" : "bg-slate-100 border-slate-200 text-slate-600"
-                          }`}
-                        >
-                          {amenity}
-                        </span>
-                      ))}
-                      {hotel.amenities?.length > 4 && (
-                        <span className={`text-[10px] font-bold border px-2 py-0.5 rounded-md uppercase tracking-wide ${
-                          darkMode ? "bg-transparent border-transparent text-white/30" : "text-slate-400 border-transparent"
-                        }`}>
-                          +{hotel.amenities.length - 4} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
+{/* Amenities horizontal chip cloud */}
+<div className="flex flex-wrap gap-1 mt-4">
+  {hotel.amenities?.slice(0, 4).map((amenity, aIdx) => (
+    <span 
+      key={aIdx} 
+      className={`text-[10px] font-bold border px-2 py-0.5 rounded-md uppercase tracking-wide transition-colors ${
+        darkMode ? "bg-white/5 border-white/5 text-white/50 group-hover:border-white/20" : "bg-slate-100 border-slate-200 text-slate-600"
+      }`}
+    >
+      {amenity}
+    </span>
+  ))}
+  {hotel.amenities?.length > 4 && (
+    <span className={`text-[10px] font-bold border px-2 py-0.5 rounded-md uppercase tracking-wide ${
+      darkMode ? "bg-transparent border-transparent text-white/30" : "text-slate-400 border-transparent"
+    }`}>
+      +{hotel.amenities.length - 4} more
+    </span>
+  )}
+</div>
+</div>
 
-                  {/* Column 3: Booking Outlay Financial Card Block (md:span-3) */}
-                  <div className={`md:col-span-3 p-5 md:p-6 flex flex-col justify-between items-stretch text-left md:text-right bg-opacity-10 bg-brand-cobalt/5 ${
-                    darkMode ? "bg-white/[0.005]" : "bg-slate-50/50"
-                  }`}>
-                    <div className="space-y-1 flex justify-between items-start md:block">
-                      <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-block">
-                        Active
-                      </span>
-                      <p className={`text-[11px] font-medium hidden md:block mt-1 ${darkMode ? "text-white/40" : "text-slate-400"}`}>
-                        Includes service provisions
-                      </p>
-                    </div>
+{/* Column 3: Dynamic Booking & Financial Card Block (md:span-3) */}
+<div className={`md:col-span-3 p-5 md:p-6 flex flex-col justify-between items-stretch text-left md:text-right bg-opacity-10 bg-brand-cobalt/5 ${
+  darkMode ? "bg-white/[0.005]" : "bg-slate-50/50"
+}`}>
+  <div className="space-y-1 flex justify-between items-start md:block">
+    <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-block shadow-sm">
+      Available
+    </span>
+    
+    {/* Dynamic Suite Variations Indicator */}
+    {hotel.roomTypes?.length > 0 ? (
+      <p className={`text-[10px] font-bold hidden md:block mt-2 tracking-wide ${darkMode ? "text-brand-cobalt/80" : "text-brand-cobalt"}`}>
+        {hotel.roomTypes.length} Suite {hotel.roomTypes.length > 1 ? 'Variations' : 'Type'}
+      </p>
+    ) : (
+      <p className={`text-[11px] font-medium hidden md:block mt-1 ${darkMode ? "text-white/40" : "text-slate-400"}`}>
+        Includes service provisions
+      </p>
+    )}
+  </div>
 
-                    <div className="mt-4 md:mt-0 flex justify-between items-end md:block">
-                      <div>
-                        <span className={`text-[10px] uppercase tracking-wider block font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>
-                          Per Night
-                        </span>
-                        <h3 className="text-2xl font-mono font-black tracking-tight text-brand-cobalt mt-0.5">
-                          ₦{baseRate.toLocaleString()}
-                        </h3>
-                        <p className={`text-[10px] font-medium block ${darkMode ? "text-white/30" : "text-slate-400"}`}>
-                          + taxes and charges
-                        </p>
-                      </div>
-                    </div>
+  <div className="mt-4 md:mt-0 flex justify-between items-end md:block">
+    <div>
+      {/* Smart Pricing Label */}
+      <span className={`text-[10px] uppercase tracking-wider block font-bold ${darkMode ? "text-white/40" : "text-slate-500"}`}>
+        {hotel.roomTypes?.length > 1 ? "Starts From" : "Per Night"}
+      </span>
+      
+      {/* Smart Minimum Price Calculation */}
+      <h3 className="text-2xl font-mono font-black tracking-tight text-brand-cobalt mt-0.5">
+        ₦{hotel.roomTypes?.length > 0 
+          ? Math.min(...hotel.roomTypes.map(r => r.pricePerNight)).toLocaleString() 
+          : (typeof baseRate !== 'undefined' ? baseRate.toLocaleString() : "0")}
+      </h3>
+      
+      <p className={`text-[10px] font-medium block ${darkMode ? "text-white/30" : "text-slate-400"}`}>
+        + taxes and charges
+      </p>
+    </div>
+  </div>
 
                     <div className="flex flex-col gap-2 mt-4">
                       {/* 🟢 Modified Button: Prevents the card click event so it ONLY opens the reservation modal */}
