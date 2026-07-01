@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../services/apiClient';
-import { Building2, FileCheck, MapPin, Phone, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Building2, AtSign, MapPin, Phone, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 export const AgencyRegistration = () => {
   const navigate = useNavigate();
@@ -94,10 +94,10 @@ const handleSubmit = async (e) => {
 
             <div className="space-y-1">
               <label className="text-xs text-white/40 font-bold uppercase flex items-center gap-1.5">
-                <FileCheck size={12} /> CAC Verification Number
+                <AtSign size={12} /> Business Social Handle
               </label>
               <input 
-                type="text" name="cacNumber" required placeholder="E.g., RC-1234567"
+                type="text" name="cacNumber" required placeholder="@yourbusinessname"
                 value={formData.cacNumber} onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-cobalt transition-colors text-sm font-medium"
               />
