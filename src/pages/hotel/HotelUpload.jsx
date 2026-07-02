@@ -36,7 +36,17 @@ const ROOM_CATEGORIES = [
   "Business Suite",
   "Presidential Suite",
   "Penthouse Suite",
-  "Royal Suite"
+  "Royal Suite",
+  "Compact Standard",
+  "Classic Deluxe",
+  "Classic Superior",
+  "Heritage Executive",
+  "Maison Standard with pool view",
+  "Maison Standard without pool view",
+  "Maison delux with balcony",
+  "Maison Premium",
+  "Maison Executive",
+  "Maison Signature"
 ];
 
   const tokenBg = darkMode 

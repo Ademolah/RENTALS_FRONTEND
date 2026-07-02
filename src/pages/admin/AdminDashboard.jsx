@@ -295,37 +295,39 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
     <div className="flex items-center gap-3 w-full md:w-auto">
       
       {/* Desktop Only Utilities (Hidden on Mobile) */}
-      <div className="hidden md:flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`p-3.5 border transition-all duration-300 transform active:scale-95 flex items-center justify-center ${
-            isDarkMode 
-              ? 'bg-white/5 hover:bg-white/10 border-white/10 text-brand-gold' 
-              : 'bg-white border-slate-200 hover:bg-slate-50 text-amber-500 shadow-sm'
-          }`}
-          title={isDarkMode ? "Switch to Light Spectrum" : "Switch to Midnight Spectrum"}
-        >
-          {isDarkMode ? <Sun size={18} className="animate-pulse" /> : <Moon size={18} />}
-        </button>
+<div className="hidden md:flex items-center gap-3">
+  {/* Perfect Circle Icon Button */}
+  <button
+    type="button"
+    onClick={() => setIsDarkMode(!isDarkMode)}
+    className={`rounded-full p-3.5 border transition-all duration-300 transform active:scale-95 flex items-center justify-center ${
+      isDarkMode 
+        ? 'bg-white/5 hover:bg-white/10 border-white/10 text-brand-gold' 
+        : 'bg-white border-slate-200 hover:bg-slate-50 text-amber-500 shadow-sm'
+    }`}
+    title={isDarkMode ? "Switch to Light Spectrum" : "Switch to Midnight Spectrum"}
+  >
+    {isDarkMode ? <Sun size={18} className="animate-pulse" /> : <Moon size={18} />}
+  </button>
 
-        <button 
-          onClick={handleLogout}
-          className={`border font-bold text-sm px-5 py-3.5 transition-all flex items-center justify-center gap-2 ${
-            isDarkMode 
-              ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' 
-              : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm'
-          }`}
-        >
-          <LogOut size={16} className="text-brand-coral" />
-          <span>Sign Out</span>
-        </button>
-      </div>
+  {/* Elegant Pill Text Button */}
+  <button 
+    onClick={handleLogout}
+    className={`rounded-full border font-bold text-sm px-6 py-3.5 transition-all flex items-center justify-center gap-2 ${
+      isDarkMode 
+        ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' 
+        : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm'
+    }`}
+  >
+    <LogOut size={16} className="text-brand-coral" />
+    <span>Sign Out</span>
+  </button>
+</div>
 
-      {/* Primary Action - Precision Sized */}
-      <Link 
+      {/* Primary Action - Precision Sized & Curved */}
+<Link 
   to="/agent/upload" 
-  className="inline-flex w-max bg-brand-coral hover:bg-brand-coral/90 text-white px-8 py-3.5 font-bold text-xs md:text-sm uppercase tracking-widest transition-all shadow-xl shadow-brand-coral/30 transform active:scale-95 items-center justify-center gap-2 rounded-full md:rounded-none md:border md:border-brand-coral"
+  className="inline-flex w-max bg-brand-coral hover:bg-brand-coral/90 text-white px-8 py-3.5 font-bold text-xs md:text-sm uppercase tracking-widest transition-all shadow-xl shadow-brand-coral/30 transform active:scale-95 items-center justify-center gap-2 rounded-full border border-brand-coral"
 >
   <Plus size={16} strokeWidth={3} />
   <span>Upload Listing</span>
