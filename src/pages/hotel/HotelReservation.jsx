@@ -162,6 +162,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
 </h2>
 
 {/* 🏨 PREMIUM ROOM TYPE SELECTOR ENGINE */}
+{/* 🏨 PREMIUM ROOM TYPE SELECTOR ENGINE */}
 <div className="mt-4 space-y-2">
   <label className={`text-[10px] font-black tracking-widest uppercase block ${
     darkMode ? "text-white/40" : "text-slate-400"
@@ -178,21 +179,12 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
     </div>
 
     <select
-      /* 🚨 THE FIX: Force strict stringification so React never misinterprets the active state */
-      value={String(selectedRoom?._id || selectedRoom?.name || "")}
+      value={selectedRoom?._id || selectedRoom?.id || selectedRoom?.name}
       onChange={(e) => {
-        const selectedString = e.target.value;
-        const availableRooms = hotel?.roomTypes?.length ? hotel.roomTypes : [selectedRoom].filter(Boolean);
-        
-        // Find the exact match using strict string comparison
-        const matchedRoom = availableRooms.find(
-          (r) => String(r?._id || r?.name || "") === selectedString
-        );
-        
-        // Pass the pure object back to the parent state
-        if (matchedRoom) {
-          setSelectedRoom(matchedRoom);
-        }
+        // Updated to search through your real database key: roomTypes
+        const baselineRoomsList = hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom];
+        const pickedRoom = baselineRoomsList.find(r => (r._id || r.id || r.name) === e.target.value);
+        if (pickedRoom) setSelectedRoom(pickedRoom);
       }}
       className={`w-full appearance-none pl-11 pr-10 py-3.5 text-xs font-bold uppercase tracking-wider rounded-full border outline-none transition-all cursor-pointer ${
         darkMode 
@@ -200,21 +192,16 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
           : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-cobalt focus:ring-2 focus:ring-brand-cobalt/20"
       }`}
     >
-      {/* Fallback to ensure it maps safely even if data is still loading */}
-      {(hotel?.roomTypes?.length ? hotel.roomTypes : [selectedRoom].filter(Boolean)).map((room, idx) => {
-        // 🚨 THE FIX: Guarantee the option value is the exact same string type
-        const uniqueStringValue = String(room?._id || room?.name || idx);
-        
-        return (
-          <option 
-            key={uniqueStringValue} 
-            value={uniqueStringValue}
-            className="text-slate-900 bg-white"
-          >
-            {room?.name || "Suite"} — ₦{room?.pricePerNight?.toLocaleString() || "0"}/night
-          </option>
-        );
-      })}
+      {/* Target your actual database array mapping */}
+      {(hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom]).map((room, idx) => (
+        <option 
+          key={room._id || room.id || idx} 
+          value={room._id || room.id || room.name}
+          className="text-slate-900 bg-white"
+        >
+          {room.name} — ₦{room.pricePerNight?.toLocaleString()}/night
+        </option>
+      ))}
     </select>
 
     {/* Right Custom Chevron */}
@@ -227,7 +214,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
 
   {/* Real-time Dynamic Feedback Copy */}
   <p className={`text-[11px] font-medium mt-1.5 ${darkMode ? "text-white/50" : "text-slate-500"}`}>
-    Allocating: <span className="font-bold text-brand-cobalt">{selectedRoom?.name || '...'}</span> — <span className="text-emerald-500 font-bold">₦{selectedRoom?.pricePerNight?.toLocaleString() || '0'}</span> / night
+    Allocating: <span className="font-bold text-brand-cobalt">{selectedRoom?.name}</span> — <span className="text-emerald-500 font-bold">₦{selectedRoom?.pricePerNight?.toLocaleString()}</span> / night
   </p>
 </div>
     </div>
