@@ -1,9 +1,9 @@
 import  { useState, } from 'react';
-import { X, Calendar, User, Mail, Phone, MessageSquare, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { X, Calendar, User, Mail, Phone, MessageSquare, Loader2,ChevronDown, BedDouble, CheckCircle2, ArrowRight } from 'lucide-react';
 import { apiClient } from '../../services/apiClient'
 import toast from 'react-hot-toast'
 
-export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMode = true }) => {
+export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelectedRoom, darkMode = true }) => {
   const [formData, setFormData] = useState({
     guestName: '',
     guestEmail: '',
@@ -16,6 +16,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  
 
   // 🟢 STEP 1: Halt execution immediately if modal is inactive or data is missing
   if (!isOpen || !hotel || !selectedRoom) return null;
@@ -148,7 +149,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
         </div>
         ) : (
           <>
-            {/* Header Content Block */}
+           
             {/* Header Content Block */}
 <div className={`p-6 md:p-8 border-b shrink-0 ${darkMode ? "border-white/5 bg-white/[0.01]" : "border-slate-100 bg-slate-50/50"}`}>
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -156,10 +157,64 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMod
       <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded border border-brand-gold/20">
         Secure Booking
       </span>
-      <h2 className="text-xl font-black tracking-tight uppercase mt-2 text-white">{hotel?.title}</h2>
-      <p className={`text-xs mt-0.5 ${darkMode ? "text-white/40" : "text-slate-500"}`}>
-        Allocating Architecture Suite: <span className="font-bold text-brand-cobalt">{selectedRoom.name}</span> — ₦{selectedRoom.pricePerNight?.toLocaleString()}/night
-      </p>
+      <h2 className="text-xl font-black tracking-tight uppercase mt-2 text-white">
+  {hotel?.title}
+</h2>
+
+{/* 🏨 PREMIUM ROOM TYPE SELECTOR ENGINE */}
+<div className="mt-4 space-y-2">
+  <label className={`text-[10px] font-black tracking-widest uppercase block ${
+    darkMode ? "text-white/40" : "text-slate-400"
+  }`}>
+    Select Suite Architecture
+  </label>
+  
+  <div className="relative w-full sm:max-w-md">
+    {/* Left Icon Decorator */}
+    <div className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${
+      darkMode ? "text-white/40" : "text-slate-400"
+    }`}>
+      {/* Make sure to import { BedDouble, ChevronDown } from 'lucide-react' */}
+      <BedDouble size={14} />
+    </div>
+
+    <select
+      value={selectedRoom?.id || selectedRoom?.name}
+      onChange={(e) => {
+        // Find the full room object from the hotel array when selected
+        const pickedRoom = hotel?.rooms?.find(r => (r.id || r.name) === e.target.value);
+        if (pickedRoom) setSelectedRoom(pickedRoom);
+      }}
+      className={`w-full appearance-none pl-11 pr-10 py-3.5 text-xs font-bold uppercase tracking-wider rounded-full border outline-none transition-all cursor-pointer ${
+        darkMode 
+          ? "bg-white/5 border-white/10 text-white focus:border-brand-cobalt focus:ring-2 focus:ring-brand-cobalt/20" 
+          : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-cobalt focus:ring-2 focus:ring-brand-cobalt/20"
+      }`}
+    >
+      {hotel?.rooms?.map((room, idx) => (
+        <option 
+          key={room.id || idx} 
+          value={room.id || room.name}
+          className={darkMode ? "bg-[#0B0F19] text-white" : "bg-white text-slate-800"}
+        >
+          {room.name} — ₦{room.pricePerNight?.toLocaleString()}/night
+        </option>
+      ))}
+    </select>
+
+    {/* Right Custom Chevron */}
+    <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${
+      darkMode ? "text-white/40" : "text-slate-400"
+    }`}>
+      <ChevronDown size={14} strokeWidth={2.5} />
+    </div>
+  </div>
+
+  {/* Real-time Dynamic Feedback Copy */}
+  <p className={`text-[11px] font-medium mt-1.5 ${darkMode ? "text-white/50" : "text-slate-500"}`}>
+    Allocating: <span className="font-bold text-brand-cobalt">{selectedRoom?.name}</span> — <span className="text-emerald-500 font-bold">₦{selectedRoom?.pricePerNight?.toLocaleString()}</span> / night
+  </p>
+</div>
     </div>
 
     {/* 🎯 SURGICAL MATRIX INJECTION: Live Hotel Admin Contact Desk via partner payload */}
