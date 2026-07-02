@@ -174,15 +174,15 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
     <div className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${
       darkMode ? "text-white/40" : "text-slate-400"
     }`}>
-      {/* Make sure to import { BedDouble, ChevronDown } from 'lucide-react' */}
       <BedDouble size={14} />
     </div>
 
     <select
-      value={selectedRoom?.id || selectedRoom?.name}
+      value={selectedRoom?._id || selectedRoom?.id || selectedRoom?.name}
       onChange={(e) => {
-        // Find the full room object from the hotel array when selected
-        const pickedRoom = hotel?.rooms?.find(r => (r.id || r.name) === e.target.value);
+        // Updated to search through your real database key: roomTypes
+        const baselineRoomsList = hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom];
+        const pickedRoom = baselineRoomsList.find(r => (r._id || r.id || r.name) === e.target.value);
         if (pickedRoom) setSelectedRoom(pickedRoom);
       }}
       className={`w-full appearance-none pl-11 pr-10 py-3.5 text-xs font-bold uppercase tracking-wider rounded-full border outline-none transition-all cursor-pointer ${
@@ -191,11 +191,12 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
           : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-cobalt focus:ring-2 focus:ring-brand-cobalt/20"
       }`}
     >
-      {hotel?.rooms?.map((room, idx) => (
+      {/* Target your actual database array mapping */}
+      {(hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom]).map((room, idx) => (
         <option 
-          key={room.id || idx} 
-          value={room.id || room.name}
-          className={darkMode ? "bg-[#0B0F19] text-white" : "bg-white text-slate-800"}
+          key={room._id || room.id || idx} 
+          value={room._id || room.id || room.name}
+          className="text-slate-900 bg-white"
         >
           {room.name} — ₦{room.pricePerNight?.toLocaleString()}/night
         </option>
