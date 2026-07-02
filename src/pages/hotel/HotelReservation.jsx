@@ -3,7 +3,8 @@ import { X, Calendar, User, Mail, Phone, MessageSquare, Loader2,ChevronDown, Bed
 import { apiClient } from '../../services/apiClient'
 import toast from 'react-hot-toast'
 
-export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelectedRoom, darkMode = true }) => {
+export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom, darkMode = true }) => {
+  const [activeSuite, setActiveSuite] = useState(selectedRoom || hotel?.roomTypes?.[0] || {});
   const [formData, setFormData] = useState({
     guestName: '',
     guestEmail: '',
@@ -32,7 +33,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
     if (checkOut > checkIn) {
       const timeDelta = Math.abs(checkOut.getTime() - checkIn.getTime());
       nights = Math.ceil(timeDelta / (1000 * 60 * 60 * 24));
-      total = nights * (selectedRoom.pricePerNight || 0);
+      total = nights * (activeSuite.pricePerNight || 0);
     }
   }
 
@@ -58,7 +59,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
       // 🟢 Swapped to unified apiClient architecture
       const response = await apiClient.post('/reservations', {
         hotelId: hotel._id,
-        roomTypeId: selectedRoom._id || selectedRoom.id,
+        roomTypeId: activeSuite._id || activeSuite.id,
         ...formData
       });
 
@@ -161,6 +162,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
   {hotel?.title}
 </h2>
 
+
 {/* 🏨 PREMIUM ROOM TYPE SELECTOR ENGINE */}
 {/* 🏨 PREMIUM ROOM TYPE SELECTOR ENGINE */}
 <div className="mt-4 space-y-2">
@@ -179,12 +181,19 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
     </div>
 
     <select
-      value={selectedRoom?._id || selectedRoom?.id || selectedRoom?.name}
+      value={String(activeSuite?._id || activeSuite?.name || "")}
       onChange={(e) => {
-        // Updated to search through your real database key: roomTypes
-        const baselineRoomsList = hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom];
-        const pickedRoom = baselineRoomsList.find(r => (r._id || r.id || r.name) === e.target.value);
-        if (pickedRoom) setSelectedRoom(pickedRoom);
+        const selectedString = e.target.value;
+        const availableRooms = hotel?.roomTypes?.length ? hotel.roomTypes : [];
+        
+        const matchedRoom = availableRooms.find(
+          (r) => String(r?._id || r?.name || "") === selectedString
+        );
+        
+        if (matchedRoom) {
+          // Updates locally, instantly.
+          setActiveSuite(matchedRoom); 
+        }
       }}
       className={`w-full appearance-none pl-11 pr-10 py-3.5 text-xs font-bold uppercase tracking-wider rounded-full border outline-none transition-all cursor-pointer ${
         darkMode 
@@ -192,16 +201,19 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
           : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-cobalt focus:ring-2 focus:ring-brand-cobalt/20"
       }`}
     >
-      {/* Target your actual database array mapping */}
-      {(hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom]).map((room, idx) => (
-        <option 
-          key={room._id || room.id || idx} 
-          value={room._id || room.id || room.name}
-          className="text-slate-900 bg-white"
-        >
-          {room.name} — ₦{room.pricePerNight?.toLocaleString()}/night
-        </option>
-      ))}
+      {/* Map through the rooms safely */}
+      {(hotel?.roomTypes?.length ? hotel.roomTypes : [activeSuite]).map((room, idx) => {
+        const uniqueStringValue = String(room?._id || room?.name || idx);
+        return (
+          <option 
+            key={uniqueStringValue} 
+            value={uniqueStringValue}
+            className="text-slate-900 bg-white"
+          >
+            {room?.name || "Suite"} — ₦{room?.pricePerNight?.toLocaleString() || "0"}/night
+          </option>
+        );
+      })}
     </select>
 
     {/* Right Custom Chevron */}
@@ -214,7 +226,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
 
   {/* Real-time Dynamic Feedback Copy */}
   <p className={`text-[11px] font-medium mt-1.5 ${darkMode ? "text-white/50" : "text-slate-500"}`}>
-    Allocating: <span className="font-bold text-brand-cobalt">{selectedRoom?.name}</span> — <span className="text-emerald-500 font-bold">₦{selectedRoom?.pricePerNight?.toLocaleString()}</span> / night
+    Allocating: <span className="font-bold text-brand-cobalt">{activeSuite?.name || '...'}</span> — <span className="text-emerald-500 font-bold">₦{activeSuite?.pricePerNight?.toLocaleString() || '0'}</span> / night
   </p>
 </div>
     </div>
