@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Star, MapPin, Users, CheckCircle, MessageSquare, Send, User as UserIcon } from 'lucide-react';
+import { X, Star, MapPin, Users, CheckCircle, MessageSquare,Navigation, Send, User as UserIcon } from 'lucide-react';
 import { HotelCardCarousel } from './HotelCardCarousel';
 import toast from 'react-hot-toast';
 import { apiClient } from '../../services/apiClient'; // Adjust path
@@ -106,10 +106,42 @@ export const HotelDetailsModal = ({ isOpen, onClose, hotel, darkMode = true }) =
             {hotel.title}
           </h2>
           
-          <p className={`text-sm font-bold flex items-center gap-1.5 mb-6 text-brand-cobalt`}>
+          <p className={`text-sm font-bold flex items-center gap-1.5 mb-4 text-brand-cobalt`}>
             <MapPin size={16} /> 
             {hotel.streetAddress}, {hotel.locality}, {hotel.state}
           </p>
+
+          {/* 🗺️ PREMIUM EMBEDDED GOOGLE MAP (With shrink-0 Fix) */}
+          <div className={`relative w-full h-36 md:h-40 mb-6 shrink-0 overflow-hidden border group shadow-sm rounded-2xl ${
+            darkMode ? "border-white/10 bg-white/[0.02]" : "border-slate-200 bg-slate-50"
+          }`}>
+            <iframe
+              title="Property Location View"
+              width="100%"
+              height="100%"
+              className={`border-0 transition-all duration-500 group-hover:scale-[1.02] ${
+                darkMode 
+                  ? "invert-[92%] hue-rotate-180 contrast-[115%] brightness-[90%] grayscale-[20%]" 
+                  : "grayscale-[10%]"
+              }`}
+              loading="lazy"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(`${hotel.streetAddress}, ${hotel.locality}, ${hotel.state}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+            />
+            
+            {/* Ambient Dark Mode Gradient Protector Layer */}
+            {darkMode && <div className="absolute inset-0 bg-brand-cobalt/5 pointer-events-none mix-blend-color" />}
+
+            {/* Premium Floating Direction Card Overlay */}
+            <a 
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.streetAddress}, ${hotel.locality}, ${hotel.state}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-3 right-3 inline-flex bg-brand-cobalt text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-xl hover:bg-brand-cobalt/90 transform active:scale-95 transition-all items-center gap-1.5 border border-white/10"
+            >
+              <Navigation size={11} fill="currentColor" />
+              <span>Navigate</span>
+            </a>
+          </div>
 
           {/* Social Proof / Current Stats */}
           <div className={`p-4 rounded-2xl mb-6 border flex items-center justify-between flex-wrap gap-4 ${
