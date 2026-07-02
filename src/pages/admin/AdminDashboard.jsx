@@ -225,67 +225,115 @@ const prioritizedBookings = [...bookings].sort((a, b) => {
     <div className="max-w-[1400px] mx-auto p-4 sm:p-6 md:p-10 space-y-6 md:space-y-8">
       
       {/* =======================================================================
-         HEADER ARCHITECTURE WITH LIVE THEME CONTROLLERS
-         ======================================================================= */}
-      <div className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 md:pb-8 border-b ${
-        isDarkMode ? 'border-white/10' : 'border-slate-200'
-      }`}>
-        <div className="space-y-1 w-full lg:w-auto">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="bg-brand-cobalt text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-md text-white shadow-sm">
-              Enterprise Layer
-            </span>
-            <span className={`text-xs font-mono px-2 py-0.5 rounded ${
-              isDarkMode ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-500'
+    PREMIUM EXECUTIVE IDENTITY HEADER (SHARP & PRECISION LAYOUT)
+    ======================================================================= */}
+<div className={`p-5 md:p-8 border-b ${
+  isDarkMode 
+    ? "bg-[#0B0F19] border-white/10" 
+    : "bg-white border-slate-200 shadow-sm"
+}`}>
+  
+  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    
+    {/* ==========================================
+        TOP ROW: IDENTITY & MOBILE UTILITIES
+        ========================================== */}
+    <div className="flex justify-between items-start w-full md:w-auto gap-4">
+      
+      {/* Identity Block */}
+      <div className="flex items-center gap-3 md:gap-4 shrink-0">
+        <div className={`h-12 w-12 md:h-16 md:w-16 flex shrink-0 items-center justify-center font-black text-base md:text-xl shadow-sm border ${
+          isDarkMode ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-800"
+        }`}>
+          {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+        </div>
+
+        <div className="space-y-0.5">
+          <h1 className="text-xl md:text-4xl font-black tracking-tighter leading-none truncate max-w-[160px] sm:max-w-xs md:max-w-none">
+            {user?.firstName} {user?.lastName}
+          </h1>
+          <div className="flex items-center">
+            <span className={`text-[9px] md:text-xs font-bold uppercase tracking-widest ${
+              isDarkMode ? "text-white/40" : "text-slate-500"
             }`}>
-              ID: {user?.agencyId || 'No Agency Synced'}
+              ID: {user?.agencyId || 'UNSYNCED'}
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-display font-black tracking-tight mt-1.5">
-            CEO Management Console
-          </h1>
-          <p className={`text-sm font-medium ${isDarkMode ? 'text-white/60' : 'text-slate-600'}`}>
-            Oversee corporate properties, register field staff, and track transactional velocity.
-          </p>
-        </div>
-
-        {/* Global Toolbar Framework */}
-        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          {/* Light / Dark Mode Premium Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-3.5 rounded-xl border transition-all duration-300 transform active:scale-95 flex items-center justify-center ${
-              isDarkMode 
-                ? 'bg-white/5 hover:bg-white/10 border-white/10 text-brand-gold' 
-                : 'bg-white border-slate-200 hover:bg-slate-50 text-amber-500 shadow-sm'
-            }`}
-            title={isDarkMode ? "Switch to Light Spectrum" : "Switch to Midnight Spectrum"}
-          >
-            {isDarkMode ? <Sun size={18} className="animate-pulse" /> : <Moon size={18} />}
-          </button>
-
-          <Link 
-            to="/agent/upload" 
-            className="flex-1 sm:flex-initial bg-brand-coral hover:bg-brand-coral/90 text-white px-5 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-brand-coral/10 transform active:scale-95 flex items-center justify-center gap-2"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            <span className="inline">Upload Listing</span>
-          </Link>
-          
-          <button 
-            onClick={handleLogout}
-            className={`flex-1 sm:flex-initial border font-bold text-sm px-5 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
-              isDarkMode 
-                ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' 
-                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm'
-            }`}
-          >
-            <LogOut size={16} className="text-brand-coral" />
-            <span>Sign Out</span>
-          </button>
         </div>
       </div>
+
+      {/* Quick Actions (Mobile Only) - Anchored to the right of the name */}
+      <div className="flex md:hidden items-center gap-2 shrink-0 mt-1">
+        <button
+          type="button"
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className={`p-2.5 border transition-all duration-300 transform active:scale-95 flex items-center justify-center ${
+            isDarkMode 
+              ? 'bg-white/5 hover:bg-white/10 border-white/10 text-brand-gold' 
+              : 'bg-white border-slate-200 hover:bg-slate-50 text-amber-500 shadow-sm'
+          }`}
+        >
+          {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
+
+        <button 
+          onClick={handleLogout}
+          className={`p-2.5 border transition-all flex items-center justify-center ${
+            isDarkMode 
+              ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' 
+              : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm'
+          }`}
+        >
+          <LogOut size={14} className="text-brand-coral" />
+        </button>
+      </div>
+    </div>
+
+    {/* ==========================================
+        BOTTOM/RIGHT ROW: PRIMARY ACTION & DESKTOP UTILITIES
+        ========================================== */}
+    <div className="flex items-center gap-3 w-full md:w-auto">
+      
+      {/* Desktop Only Utilities (Hidden on Mobile) */}
+      <div className="hidden md:flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className={`p-3.5 border transition-all duration-300 transform active:scale-95 flex items-center justify-center ${
+            isDarkMode 
+              ? 'bg-white/5 hover:bg-white/10 border-white/10 text-brand-gold' 
+              : 'bg-white border-slate-200 hover:bg-slate-50 text-amber-500 shadow-sm'
+          }`}
+          title={isDarkMode ? "Switch to Light Spectrum" : "Switch to Midnight Spectrum"}
+        >
+          {isDarkMode ? <Sun size={18} className="animate-pulse" /> : <Moon size={18} />}
+        </button>
+
+        <button 
+          onClick={handleLogout}
+          className={`border font-bold text-sm px-5 py-3.5 transition-all flex items-center justify-center gap-2 ${
+            isDarkMode 
+              ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' 
+              : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm'
+          }`}
+        >
+          <LogOut size={16} className="text-brand-coral" />
+          <span>Sign Out</span>
+        </button>
+      </div>
+
+      {/* Primary Action - Precision Sized */}
+      <Link 
+  to="/agent/upload" 
+  className="inline-flex w-max bg-brand-coral hover:bg-brand-coral/90 text-white px-8 py-3.5 font-bold text-xs md:text-sm uppercase tracking-widest transition-all shadow-xl shadow-brand-coral/30 transform active:scale-95 items-center justify-center gap-2 rounded-full md:rounded-none md:border md:border-brand-coral"
+>
+  <Plus size={16} strokeWidth={3} />
+  <span>Upload Listing</span>
+</Link>
+      
+    </div>
+  </div>
+</div>
 
       {/* =======================================================================
          ANALYTICAL STATISTICS MATRIX GRID
