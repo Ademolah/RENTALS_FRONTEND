@@ -178,12 +178,21 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
     </div>
 
     <select
-      value={selectedRoom?._id || selectedRoom?.id || selectedRoom?.name}
+      value={selectedRoom?._id || selectedRoom?.id || selectedRoom?.name || ""}
       onChange={(e) => {
-        // Updated to search through your real database key: roomTypes
+        const targetValue = e.target.value;
         const baselineRoomsList = hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom];
-        const pickedRoom = baselineRoomsList.find(r => (r._id || r.id || r.name) === e.target.value);
-        if (pickedRoom) setSelectedRoom(pickedRoom);
+        
+        // Find matching room while safeguarding against type differences
+        const pickedRoom = baselineRoomsList.find(r => 
+          String(r._id || r.id || r.name) === String(targetValue)
+        );
+        
+        // 🚨 THE FIX: Spread into a brand new object reference pointer!
+        // This forces React to detect the change and re-render the paragraph instantly.
+        if (pickedRoom) {
+          setSelectedRoom({ ...pickedRoom });
+        }
       }}
       className={`w-full appearance-none pl-11 pr-10 py-3.5 text-xs font-bold uppercase tracking-wider rounded-full border outline-none transition-all cursor-pointer ${
         darkMode 
@@ -191,16 +200,18 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
           : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-cobalt focus:ring-2 focus:ring-brand-cobalt/20"
       }`}
     >
-      {/* Target your actual database array mapping */}
-      {(hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom]).map((room, idx) => (
-        <option 
-          key={room._id || room.id || idx} 
-          value={room._id || room.id || room.name}
-          className="text-slate-900 bg-white"
-        >
-          {room.name} — ₦{room.pricePerNight?.toLocaleString()}/night
-        </option>
-      ))}
+      {(hotel?.roomTypes && hotel.roomTypes.length > 0 ? hotel.roomTypes : [selectedRoom]).map((room, idx) => {
+        const uniqueValue = room._id || room.id || room.name;
+        return (
+          <option 
+            key={uniqueValue || idx} 
+            value={uniqueValue}
+            className="text-slate-900 bg-white"
+          >
+            {room.name} — ₦{room.pricePerNight?.toLocaleString()}/night
+          </option>
+        );
+      })}
     </select>
 
     {/* Right Custom Chevron */}
@@ -213,7 +224,7 @@ export const ReservationModal = ({ isOpen, onClose, hotel, selectedRoom,setSelec
 
   {/* Real-time Dynamic Feedback Copy */}
   <p className={`text-[11px] font-medium mt-1.5 ${darkMode ? "text-white/50" : "text-slate-500"}`}>
-    Allocating: <span className="font-bold text-brand-cobalt">{selectedRoom?.name}</span> — <span className="text-emerald-500 font-bold">₦{selectedRoom?.pricePerNight?.toLocaleString()}</span> / night
+    Allocating: <span className="font-bold text-brand-cobalt">{selectedRoom?.name || 'Processing...'}</span> — <span className="text-emerald-500 font-bold">₦{selectedRoom?.pricePerNight?.toLocaleString() || '0'}</span> / night
   </p>
 </div>
     </div>
